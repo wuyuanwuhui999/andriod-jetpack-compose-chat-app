@@ -7,9 +7,13 @@ cls
 echo 正在推送代码到GitHub仓库...
 echo.
 
-git remote rm origin
-git remote add origin https://github.com/wuyuanwuhui999/andriod-jetpack-compose-chat-app
-git push origin main
+#git remote rm origin
+#git remote add origin https://github.com/wuyuanwuhui999/andriod-jetpack-compose-chat-app
+#git push origin main
+
+git remote add origin https://github.com/wuyuanwuhui999/andriod-jetpack-compose-chat-app.git
+git branch -M main
+git push -u origin main
 
 if %errorlevel% equ 0 (
     echo.
