@@ -8,7 +8,7 @@ echo 正在推送代码到GitHub仓库...
 echo.
 
 git remote rm origin
-git remote add origin https://github.com/wuyuanwuhui999/flutter-music-app-ui
+git remote add origin https://github.com/wuyuanwuhui999/andriod-jetpack-compose-chat-app
 git push origin main
 
 if %errorlevel% equ 0 (

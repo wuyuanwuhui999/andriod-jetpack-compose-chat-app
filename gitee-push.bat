@@ -42,7 +42,7 @@ if errorlevel 1 (
 REM 推送代码
 echo.
 echo 正在推送到远程仓库...
-git push origin main
+git push origin master
 
 REM 显示结果
 if errorlevel 1 (
