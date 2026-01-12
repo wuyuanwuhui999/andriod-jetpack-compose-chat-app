@@ -1,4 +1,4 @@
-package com.yourpackage.data.remote
+package com.player.chat.network;
 
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient

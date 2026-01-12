@@ -55,7 +55,7 @@ class LoginViewModel @Inject constructor(
 sealed class LoginState {
     object Idle : LoginState()
     object Loading : LoginState()
-    data class Success(val user: com.yourpackage.data.model.User?) : LoginState()
+    data class Success(val user: com.player.chat.model.User?) : LoginState()
     data class Error(val message: String) : LoginState()
 }
 

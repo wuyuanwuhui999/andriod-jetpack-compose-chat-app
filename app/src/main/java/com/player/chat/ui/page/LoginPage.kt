@@ -1,5 +1,6 @@
 package com.player.chat.ui.page
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,6 +17,8 @@ import com.player.chat.ui.theme.Dimens
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.components.AccountLogin
 import com.player.chat.ui.components.EmailLogin
+import com.player.chat.viewmodel.LoginViewModel
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,10 +133,8 @@ fun LoginPage(
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.Black
                 ),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    width = 1.dp,
-                    color = Color.Gray
-                )
+                border = BorderStroke(1.dp, Color.Gray)
+
             ) {
                 Text(
                     text = "注册",
@@ -156,10 +157,7 @@ fun LoginPage(
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.Black
                 ),
-                border = ButtonDefaults.outlinedButtonBorder(
-                    width = 1.dp,
-                    contentColor = Color.Gray
-                )
+                border = BorderStroke(1.dp, Color.Gray) // ✅ 正确写法
             ) {
                 Text(
                     text = "找回密码",
