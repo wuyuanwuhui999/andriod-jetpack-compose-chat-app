@@ -1,6 +1,8 @@
+// Color.kt
 package com.player.chat.ui.theme
 
 import androidx.annotation.ColorInt
+import androidx.compose.ui.graphics.Color
 
 object Color {
     @ColorInt const val PAGE_BACKGROUND_COLOR = 0xFFEFEFEF.toInt()
@@ -19,4 +21,25 @@ object Color {
     @ColorInt const val LINEAR_GRADIENT = 0xFF333333.toInt()
     @ColorInt const val POP_BACKGROUND_COLOR = 0xFF333333.toInt()
     @ColorInt const val POP_LINE_COLOR = 0xFF444444.toInt()
+
+    // Compose Material3 颜色定义
+    @ColorInt const val PRIMARY_COLOR = 0xFFFFAE00.toInt()
+    @ColorInt const val SECONDARY_COLOR = 0xFF2196F3.toInt()
+    @ColorInt const val BACKGROUND_COLOR = 0xFFEFEFEF.toInt()
+    @ColorInt const val TEXT_COLOR = 0xFF000000.toInt()
+    @ColorInt const val DARK_BACKGROUND_COLOR = 0xFF000000.toInt() // 添加暗色背景常量
+    @ColorInt const val DARK_TEXT_COLOR = 0xFFFFFFFF.toInt() // 添加暗色文字颜色
+
+    // 为了兼容 Compose Color 类型，同时提供 Color 类型常量
+    val PrimaryColor = Color(PRIMARY_COLOR)
+    val SecondaryColor = Color(SECONDARY_COLOR)
+    val BackgroundColor = Color(BACKGROUND_COLOR)
+    val TextColor = Color(TEXT_COLOR)
+    val DarkBackgroundColor = Color(DARK_BACKGROUND_COLOR)
+    val DarkTextColor = Color(DARK_TEXT_COLOR)
+    val White = Color.White
+    val Red = Color.Red
+    val Black = Color.Black
+
+    val Gray = Color.Gray
 }

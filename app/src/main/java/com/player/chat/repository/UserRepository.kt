@@ -1,0 +1,73 @@
+package com.player.chat.chat.repository
+
+import com.player.chat.local.DataStoreManager
+import com.player.chat.network.ApiService
+import com.player.chat.model.*
+import javax.inject.Inject
+
+class UserRepository @Inject constructor(
+    private val apiService: ApiService,
+    private val dataStoreManager: DataStoreManager
+) {
+    suspend fun getUserData(): Result<Pair<User, String?>> {
+        return try {
+            val response = apiService.getUserData()
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val user = response.body()?.data
+                val token = response.body()?.token
+                if (user != null) {
+                    dataStoreManager.saveUser(user)
+                    token?.let { dataStoreManager.saveToken(it) }
+                    Result.success(Pair(user, token))
+                } else {
+                    Result.failure(Exception("User data is null"))
+                }
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "Request failed"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun loginByEmail(email: String, code: String): Result<Pair<User, String?>> {
+        return try {
+            val request = EmailLoginRequest(email, code)
+            val response = apiService.loginByEmail(request)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val user = response.body()?.data
+                val token = response.body()?.token
+                if (user != null) {
+                    dataStoreManager.saveUser(user)
+                    token?.let { dataStoreManager.saveToken(it) }
+                    dataStoreManager.setLoggedIn(true)
+                    Result.success(Pair(user, token))
+                } else {
+                    Result.failure(Exception("Login failed"))
+                }
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "Login failed"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun sendEmailVerifyCode(email: String): Result<Unit> {
+        return try {
+            val request = SendEmailRequest(email)
+            val response = apiService.sendEmailVerifyCode(request)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "Failed to send code"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun logout() {
+        dataStoreManager.clearAll()
+    }
+}

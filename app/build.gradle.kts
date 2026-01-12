@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.kapt") // ← 添加这一行
 }
 
 android {
@@ -59,5 +60,15 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     implementation(libs.gson)
+    implementation(libs.okhttp)
+    implementation(libs.javax.inject)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.datastore.preferences)
+    implementation(libs.navigation.compose)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler) // 注意：是 kapt，不是 annotationProcessor
+
 
 }
