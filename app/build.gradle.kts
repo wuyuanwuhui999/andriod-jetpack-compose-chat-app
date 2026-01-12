@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler) // 注意：是 kapt，不是 annotationProcessor
-
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.java.jwt)
 
 }
