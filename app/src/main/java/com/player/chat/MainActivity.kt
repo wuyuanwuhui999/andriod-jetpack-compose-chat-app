@@ -7,7 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import com.player.chat.navigation.AppNavGraph
 import com.player.chat.ui.theme.ChatTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint  // 添加这个注解
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
