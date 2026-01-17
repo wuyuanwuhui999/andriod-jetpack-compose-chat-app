@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +19,6 @@ import com.player.chat.ui.theme.Color
 import com.player.chat.ui.components.AccountLogin
 import com.player.chat.ui.components.EmailLogin
 import com.player.chat.viewmodel.LoginViewModel
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,8 +55,8 @@ fun LoginPage(
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = Color.White,
                 contentColor = Color.PrimaryColor,
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
+                indicator = @Composable { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(  // 修改这里：使用 SecondaryIndicator
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
                         height = 2.dp,
                         color = Color.PrimaryColor

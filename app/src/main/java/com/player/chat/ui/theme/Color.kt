@@ -2,7 +2,7 @@
 package com.player.chat.ui.theme
 
 import androidx.annotation.ColorInt
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 object Color {
     @ColorInt const val PAGE_BACKGROUND_COLOR = 0xFFEFEFEF.toInt()
@@ -31,15 +31,15 @@ object Color {
     @ColorInt const val DARK_TEXT_COLOR = 0xFFFFFFFF.toInt() // 添加暗色文字颜色
 
     // 为了兼容 Compose Color 类型，同时提供 Color 类型常量
-    val PrimaryColor = Color(PRIMARY_COLOR)
-    val SecondaryColor = Color(SECONDARY_COLOR)
-    val BackgroundColor = Color(BACKGROUND_COLOR)
-    val TextColor = Color(TEXT_COLOR)
-    val DarkBackgroundColor = Color(DARK_BACKGROUND_COLOR)
-    val DarkTextColor = Color(DARK_TEXT_COLOR)
-    val White = Color.White
-    val Red = Color.Red
-    val Black = Color.Black
+    val PrimaryColor = ComposeColor(PRIMARY_COLOR)
+    val SecondaryColor = ComposeColor(SECONDARY_COLOR)
+    val BackgroundColor = ComposeColor(BACKGROUND_COLOR)
+    val TextColor = ComposeColor(TEXT_COLOR)
+    val DarkBackgroundColor = ComposeColor(DARK_BACKGROUND_COLOR)
+    val DarkTextColor = ComposeColor(DARK_TEXT_COLOR)
+    val White = ComposeColor.White
+    val Red = ComposeColor.Red
+    val Black = ComposeColor.Black
 
-    val Gray = Color.Gray
+    val Gray = ComposeColor.Gray
 }

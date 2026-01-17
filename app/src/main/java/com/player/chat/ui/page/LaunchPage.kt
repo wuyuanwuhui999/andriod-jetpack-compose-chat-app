@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import com.player.chat.navigation.Screens
 import com.player.chat.viewmodel.MainViewModel
 
+// LaunchPage.kt
 @Composable
 fun LaunchPage(
     navController: NavHostController,
@@ -36,10 +37,13 @@ fun LaunchPage(
     }
 
     LaunchedEffect(Unit) {
-        // 1. 从 ViewModel 获取当前缓存的 token（StateFlow 的最新值）
+        // 添加延迟，确保界面先显示
+        kotlinx.coroutines.delay(1000)
+
+        // 1. 从 ViewModel 获取当前缓存的 token
         val cachedToken = mainViewModel.token.value
 
-        // 2. 本地校验 token 是否有效（未过期）
+        // 2. 本地校验 token 是否有效
         if (!mainViewModel.isTokenValid(cachedToken)) {
             // Token 无效或为空，跳转登录页
             navController.navigate(Screens.Login.route) {
@@ -50,13 +54,8 @@ fun LaunchPage(
 
         // 3. Token 有效，尝试调用 getUserData 接口刷新用户信息
         try {
-            val result = mainViewModel.userRepository.getUserData()
+            val result = mainViewModel.getUserData()
             if (result.isSuccess) {
-                // getUserData 成功后，UserRepository 已将新 token 和 userData 存入 DataStore
-                // MainViewModel 会自动通过 collect 从 DataStore 加载最新数据到 StateFlow
-                // 所以无需手动 set，但为了确保立即可用，可主动触发一次加载（可选）
-                // 这里我们信任 DataStore -> StateFlow 的自动同步
-
                 // 导航到主界面
                 navController.navigate(Screens.Chat.route) {
                     popUpTo(Screens.Launch.route) { inclusive = true }

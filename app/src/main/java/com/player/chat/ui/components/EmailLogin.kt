@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send  // 改为 AutoMirrored 版本
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -43,7 +43,7 @@ fun EmailLogin(viewModel: LoginViewModel) {
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Send,
+                        imageVector = Icons.AutoMirrored.Filled.Send,  // 修改这里
                         contentDescription = "发送验证码",
                         tint = Color.PrimaryColor
                     )
