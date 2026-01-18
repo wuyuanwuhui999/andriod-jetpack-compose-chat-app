@@ -3,12 +3,11 @@ package com.player.chat.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Lock
+import com.player.chat.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.player.chat.ui.theme.Color
@@ -31,8 +30,9 @@ fun AccountLogin() {
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "账号"
+                    painter = painterResource(R.drawable.icon_user),
+                    contentDescription = "账号",
+                    modifier = Modifier.width(Dimens.smallIconSize).height(Dimens.smallIconSize)
                 )
             },
             placeholder = {
@@ -40,8 +40,8 @@ fun AccountLogin() {
             },
             shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Gray,
-                unfocusedBorderColor = Color.Gray
+                focusedBorderColor = Color.disableTextColor,
+                unfocusedBorderColor = Color.disableTextColor
             ),
             singleLine = true
         )
@@ -53,8 +53,9 @@ fun AccountLogin() {
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "密码"
+                    painter = painterResource(R.drawable.icon_password),
+                    contentDescription = "密码",
+                    modifier = Modifier.width(Dimens.smallIconSize).height(Dimens.smallIconSize)
                 )
             },
             placeholder = {
@@ -62,8 +63,8 @@ fun AccountLogin() {
             },
             shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Gray,
-                unfocusedBorderColor = Color.Gray
+                focusedBorderColor = Color.disableTextColor,
+                unfocusedBorderColor = Color.disableTextColor
             ),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

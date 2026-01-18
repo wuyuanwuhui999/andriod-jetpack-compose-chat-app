@@ -1,6 +1,8 @@
 package com.player.chat.ui.page
 
+import com.player.chat.R
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -8,16 +10,17 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.player.chat.navigation.Screens
-import com.player.chat.ui.theme.Dimens
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.components.AccountLogin
 import com.player.chat.ui.components.EmailLogin
+import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,7 +33,7 @@ fun LoginPage(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color.White
+        containerColor = Color.pageBackgroundColor
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -40,25 +43,22 @@ fun LoginPage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Logo (占位)
-            Spacer(modifier = Modifier.height(60.dp))
-            Text(
-                text = "Logo",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.PrimaryColor
+            Spacer(modifier = Modifier.height(Dimens.bigMargin))
+            Icon(
+                painter = painterResource(R.drawable.icon_ai),
+                contentDescription = "icon",
+                modifier = Modifier.width(Dimens.bigIconSize).height(Dimens.bigIconSize)
             )
-            Spacer(modifier = Modifier.height(40.dp))
-
+            Spacer(modifier = Modifier.height(Dimens.bigMargin))
             // 选项卡
             TabRow(
                 selectedTabIndex = selectedTab,
                 modifier = Modifier.fillMaxWidth(),
-                containerColor = Color.White,
                 contentColor = Color.PrimaryColor,
                 indicator = @Composable { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(  // 修改这里：使用 SecondaryIndicator
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        height = 2.dp,
+                        height = Dimens.borderSize,
                         color = Color.PrimaryColor
                     )
                 }
@@ -106,7 +106,7 @@ fun LoginPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
-                shape = RoundedCornerShape(Dimens.btnBorderRadius),
+                shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Red
                 )
@@ -114,8 +114,7 @@ fun LoginPage(
                 Text(
                     text = "登录",
                     color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = Dimens.fontSizeNormal,
                 )
             }
 
@@ -129,17 +128,16 @@ fun LoginPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
-                shape = RoundedCornerShape(Dimens.btnBorderRadius),
+                shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.Black
                 ),
-                border = BorderStroke(1.dp, Color.Gray)
+                border = BorderStroke(1.dp, Color.disableTextColor)
 
             ) {
                 Text(
                     text = "注册",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = Dimens.fontSizeNormal,
                 )
             }
 
@@ -153,16 +151,15 @@ fun LoginPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
-                shape = RoundedCornerShape(Dimens.btnBorderRadius),
+                shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.Black
                 ),
-                border = BorderStroke(1.dp, Color.Gray) // ✅ 正确写法
+                border = BorderStroke(1.dp, Color.disableTextColor) // ✅ 正确写法
             ) {
                 Text(
                     text = "找回密码",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = Dimens.fontSizeNormal,
                 )
             }
         }

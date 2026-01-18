@@ -8,12 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.player.chat.navigation.Screens
+import com.player.chat.ui.theme.Color
+import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.MainViewModel
 
 // LaunchPage.kt
@@ -30,9 +29,7 @@ fun LaunchPage(
     ) {
         Text(
             text = "欢迎使用",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
+            fontSize = Dimens.fontSizeBig,
         )
     }
 

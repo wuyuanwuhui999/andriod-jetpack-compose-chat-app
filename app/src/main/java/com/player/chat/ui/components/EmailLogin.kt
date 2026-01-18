@@ -3,13 +3,12 @@ package com.player.chat.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send  // 改为 AutoMirrored 版本
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import com.player.chat.R
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.ui.theme.Color
 import com.player.chat.viewmodel.LoginViewModel
@@ -31,8 +30,9 @@ fun EmailLogin(viewModel: LoginViewModel) {
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Email,
-                    contentDescription = "邮箱"
+                    painter = painterResource(R.drawable.icon_password),
+                    contentDescription = "邮箱",
+                    modifier = Modifier.width(Dimens.smallIconSize).height(Dimens.smallIconSize)
                 )
             },
             trailingIcon = {
@@ -43,19 +43,19 @@ fun EmailLogin(viewModel: LoginViewModel) {
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,  // 修改这里
+                        painter = painterResource(R.drawable.icon_send),
                         contentDescription = "发送验证码",
-                        tint = Color.PrimaryColor
+                        modifier = Modifier.width(Dimens.smallIconSize).height(Dimens.smallIconSize)
                     )
                 }
             },
             placeholder = {
                 Text(text = "请输入邮箱")
             },
-            shape = RoundedCornerShape(Dimens.btnBorderRadius),
+            shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Gray,
-                unfocusedBorderColor = Color.Gray
+                focusedBorderColor = Color.disableTextColor,
+                unfocusedBorderColor = Color.disableTextColor
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
@@ -69,11 +69,18 @@ fun EmailLogin(viewModel: LoginViewModel) {
             placeholder = {
                 Text(text = "请输入验证码")
             },
-            shape = RoundedCornerShape(Dimens.btnBorderRadius),
+            shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Gray,
-                unfocusedBorderColor = Color.Gray
+                focusedBorderColor = Color.disableTextColor,
+                unfocusedBorderColor = Color.disableTextColor
             ),
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.icon_code),
+                    contentDescription = "邮箱",
+                    modifier = Modifier.width(Dimens.smallIconSize).height(Dimens.smallIconSize)
+                )
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true
         )

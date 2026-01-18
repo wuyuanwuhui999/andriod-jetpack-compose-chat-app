@@ -37,9 +37,14 @@ object Color {
     val TextColor = ComposeColor(TEXT_COLOR)
     val DarkBackgroundColor = ComposeColor(DARK_BACKGROUND_COLOR)
     val DarkTextColor = ComposeColor(DARK_TEXT_COLOR)
+    val pageBackgroundColor = ComposeColor(PAGE_BACKGROUND_COLOR)
     val White = ComposeColor.White
     val Red = ComposeColor.Red
     val Black = ComposeColor.Black
 
     val Gray = ComposeColor.Gray
+
+    val disableTextColor = ComposeColor(DISABLE_TEXT_COLOR)
+
+    val subTitleColor = ComposeColor(SUB_TITLE_COLOR)
 }
