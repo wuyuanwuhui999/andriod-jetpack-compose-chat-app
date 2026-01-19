@@ -9,6 +9,29 @@ class UserRepository @Inject constructor(
     private val apiService: ApiService,
     private val dataStoreManager: DataStoreManager
 ) {
+    suspend fun loginByUserAccount(userAccount: String, password: String): Result<Pair<User, String?>> {
+        return try {
+            val request = AccountLoginRequest(userAccount, password)
+            val response = apiService.loginByUserAccount(request)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val user = response.body()?.data
+                val token = response.body()?.token
+                if (user != null) {
+                    dataStoreManager.saveUser(user)
+                    token?.let { dataStoreManager.saveToken(it) }
+                    dataStoreManager.setLoggedIn(true)
+                    Result.success(Pair(user, token))
+                } else {
+                    Result.failure(Exception("Login failed"))
+                }
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "Login failed"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getUserData(): Result<Pair<User, String?>> {
         return try {
             val response = apiService.getUserData()

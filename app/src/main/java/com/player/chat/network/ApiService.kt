@@ -5,6 +5,9 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
+    @POST("/service/user/login")  // 注意：使用POST方法
+    suspend fun loginByUserAccount(@Body request: AccountLoginRequest): Response<ApiResponse<User>>
+
     // 获取用户信息（验证token）
     @GET("/service/user/getUserData")
     suspend fun getUserData(): Response<ApiResponse<User>>
