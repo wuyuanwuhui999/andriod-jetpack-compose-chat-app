@@ -19,6 +19,19 @@ class LoginViewModel @Inject constructor(
     private val _emailCodeState = MutableStateFlow<EmailCodeState>(EmailCodeState.Idle)
     val emailCodeState: StateFlow<EmailCodeState> = _emailCodeState
 
+    // 添加账号密码登录方法
+    fun loginByUserAccount(userAccount: String, password: String) {
+        viewModelScope.launch {
+            _loginState.value = LoginState.Loading
+            val result = userRepository.loginByUserAccount(userAccount, password)
+            _loginState.value = if (result.isSuccess) {
+                LoginState.Success(result.getOrNull()?.first)
+            } else {
+                LoginState.Error(result.exceptionOrNull()?.message ?: "登录失败")
+            }
+        }
+    }
+
     fun loginByEmail(email: String, code: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading

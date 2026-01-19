@@ -30,6 +30,10 @@ fun LoginPage(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var account by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var code by remember { mutableStateOf("") }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -89,8 +93,16 @@ fun LoginPage(
 
             // 登录面板
             when (selectedTab) {
-                0 -> AccountLogin()
-                1 -> EmailLogin(viewModel = viewModel)
+                0 -> AccountLogin(
+                    viewModel = viewModel,
+                    onAccountChange = { account = it },
+                    onPasswordChange = { password = it }
+                )
+                1 -> EmailLogin(
+                    viewModel = viewModel,
+                    onEmailChange = { email = it },
+                    onCodeChange = { code = it }
+                )
             }
 
             Spacer(modifier = Modifier.height(Dimens.pagePadding))

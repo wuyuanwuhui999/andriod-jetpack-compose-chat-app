@@ -15,9 +15,22 @@ import com.player.chat.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmailLogin(viewModel: LoginViewModel) {
+fun EmailLogin(
+    viewModel: LoginViewModel,
+    onEmailChange: (String) -> Unit = {},
+    onCodeChange: (String) -> Unit = {}
+) {
     var email by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
+
+    // 监听输入变化
+    LaunchedEffect(email) {
+        onEmailChange(email)
+    }
+
+    LaunchedEffect(code) {
+        onCodeChange(code)
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),

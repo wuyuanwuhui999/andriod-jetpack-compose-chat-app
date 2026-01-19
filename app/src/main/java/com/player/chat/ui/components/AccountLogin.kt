@@ -12,12 +12,27 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
+import com.player.chat.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountLogin() {
+fun AccountLogin(
+    viewModel: LoginViewModel,
+    onAccountChange: (String) -> Unit = {},
+    onPasswordChange: (String) -> Unit = {}
+) {
     var account by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // 监听输入变化
+    LaunchedEffect(account) {
+        onAccountChange(account)
+    }
+
+    LaunchedEffect(password) {
+        onPasswordChange(password)
+    }
+
 
     Column(
         modifier = Modifier.fillMaxWidth(),
