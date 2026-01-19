@@ -30,6 +30,7 @@ fun LoginPage(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    val loginState = viewModel.loginState.collectAsState()
     var account by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -110,24 +111,48 @@ fun LoginPage(
             // 登录按钮
             Button(
                 onClick = {
-                    // 登录逻辑
-                    navController.navigate(Screens.Chat.route) {
-                        popUpTo(Screens.Login.route) { inclusive = true }
+                    when (selectedTab) {
+                        0 -> {
+                            if (account.isNotBlank() && password.isNotBlank()) {
+                                viewModel.loginByUserAccount(account, password)
+                            }
+                        }
+                        1 -> {
+                            if (email.isNotBlank() && code.isNotBlank()) {
+                                viewModel.loginByEmail(email, code)
+                            }
+                        }
                     }
                 },
+                enabled = when (selectedTab) {
+                    0 -> account.isNotBlank() && password.isNotBlank()
+                    1 -> email.isNotBlank() && code.isNotBlank()
+                    else -> false
+                } && loginState.value !is com.player.chat.viewmodel.LoginState.Loading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Red
+                    containerColor = Color.PrimaryColor
                 )
             ) {
-                Text(
-                    text = "登录",
-                    color = Color.White,
-                    fontSize = Dimens.fontSizeNormal,
-                )
+                when (loginState.value) {
+                    is com.player.chat.viewmodel.LoginState.Loading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    else -> {
+                        Text(
+                            text = "登录",
+                            color = Color.White,
+                            fontSize = Dimens.fontSizeNormal,
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(Dimens.pagePadding))
