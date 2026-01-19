@@ -18,7 +18,7 @@ fun AppNavGraph(navController: NavHostController) {
             LaunchPage(navController = navController)
         }
         composable(Screens.Login.route) {
-            LoginPage(navController = navController)
+            LoginPage()
         }
         composable(Screens.Chat.route) {
             ChatPage(navController = navController)

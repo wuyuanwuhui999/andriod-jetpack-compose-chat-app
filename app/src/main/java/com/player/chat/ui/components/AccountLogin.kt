@@ -12,12 +12,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
-import com.player.chat.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountLogin(
-    viewModel: LoginViewModel,
     onAccountChange: (String) -> Unit = {},
     onPasswordChange: (String) -> Unit = {}
 ) {

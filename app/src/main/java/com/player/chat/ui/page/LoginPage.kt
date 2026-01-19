@@ -2,7 +2,6 @@ package com.player.chat.ui.page
 
 import com.player.chat.R
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,22 +10,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
-import com.player.chat.navigation.Screens
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.components.AccountLogin
 import com.player.chat.ui.components.EmailLogin
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.LoginViewModel
+import com.player.chat.viewmodel.LoginState // 直接导入LoginState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginPage(
-    navController: NavHostController,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -95,7 +90,6 @@ fun LoginPage(
             // 登录面板
             when (selectedTab) {
                 0 -> AccountLogin(
-                    viewModel = viewModel,
                     onAccountChange = { account = it },
                     onPasswordChange = { password = it }
                 )
@@ -128,7 +122,7 @@ fun LoginPage(
                     0 -> account.isNotBlank() && password.isNotBlank()
                     1 -> email.isNotBlank() && code.isNotBlank()
                     else -> false
-                } && loginState.value !is com.player.chat.viewmodel.LoginState.Loading,
+                } && loginState.value !is LoginState.Loading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
@@ -138,7 +132,7 @@ fun LoginPage(
                 )
             ) {
                 when (loginState.value) {
-                    is com.player.chat.viewmodel.LoginState.Loading -> {
+                    is LoginState.Loading -> {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
                             color = Color.White,
