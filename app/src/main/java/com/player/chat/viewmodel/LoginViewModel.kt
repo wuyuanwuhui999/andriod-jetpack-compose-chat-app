@@ -3,6 +3,7 @@ package com.player.chat.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.player.chat.chat.repository.UserRepository
+import com.player.chat.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -68,7 +69,7 @@ class LoginViewModel @Inject constructor(
 sealed class LoginState {
     object Idle : LoginState()
     object Loading : LoginState()
-    data class Success(val user: com.player.chat.model.User?) : LoginState()
+    data class Success(val user: User?) : LoginState()
     data class Error(val message: String) : LoginState()
 }
 

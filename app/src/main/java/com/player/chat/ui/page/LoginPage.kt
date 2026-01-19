@@ -12,16 +12,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.player.chat.navigation.Screens
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.components.AccountLogin
 import com.player.chat.ui.components.EmailLogin
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.LoginViewModel
 import com.player.chat.viewmodel.LoginState // 直接导入LoginState
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginPage(
+    navController: NavHostController,  // 添加 NavController 参数
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -30,6 +34,22 @@ fun LoginPage(
     var password by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
+
+    // 监听登录成功状态
+    LaunchedEffect(key1 = true) {
+        viewModel.loginState.collectLatest { state ->
+            when (state) {
+                is LoginState.Success -> {
+                    // 登录成功，跳转到 ChatPage
+                    navController.navigate(Screens.Chat.route) {
+                        // 清空返回栈，防止返回登录页
+                        popUpTo(Screens.Login.route) { inclusive = true }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
