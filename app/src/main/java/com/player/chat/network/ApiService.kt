@@ -5,6 +5,7 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
+    // 账号密码登录
     @POST("/service/user/login")  // 注意：使用POST方法
     suspend fun loginByUserAccount(@Body request: AccountLoginRequest): Response<ApiResponse<User>>
 
