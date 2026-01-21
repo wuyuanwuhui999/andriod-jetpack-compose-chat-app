@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.player.chat.chat.repository.UserRepository
 import com.player.chat.model.User
+import com.player.chat.utils.CommonUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,7 @@ class LoginViewModel @Inject constructor(
     fun loginByUserAccount(userAccount: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
-            val result = userRepository.loginByUserAccount(userAccount, password)
+            val result = userRepository.loginByUserAccount(userAccount,CommonUtils.md5(password))
             _loginState.value = if (result.isSuccess) {
                 LoginState.Success(result.getOrNull()?.first)
             } else {
