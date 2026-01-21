@@ -1,7 +1,7 @@
 package com.player.chat.network
 
 import com.google.gson.GsonBuilder
-import com.player.chat.Config
+import com.player.chat.config.Config
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
