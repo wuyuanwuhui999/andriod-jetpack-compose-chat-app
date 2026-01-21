@@ -107,6 +107,8 @@ dependencies {
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    implementation(libs.coil.compose)
 }
 
 // 允许引用 Kotlin 符号

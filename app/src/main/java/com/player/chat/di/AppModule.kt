@@ -7,6 +7,7 @@ import com.player.chat.chat.repository.UserRepository
 import com.player.chat.local.DataStoreManager
 import com.player.chat.network.ApiService
 import com.player.chat.network.NetworkInterceptor
+import com.player.chat.repository.ChatRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -76,6 +77,12 @@ object AppModule {
         dataStoreManager: DataStoreManager
     ): UserRepository {
         return UserRepository(apiService, dataStoreManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatRepository(apiService: ApiService): ChatRepository {
+        return ChatRepository(apiService)
     }
 }
 

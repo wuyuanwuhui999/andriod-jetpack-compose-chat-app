@@ -21,5 +21,6 @@ interface ApiService {
     @POST("/service/user/sendEmailVertifyCode")
     suspend fun sendEmailVerifyCode(@Body request: SendEmailRequest): Response<ApiResponse<Unit>>
 
-    // 后续可以添加其他接口...
+    @GET("/service/chat/getModelList")
+    suspend fun getModelList(): Response<ApiResponse<List<ChatModel>>>
 }
