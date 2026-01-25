@@ -1,19 +1,19 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.kapt)        // 使用别名，不需要版本
-    alias(libs.plugins.hilt.android)       // Hilt 插件
+    // 不需要单独的 kotlin-compose 插件
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
     namespace = "com.player.chat"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.player.chat"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -47,6 +47,7 @@ android {
     }
 
     composeOptions {
+        // 使用与 Kotlin 1.9.23 兼容的版本
         kotlinCompilerExtensionVersion = "1.5.11"
     }
 
@@ -97,6 +98,9 @@ dependencies {
     // JWT
     implementation(libs.java.jwt)
 
+    // Coil
+    implementation(libs.coil.compose)
+
     // 测试
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -107,11 +111,8 @@ dependencies {
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-    implementation(libs.coil.compose)
 }
 
-// 允许引用 Kotlin 符号
 kapt {
     correctErrorTypes = true
 }

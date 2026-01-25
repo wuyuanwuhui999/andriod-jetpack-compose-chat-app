@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.sp
 
 object Dimens {
     val pagePadding = 10.dp          // 20rpx
+    val strokeWidth = 2.dp
     val btnBorderRadius = 5.dp       // 10rpx
     val moduleBorderRadius = 10.dp   // 20rpx
     val bigBorderRadius = 30.dp

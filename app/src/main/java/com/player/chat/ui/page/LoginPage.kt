@@ -76,7 +76,7 @@ fun LoginPage(
                 modifier = Modifier.fillMaxWidth(),
                 contentColor = Color.PrimaryColor,
                 indicator = @Composable { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(  // 修改这里：使用 SecondaryIndicator
+                    TabRowDefaults.Indicator(  // 修改这里：使用 SecondaryIndicator
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
                         height = Dimens.borderSize,
                         color = Color.PrimaryColor

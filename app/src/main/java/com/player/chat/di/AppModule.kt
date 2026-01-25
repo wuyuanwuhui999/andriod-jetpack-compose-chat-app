@@ -14,12 +14,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.*
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
-import java.nio.Buffer
 import javax.inject.Singleton
+import com.player.chat.config.Config
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -46,7 +44,7 @@ object AppModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.73.8:3000")
+            .baseUrl(Config.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -169,7 +167,6 @@ class DetailedLoggingInterceptor : Interceptor {
         val buffer = source?.buffer?.clone()
 
         try {
-            val contentType = responseBody?.contentType()
             val content = buffer?.readUtf8()
 
             if (content != null && content.isNotBlank()) {

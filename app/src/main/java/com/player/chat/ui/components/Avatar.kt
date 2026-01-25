@@ -48,7 +48,7 @@ fun Avatar(
         )
     } else {
         Image(
-            painter = painterResource(R.drawable.icon_user),
+            painter = painterResource(R.drawable.default_avater),
             contentDescription = "默认头像",
             modifier = modifier
                 .size(sizeDp)

@@ -52,8 +52,7 @@ fun ChatPage(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
+            .fillMaxSize().background(Color.White)
     ) {
         // 1. 顶部标题栏
         TopAppBar(
@@ -64,8 +63,8 @@ fun ChatPage(
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp
+                            modifier = Modifier.size(Dimens.smallIconSize),
+                            strokeWidth = Dimens.strokeWidth
                         )
                     } else {
                         Text(
@@ -92,17 +91,24 @@ fun ChatPage(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "菜单",
-                        modifier = Modifier.size(Dimens.smallIconSize)
+                        modifier = Modifier.size(Dimens.middleIconSize)
                     )
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().background(Color.White),
+            colors = TopAppBarDefaults.topAppBarColors( // 关键设置
+                containerColor = Color.White, // 背景色设为白色
+                titleContentColor = Color.Black, // 标题文字颜色设为黑色
+                actionIconContentColor = Color.Black, // 操作图标颜色设为黑色
+                navigationIconContentColor = Color.Black // 导航图标颜色设为黑色
+            ),
         )
 
         // 2. 中间内容区
         Box(
             modifier = Modifier
                 .weight(1f)
+                .background(Color.pageBackgroundColor)
                 .fillMaxWidth()
         ) {
             // 这里暂时显示空白，后续开发内容
@@ -141,8 +147,8 @@ fun ChatPage(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.disableTextColor)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .background(Color.White)
+                .padding(horizontal = Dimens.pagePadding, vertical = Dimens.pagePadding)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -155,8 +161,8 @@ fun ChatPage(
                     onValueChange = { inputText = it },
                     modifier = Modifier
                         .weight(1f)
-                        .background(Color.White, RoundedCornerShape(20.dp))
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .background(Color.pageBackgroundColor, RoundedCornerShape(Dimens.bigBorderRadius))
+                        .padding(horizontal = Dimens.pagePadding, vertical = Dimens.pagePadding)
                         .focusRequester(focusRequester),
                     textStyle = TextStyle.Default.copy(color = Color.Black),
                     cursorBrush = SolidColor(Color.PrimaryColor),
