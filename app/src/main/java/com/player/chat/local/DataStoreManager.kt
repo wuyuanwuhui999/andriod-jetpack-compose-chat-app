@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import com.player.chat.model.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.player.chat.model.TenantUser
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
@@ -61,4 +62,66 @@ class DataStoreManager(private val context: Context) {
             preferences.clear()
         }
     }
+
+    // 租户ID
+    suspend fun saveTenantId(tenantId: String) {
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.TENANT_ID)] = tenantId
+        }
+    }
+
+    fun getTenantId(): Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.TENANT_ID)]
+        }
+
+    // 当前租户信息
+    suspend fun saveCurrentTenant(tenantUser: TenantUser) {
+        val tenantJson = gson.toJson(tenantUser)
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT)] = tenantJson
+        }
+    }
+
+    fun getCurrentTenant(): Flow<TenantUser?> = context.dataStore.data
+        .map { preferences ->
+            val tenantJson = preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT)]
+            tenantJson?.let { gson.fromJson(it, TenantUser::class.java) }
+        }
+
+    // 聊天ID
+    suspend fun saveChatId(chatId: String) {
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.CHAT_ID)] = chatId
+        }
+    }
+
+    fun getChatId(): Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.CHAT_ID)]
+        }
+
+    // 语言设置
+    suspend fun saveLanguage(language: String) {
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.LANGUAGE)] = language
+        }
+    }
+
+    fun getLanguage(): Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.LANGUAGE)] ?: "zh"
+        }
+
+    // 思考模式
+    suspend fun saveThinkMode(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[booleanPreferencesKey(PreferenceKeys.THINK_MODE)] = enabled
+        }
+    }
+
+    fun getThinkMode(): Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[booleanPreferencesKey(PreferenceKeys.THINK_MODE)] ?: false
+        }
 }

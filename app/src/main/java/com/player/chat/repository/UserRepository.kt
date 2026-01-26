@@ -93,4 +93,25 @@ class UserRepository @Inject constructor(
     suspend fun logout() {
         dataStoreManager.clearAll()
     }
+
+    suspend fun getTenantUserList(): Result<List<TenantUser>> {
+        return try {
+            val response = apiService.getTenantUserList()
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "获取租户列表失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 获取缓存的租户ID
+    suspend fun getCachedTenantId(): String? {
+        // 这里假设使用DataStore存储租户ID
+        // 需要先在DataStoreManager中添加相关方法
+        // 为简化，这里直接返回null
+        return null
+    }
 }

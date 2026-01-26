@@ -23,4 +23,8 @@ interface ApiService {
 
     @GET("/service/chat/getModelList")
     suspend fun getModelList(): Response<ApiResponse<List<ChatModel>>>
+
+    @GET("/service/tenant/getTenantUserList")
+    suspend fun getTenantUserList(): Response<TenantUserResponse>
+
 }
