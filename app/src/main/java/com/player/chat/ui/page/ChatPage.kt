@@ -138,9 +138,8 @@ fun ChatPage(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(Dimens.pagePadding),
-                    reverseLayout = true
                 ) {
-                    items(chatList.reversed()) { message ->
+                    items(chatList) { message ->
                         ChatBubble(
                             message = message,
                             userAvatar = user?.avatar,
@@ -216,7 +215,7 @@ fun ChatPage(
                         chatViewModel.startNewChat()
                     },
                     enabled = !isSending,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(Dimens.middleIconSize)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.icon_add),
@@ -275,7 +274,8 @@ fun ChatPage(
                         Icon(
                             imageVector = Icons.Default.Send,
                             contentDescription = "发送",
-                            tint = if (inputText.isNotBlank()) Color.PrimaryColor else Color.Gray
+                            tint = if (inputText.isNotBlank()) Color.PrimaryColor else Color.Gray,
+                            modifier = Modifier.rotate(-30f) // 旋转45度
                         )
                     }
                 }
@@ -389,137 +389,152 @@ fun ChatBubble(
     userAvatar: String?,
     thinkMode: Boolean
 ) {
-    val isLeft = message.position == PositionEnum.LEFT
 
     when (message.position) {
         PositionEnum.LEFT -> {
-            // AI消息 - 改为顶部对齐
+            // AI消息
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp), // 添加垂直间距
-                verticalAlignment = Alignment.Top, // 改为顶部对齐
+                    .padding(vertical = Dimens.pagePadding),
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.Start
             ) {
-                // AI头像
-                Icon(
-                    painter = painterResource(R.drawable.icon_ai),
-                    contentDescription = "AI",
-                    modifier = Modifier
-                        .size(Dimens.smallAvater)
-                )
+                // AI头像容器 - 相对定位
+                Box(
+                    modifier = Modifier.align(Alignment.Top)
+                ) {
+                    // AI头像
+                    Icon(
+                        painter = painterResource(R.drawable.icon_ai),
+                        contentDescription = "AI",
+                        modifier = Modifier
+                            .size(Dimens.smallAvater)
+                    )
+
+                    // 三角形箭头 - 固定在头像中间
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)  // 对齐到头像容器的中间右侧
+                            .offset(x = (Dimens.middleIconSize), y = 2.dp)  // 偏移到头像右侧
+                            .size(Dimens.smallIconSize)
+                            .rotate(-45f)
+                            .background(Color.White)
+                    )
+                }
+
                 Spacer(modifier = Modifier.width(Dimens.pagePadding))
+
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
                     // 思考内容（如果开启思考模式且存在）
                     if (thinkMode && message.thinkContent != null) {
-                        // 思考内容容器
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.8f)
-                                .background(
-                                    color = Color.Gray.copy(alpha = 0.2f),
-                                    shape = RoundedCornerShape(Dimens.btnBorderRadius)
-                                )
-                                .padding(8.dp),
-                            contentAlignment = Alignment.CenterStart
+                        // 思考内容容器 - 使用自适应宽度
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            // 三角形箭头（指向左侧头像）
                             Box(
                                 modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .offset(x = (-12).dp) // 向左偏移到气泡外
-                                    .size(12.dp)
-                                    .rotate(45f) // 旋转45度形成三角形
-                                    .background(Color.Gray.copy(alpha = 0.2f))
-                            )
-
-                            Text(
-                                text = "思考：${message.thinkContent}",
-                                color = Color.Gray,
-                                fontSize = Dimens.fontSizeNormal
-                            )
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = Color.Gray.copy(alpha = 0.2f),
+                                        shape = RoundedCornerShape(Dimens.btnBorderRadius)
+                                    )
+                                    .padding(Dimens.pagePadding),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Text(
+                                    text = "思考：${message.thinkContent}",
+                                    color = Color.Gray,
+                                    fontSize = Dimens.fontSizeNormal
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(Dimens.pagePadding))
                     }
-                    Spacer(modifier = Modifier.width(Dimens.pagePadding))
-                    // AI回复内容
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .background(
-                                color = Color.White,
-                                shape = RoundedCornerShape(Dimens.btnBorderRadius)
-                            )
-                            .padding(8.dp),
-                        contentAlignment = Alignment.CenterStart
+
+                    // AI回复内容 - 使用自适应宽度
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
                     ) {
-                        // 三角形箭头（指向左侧头像）
                         Box(
                             modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .offset(x = (-12).dp) // 向左偏移到气泡外
-                                .size(12.dp)
-                                .rotate(45f) // 旋转45度形成三角形
-                                .background(Color.White)
-                        )
-
-                        Text(
-                            text = message.responseContent,
-                            color = Color.Black
-                        )
+                                .fillMaxWidth()  // 内容自适应
+                                .background(
+                                    color = Color.White,
+                                    shape = RoundedCornerShape(Dimens.btnBorderRadius)
+                                )
+                                .padding(Dimens.pagePadding),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Text(
+                                text = message.responseContent,
+                                color = Color.Black
+                            )
+                        }
                     }
                 }
             }
         }
+
         PositionEnum.RIGHT -> {
-            // 用户消息 - 改为顶部对齐
+            // 用户消息
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp), // 添加垂直间距
-                verticalAlignment = Alignment.Top, // 改为顶部对齐
+                    .padding(vertical = Dimens.pagePadding),
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.End
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.End
                 ) {
-                    // 用户消息容器
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .background(
-                                color = Color.PrimaryColor.copy(alpha = 0.8f),
-                                shape = RoundedCornerShape(Dimens.btnBorderRadius)
-                            )
-                            .padding(12.dp),
-                        contentAlignment = Alignment.CenterEnd
+                    // 用户消息容器 - 使用自适应宽度
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        // 三角形箭头（指向右侧头像）
                         Box(
                             modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .offset(x = 12.dp) // 向右偏移到气泡外
-                                .size(12.dp)
-                                .rotate(45f) // 旋转45度形成三角形
-                                .background(Color.PrimaryColor.copy(alpha = 0.8f))
-                        )
-
-                        Text(
-                            text = message.responseContent,
-                            color = Color.White
-                        )
+                                .wrapContentWidth()  // 内容自适应
+                                .background(
+                                    color = Color.White,
+                                    shape = RoundedCornerShape(Dimens.btnBorderRadius)
+                                )
+                                .padding(Dimens.pagePadding),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            Text(
+                                text = message.responseContent,
+                            )
+                        }
                     }
                 }
-
-                // 用户头像
-                Avatar(
-                    avatarUrl = userAvatar,
-                    size = AvatarSize.SMALL,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
+                Spacer(modifier = Modifier.width(Dimens.pagePadding))
+                // 用户头像容器 - 相对定位
+                Box(
+                    modifier = Modifier.align(Alignment.Top)
+                ) {
+                    // 三角形箭头 - 固定在头像中间左侧
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)  // 对齐到头像容器的中间左侧
+                            .offset(x = (-Dimens.middleIconSize), y = 2.dp)  // 偏移到头像左侧
+                            .size(Dimens.smallIconSize)
+                            .rotate(45f)
+                            .background(Color.White)
+                    )
+                    // 用户头像
+                    Avatar(
+                        avatarUrl = userAvatar,
+                        size = AvatarSize.SMALL,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
         }
     }

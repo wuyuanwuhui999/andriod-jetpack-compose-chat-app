@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.*
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 class WebSocketManager {
     private var webSocket: WebSocket? = null
@@ -83,10 +84,13 @@ class WebSocketManager {
 }
 
 // 创建WebSocket流式响应处理器
+// 创建WebSocket流式响应处理器
 object WebSocketMessageHandler {
     private const val THINK_START = "<think>"
     private const val THINK_END = "</think>"
-    private const val COMPLETED = "[completed]"
+
+    // 使用正则表达式匹配完成标志，不区分大小写
+    private val COMPLETED_PATTERN = Pattern.compile("\\[(completed|done)\\]", Pattern.CASE_INSENSITIVE)
 
     data class ParsedMessage(
         val thinkContent: String?,
@@ -107,10 +111,13 @@ object WebSocketMessageHandler {
             responseContent = message.substring(endIndex + THINK_END.length)
         }
 
-        // 检查是否完成
-        if (responseContent.contains(COMPLETED)) {
+        // 使用正则表达式查找完成标志
+        val matcher = COMPLETED_PATTERN.matcher(responseContent)
+
+        if (matcher.find()) {
             isCompleted = true
-            responseContent = responseContent.replace(COMPLETED, "")
+            // 移除找到的完成标志
+            responseContent = responseContent.removeRange(matcher.start(), matcher.end())
         }
 
         return ParsedMessage(thinkContent, responseContent, isCompleted)

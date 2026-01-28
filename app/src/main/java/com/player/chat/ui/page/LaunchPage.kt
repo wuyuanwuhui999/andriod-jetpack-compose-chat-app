@@ -1,15 +1,26 @@
 package com.player.chat.ui.page
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.player.chat.R
 import com.player.chat.navigation.Screens
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
@@ -27,10 +38,21 @@ fun LaunchPage(
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "欢迎使用",
-            fontSize = Dimens.fontSizeBig,
-        )
+        Column() {
+            Image(
+                painter = painterResource(R.drawable.icon_ai),
+                contentDescription = "默认头像",
+                modifier = Modifier
+                    .size(Dimens.bigIconSize),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(Dimens.bigMargin))
+            Text(
+                text = "欢迎使用",
+                fontSize = Dimens.fontSizeBig,
+            )
+        }
+
     }
 
     LaunchedEffect(Unit) {
