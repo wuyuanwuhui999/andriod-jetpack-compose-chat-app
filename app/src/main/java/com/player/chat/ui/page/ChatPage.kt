@@ -28,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.tv.material3.OutlinedButtonDefaults
 import com.player.chat.R
 import com.player.chat.model.PositionEnum
+import com.player.chat.model.TenantUser
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
 import com.player.chat.ui.theme.Color
@@ -58,6 +58,10 @@ fun ChatPage(
     val showModelDialog by chatViewModel.showModelDialog.collectAsState()
     val showMenuDialog by chatViewModel.showMenuDialog.collectAsState()
 
+    // 添加租户列表状态
+    val tenantList by chatViewModel.tenantList.collectAsState()
+    val showTenantDialog by chatViewModel.showTenantDialog.collectAsState()
+
     var inputText by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
 
@@ -78,14 +82,40 @@ fun ChatPage(
                             strokeWidth = Dimens.strokeWidth
                         )
                     } else {
-                        Text(
-                            text = "${currentTenant?.tenantName ?: "私人空间"} | ${selectedModel?.modelName ?: "无模型"}",
-                            modifier = Modifier.clickable {
-                                if (modelList.isNotEmpty()) {
-                                    chatViewModel.toggleModelDialog()
-                                }
-                            }
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // 租户名称 - 可点击
+                            Text(
+                                text = currentTenant?.tenantName ?: "私人空间",
+                                modifier = Modifier
+                                    .clickable {
+                                        // 点击租户名称，弹出租户选择
+                                        chatViewModel.toggleTenantDialog()
+                                    }
+                                    .padding(end = 4.dp),
+                            )
+
+                            // 分隔符
+                            Text(
+                                text = " | ",
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                                color = Color.Gray
+                            )
+
+                            // 模型名称 - 可点击
+                            Text(
+                                text = selectedModel?.modelName ?: "无模型",
+                                modifier = Modifier
+                                    .clickable {
+                                        // 点击模型名称，弹出模型选择
+                                        if (modelList.isNotEmpty()) {
+                                            chatViewModel.toggleModelDialog()
+                                        }
+                                    },
+                            )
+                        }
                     }
                 }
             },
@@ -158,13 +188,13 @@ fun ChatPage(
                 .background(Color.pageBackgroundColor),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 思考模式按钮 - 修改为OutlinedButton实现边框样式
+            // 思考模式按钮
             OutlinedButton(
                 onClick = { chatViewModel.toggleThinkMode() },
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = if (thinkMode) Color.PrimaryColor else Color.Gray,
-                    containerColor = Color.Transparent // 透明背景
+                    containerColor = Color.Transparent
                 ),
                 border = BorderStroke(
                     width = Dimens.borderSize,
@@ -177,14 +207,13 @@ fun ChatPage(
                 )
             }
 
-
             // 语言切换按钮
             Button(
                 onClick = { chatViewModel.toggleLanguage() },
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.Gray,
-                    containerColor = Color.Transparent // 透明背景
+                    containerColor = Color.Transparent
                 ),
                 border = BorderStroke(
                     width = Dimens.borderSize,
@@ -275,7 +304,7 @@ fun ChatPage(
                             imageVector = Icons.Default.Send,
                             contentDescription = "发送",
                             tint = if (inputText.isNotBlank()) Color.PrimaryColor else Color.Gray,
-                            modifier = Modifier.rotate(-30f) // 旋转45度
+                            modifier = Modifier.rotate(-30f)
                         )
                     }
                 }
@@ -309,6 +338,58 @@ fun ChatPage(
         }
     }
 
+    // 租户选择对话框
+    if (showTenantDialog && tenantList.isNotEmpty()) {
+        Dialog(onDismissRequest = { chatViewModel.toggleTenantDialog() }) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "选择租户",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    LazyColumn {
+                        items(tenantList.size) { index ->
+                            val tenant = tenantList[index]
+                            ListItem(
+                                headlineContent = {
+                                    Text(
+                                        text = tenant.tenantName,
+                                        color = if (tenant.tenantId == currentTenant?.tenantId)
+                                            Color.PrimaryColor
+                                        else
+                                            Color.Black
+                                    )
+                                },
+                                supportingContent = {
+                                    if (tenant.email.isNotBlank()) {
+                                        Text(
+                                            text = tenant.email,
+                                            color = Color.Gray,
+                                            fontSize = Dimens.fontSizeNormal
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.clickable {
+                                    chatViewModel.selectTenant(tenant)
+                                }
+                            )
+                            if (index < tenantList.size - 1) {
+                                Divider()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // 模型选择对话框
     if (showModelDialog && modelList.isNotEmpty()) {
         Dialog(onDismissRequest = { chatViewModel.toggleModelDialog() }) {
@@ -329,7 +410,15 @@ fun ChatPage(
                         items(modelList.size) { index ->
                             val model = modelList[index]
                             ListItem(
-                                headlineContent = { Text(model.modelName) },
+                                headlineContent = {
+                                    Text(
+                                        model.modelName,
+                                        color = if (model.id == selectedModel?.id)
+                                            Color.PrimaryColor
+                                        else
+                                            Color.Black
+                                    )
+                                },
                                 modifier = Modifier.clickable {
                                     chatViewModel.selectModel(model)
                                 }

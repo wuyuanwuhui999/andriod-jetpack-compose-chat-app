@@ -1,5 +1,6 @@
 package com.player.chat.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.player.chat.model.*
@@ -24,6 +25,11 @@ class ChatViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val dataStoreManager: DataStoreManager
 ) : ViewModel() {
+    private val _tenantList = MutableStateFlow<List<TenantUser>>(emptyList())
+    val tenantList: StateFlow<List<TenantUser>> = _tenantList.asStateFlow()
+
+    private val _showTenantDialog = MutableStateFlow(false)
+    val showTenantDialog: StateFlow<Boolean> = _showTenantDialog.asStateFlow()
 
     // 模型相关
     private val _modelList = MutableStateFlow<List<ChatModel>>(emptyList())
@@ -88,6 +94,7 @@ class ChatViewModel @Inject constructor(
 
             if (result.isSuccess) {
                 val tenantList = result.getOrNull() ?: emptyList()
+                _tenantList.value = tenantList // 保存租户列表
 
                 // 3. 选择租户
                 val selectedTenant = if (tenantList.isNotEmpty()) {
@@ -113,6 +120,7 @@ class ChatViewModel @Inject constructor(
                 // 获取失败，使用默认租户
                 _currentTenant.value = DefaultTenantUser.DEFAULT
                 dataStoreManager.saveCurrentTenant(DefaultTenantUser.DEFAULT)
+                _tenantList.value = emptyList()
             }
 
             _isLoading.value = false
@@ -183,10 +191,8 @@ class ChatViewModel @Inject constructor(
             _chatList.value = _chatList.value + userMessage
             _isSending.value = true
 
-            // 检查WebSocket连接
-            if (webSocketManager == null || !webSocketManager!!.isConnected()) {
-                connectWebSocket()
-            }
+            // 每次都重新连接WebSocket（如果已有连接会自动关闭）
+            connectWebSocket()
 
             // 生成或使用现有chatId
             val currentChatId = if (_chatId.value.isBlank()) {
@@ -228,6 +234,10 @@ class ChatViewModel @Inject constructor(
     private fun connectWebSocket() {
         viewModelScope.launch {
             _isConnecting.value = true
+
+            // 确保旧的连接已关闭
+            webSocketManager?.closeWebSocket()
+            webSocketManager = null
 
             val token = dataStoreManager.getToken().firstOrNull() ?: ""
             val currentChatId = _chatId.value
@@ -272,11 +282,17 @@ class ChatViewModel @Inject constructor(
                 _chatList.value = currentList
             }
 
-            // 如果完成，重置当前内容
+            // 如果完成，重置当前内容并关闭WebSocket
             if (parsed.isCompleted) {
                 currentThinkContent = ""
                 currentResponseContent = ""
                 _isSending.value = false
+
+                // 延迟一小段时间后关闭WebSocket连接，避免立即关闭导致消息不完整
+                kotlinx.coroutines.delay(100)
+                webSocketManager?.closeWebSocket()
+                webSocketManager = null
+                Log.d("ChatViewModel", "消息完成，WebSocket连接已关闭")
             }
         }
     }
@@ -329,8 +345,27 @@ class ChatViewModel @Inject constructor(
         _showMenuDialog.value = !_showMenuDialog.value
     }
 
+    // 添加租户选择方法
+    fun selectTenant(tenant: TenantUser) {
+        viewModelScope.launch {
+            _currentTenant.value = tenant
+            dataStoreManager.saveTenantId(tenant.tenantId)
+            dataStoreManager.saveCurrentTenant(tenant)
+            _showTenantDialog.value = false
+
+            // 切换租户后，可以清空当前聊天或进行其他操作
+            startNewChat()
+        }
+    }
+
+    fun toggleTenantDialog() {
+        _showTenantDialog.value = !_showTenantDialog.value
+    }
+
+
     override fun onCleared() {
         super.onCleared()
         webSocketManager?.closeWebSocket()
+        webSocketManager = null
     }
 }

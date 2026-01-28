@@ -15,6 +15,7 @@ import java.util.regex.Pattern
 
 class WebSocketManager {
     private var webSocket: WebSocket? = null
+    private var client: OkHttpClient? = null
     private val gson = Gson()
 
     data class ChatRequest(
@@ -36,7 +37,10 @@ class WebSocketManager {
         onConnected: () -> Unit,
         onClosed: () -> Unit
     ) {
-        val client = OkHttpClient.Builder()
+        // 如果已有连接，先关闭
+        closeWebSocket()
+
+        client = OkHttpClient.Builder()
             .readTimeout(0, TimeUnit.SECONDS)
             .build()
 
@@ -44,7 +48,7 @@ class WebSocketManager {
             .url("ws://${Config.BASE_URL.removePrefix("http://")}/service/chat/ws/chat?token=$token")
             .build()
 
-        webSocket = client.newWebSocket(request, object : WebSocketListener() {
+        webSocket = client?.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 Log.d("WebSocket", "连接已建立")
                 onConnected()
@@ -76,6 +80,12 @@ class WebSocketManager {
     fun closeWebSocket() {
         webSocket?.close(1000, "正常关闭")
         webSocket = null
+
+        // 关闭客户端
+        client?.dispatcher?.executorService?.shutdown()
+        client = null
+
+        Log.d("WebSocket", "WebSocket连接已关闭并释放资源")
     }
 
     fun isConnected(): Boolean {
@@ -83,7 +93,6 @@ class WebSocketManager {
     }
 }
 
-// 创建WebSocket流式响应处理器
 // 创建WebSocket流式响应处理器
 object WebSocketMessageHandler {
     private const val THINK_START = "<think>"
