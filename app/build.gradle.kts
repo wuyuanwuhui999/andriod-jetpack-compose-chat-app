@@ -92,6 +92,7 @@ dependencies {
     // 依赖注入
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.tv.material)
     kapt(libs.hilt.compiler)
     implementation(libs.javax.inject)
 

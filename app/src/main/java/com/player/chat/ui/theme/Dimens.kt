@@ -17,7 +17,7 @@ object Dimens {
     val middleIconSize = 25.dp       // 50rpx
     val bigIconSize = 80.dp          // 70rpx
     val bigMargin = 40.dp
-    val borderSize = 2.dp
+    val borderSize = 1.dp
     val smallMargin = 5.dp           // 10rpx
     val middleMargin = 10.dp         // 20rpx
     val fontSizeNormal = 14.sp       // 30rpx - 注意：字体大小使用.sp

@@ -1,5 +1,6 @@
 package com.player.chat.ui.page
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,15 +17,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.tv.material3.OutlinedButtonDefaults
 import com.player.chat.R
 import com.player.chat.model.PositionEnum
 import com.player.chat.ui.components.Avatar
@@ -59,8 +63,7 @@ fun ChatPage(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
+            .fillMaxSize().background(Color.pageBackgroundColor)
     ) {
         // 1. 顶部标题栏
         TopAppBar(
@@ -87,10 +90,15 @@ fun ChatPage(
                 }
             },
             navigationIcon = {
-                Avatar(
-                    avatarUrl = user?.avatar,
-                    size = AvatarSize.SMALL
-                )
+                Box(
+                    modifier = Modifier.padding(horizontal = Dimens.pagePadding)
+                ) {
+                    Avatar(
+                        avatarUrl = user?.avatar,
+                        size = AvatarSize.SMALL
+                    )
+                }
+
             },
             actions = {
                 IconButton(
@@ -129,7 +137,7 @@ fun ChatPage(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(Dimens.pagePadding),
                     reverseLayout = true
                 ) {
                     items(chatList.reversed()) { message ->
@@ -138,7 +146,6 @@ fun ChatPage(
                             userAvatar = user?.avatar,
                             thinkMode = thinkMode && message.position == PositionEnum.LEFT
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
@@ -148,37 +155,46 @@ fun ChatPage(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = Dimens.pagePadding, vertical = Dimens.pagePadding)
+                .background(Color.pageBackgroundColor),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 思考模式按钮
-            Button(
+            // 思考模式按钮 - 修改为OutlinedButton实现边框样式
+            OutlinedButton(
                 onClick = { chatViewModel.toggleThinkMode() },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (thinkMode) Color.PrimaryColor else Color.Gray
+                shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = if (thinkMode) Color.PrimaryColor else Color.Gray,
+                    containerColor = Color.Transparent // 透明背景
                 ),
-                shape = RoundedCornerShape(Dimens.bigBorderRadius)
+                border = BorderStroke(
+                    width = Dimens.borderSize,
+                    color = if (thinkMode) Color.PrimaryColor else Color.Gray
+                )
             ) {
                 Text(
-                    text = if (thinkMode) "思考模式 ON" else "思考模式",
-                    color = Color.White
+                    text = "思考模式",
+                    color = if (thinkMode) Color.PrimaryColor else Color.Gray
                 )
             }
+
 
             // 语言切换按钮
             Button(
                 onClick = { chatViewModel.toggleLanguage() },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.PrimaryColor
+                shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.Gray,
+                    containerColor = Color.Transparent // 透明背景
                 ),
-                shape = RoundedCornerShape(Dimens.bigBorderRadius)
+                border = BorderStroke(
+                    width = Dimens.borderSize,
+                    color = Color.Gray
+                )
             ) {
                 Text(
                     text = if (language == "zh") "中文" else "English",
-                    color = Color.White
+                    color = Color.Gray
                 )
             }
         }
@@ -203,7 +219,8 @@ fun ChatPage(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        painter = painterResource(R.drawable.icon_add),
+                        modifier = Modifier.width(Dimens.smallIconSize).height(Dimens.smallIconSize),
                         contentDescription = "开启新对话",
                     )
                 }
@@ -372,55 +389,84 @@ fun ChatBubble(
     userAvatar: String?,
     thinkMode: Boolean
 ) {
+    val isLeft = message.position == PositionEnum.LEFT
+
     when (message.position) {
         PositionEnum.LEFT -> {
-            // AI消息
+            // AI消息 - 改为顶部对齐
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp), // 添加垂直间距
+                verticalAlignment = Alignment.Top, // 改为顶部对齐
                 horizontalArrangement = Arrangement.Start
             ) {
                 // AI头像
                 Icon(
-                    painter = androidx.compose.ui.res.painterResource(R.drawable.icon_ai),
+                    painter = painterResource(R.drawable.icon_ai),
                     contentDescription = "AI",
                     modifier = Modifier
-                        .size(40.dp)
-                        .padding(end = 8.dp)
+                        .size(Dimens.smallAvater)
                 )
-
+                Spacer(modifier = Modifier.width(Dimens.pagePadding))
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
                     // 思考内容（如果开启思考模式且存在）
                     if (thinkMode && message.thinkContent != null) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.Gray.copy(alpha = 0.2f)
-                            )
+                        // 思考内容容器
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .background(
+                                    color = Color.Gray.copy(alpha = 0.2f),
+                                    shape = RoundedCornerShape(Dimens.btnBorderRadius)
+                                )
+                                .padding(8.dp),
+                            contentAlignment = Alignment.CenterStart
                         ) {
+                            // 三角形箭头（指向左侧头像）
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .offset(x = (-12).dp) // 向左偏移到气泡外
+                                    .size(12.dp)
+                                    .rotate(45f) // 旋转45度形成三角形
+                                    .background(Color.Gray.copy(alpha = 0.2f))
+                            )
+
                             Text(
                                 text = "思考：${message.thinkContent}",
-                                modifier = Modifier.padding(8.dp),
                                 color = Color.Gray,
-                                fontSize = androidx.compose.ui.unit.sp(12)
+                                fontSize = Dimens.fontSizeNormal
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                     }
-
-                    // 回复内容
-                    Card(
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.White
-                        )
+                    Spacer(modifier = Modifier.width(Dimens.pagePadding))
+                    // AI回复内容
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .background(
+                                color = Color.White,
+                                shape = RoundedCornerShape(Dimens.btnBorderRadius)
+                            )
+                            .padding(8.dp),
+                        contentAlignment = Alignment.CenterStart
                     ) {
+                        // 三角形箭头（指向左侧头像）
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .offset(x = (-12).dp) // 向左偏移到气泡外
+                                .size(12.dp)
+                                .rotate(45f) // 旋转45度形成三角形
+                                .background(Color.White)
+                        )
+
                         Text(
                             text = message.responseContent,
-                            modifier = Modifier.padding(12.dp),
                             color = Color.Black
                         )
                     }
@@ -428,25 +474,41 @@ fun ChatBubble(
             }
         }
         PositionEnum.RIGHT -> {
-            // 用户消息
+            // 用户消息 - 改为顶部对齐
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp), // 添加垂直间距
+                verticalAlignment = Alignment.Top, // 改为顶部对齐
                 horizontalArrangement = Arrangement.End
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.End
                 ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.PrimaryColor.copy(alpha = 0.8f)
-                        )
+                    // 用户消息容器
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .background(
+                                color = Color.PrimaryColor.copy(alpha = 0.8f),
+                                shape = RoundedCornerShape(Dimens.btnBorderRadius)
+                            )
+                            .padding(12.dp),
+                        contentAlignment = Alignment.CenterEnd
                     ) {
+                        // 三角形箭头（指向右侧头像）
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .offset(x = 12.dp) // 向右偏移到气泡外
+                                .size(12.dp)
+                                .rotate(45f) // 旋转45度形成三角形
+                                .background(Color.PrimaryColor.copy(alpha = 0.8f))
+                        )
+
                         Text(
                             text = message.responseContent,
-                            modifier = Modifier.padding(12.dp),
                             color = Color.White
                         )
                     }
