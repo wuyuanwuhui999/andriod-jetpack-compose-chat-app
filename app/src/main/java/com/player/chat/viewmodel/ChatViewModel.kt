@@ -75,6 +75,10 @@ class ChatViewModel @Inject constructor(
     private var currentThinkContent = ""
     private var currentResponseContent = ""
 
+    private val _isTenantListLoaded = MutableStateFlow(false)
+    val isTenantListLoaded: StateFlow<Boolean> = _isTenantListLoaded.asStateFlow()
+
+
     init {
         loadTenantInfo()
         loadModelList()
@@ -85,6 +89,7 @@ class ChatViewModel @Inject constructor(
     private fun loadTenantInfo() {
         viewModelScope.launch {
             _isLoading.value = true
+            _isTenantListLoaded.value = false  // 重置加载状态
 
             // 1. 尝试从缓存获取租户ID
             val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
@@ -95,6 +100,7 @@ class ChatViewModel @Inject constructor(
             if (result.isSuccess) {
                 val tenantList = result.getOrNull() ?: emptyList()
                 _tenantList.value = tenantList // 保存租户列表
+                _isTenantListLoaded.value = true  // 标记为已加载
 
                 // 3. 选择租户
                 val selectedTenant = if (tenantList.isNotEmpty()) {
@@ -121,11 +127,13 @@ class ChatViewModel @Inject constructor(
                 _currentTenant.value = DefaultTenantUser.DEFAULT
                 dataStoreManager.saveCurrentTenant(DefaultTenantUser.DEFAULT)
                 _tenantList.value = emptyList()
+                _isTenantListLoaded.value = true  // 即使失败也标记为已加载
             }
 
             _isLoading.value = false
         }
     }
+
 
     private fun loadModelList() {
         viewModelScope.launch {

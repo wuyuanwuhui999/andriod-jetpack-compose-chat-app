@@ -1,5 +1,6 @@
 package com.player.chat.ui.page
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -73,6 +74,7 @@ fun LaunchPage(
 
         // 3. Token 有效，尝试调用 getUserData 接口刷新用户信息
         try {
+            mainViewModel.token.value?.let { Log.e("login",it) }
             val result = mainViewModel.getUserData()
             if (result.isSuccess) {
                 // 导航到主界面

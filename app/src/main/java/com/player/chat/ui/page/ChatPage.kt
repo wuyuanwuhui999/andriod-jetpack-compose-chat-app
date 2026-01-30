@@ -339,7 +339,7 @@ fun ChatPage(
     }
 
     // 租户选择对话框
-    if (showTenantDialog && tenantList.isNotEmpty()) {
+    if (showTenantDialog) {
         Dialog(onDismissRequest = { chatViewModel.toggleTenantDialog() }) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
