@@ -32,7 +32,6 @@ fun LaunchPage(
 ) {
     // 监听 token 验证状态
     val tokenValidState by mainViewModel.isTokenValid.collectAsState()
-    val tokenValue by mainViewModel.token.collectAsState()
 
     LaunchedEffect(key1 = tokenValidState) {
         tokenValidState?.let { isValid ->

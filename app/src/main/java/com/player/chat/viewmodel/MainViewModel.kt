@@ -121,25 +121,4 @@ class MainViewModel @Inject constructor(
             _token.value = token
         }
     }
-
-    suspend fun getUserData(): Result<Pair<User, String?>> {
-        return try {
-            _isLoading.value = true
-            val result = userRepository.getUserData()
-
-            if (result.isSuccess) {
-                val user = result.getOrNull()?.first
-                val token = result.getOrNull()?.second
-
-                user?.let { updateUser(it) }
-                token?.let { updateToken(it) }
-            }
-
-            _isLoading.value = false
-            result
-        } catch (e: Exception) {
-            _isLoading.value = false
-            Result.failure(e)
-        }
-    }
 }
