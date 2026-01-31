@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
+import com.player.chat.model.Tenant
 import com.player.chat.model.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -76,8 +77,8 @@ class DataStoreManager(private val context: Context) {
         }
 
     // 当前租户信息
-    suspend fun saveCurrentTenant(tenantUser: TenantUser) {
-        val tenantJson = gson.toJson(tenantUser)
+    suspend fun saveCurrentTenant(tenant: Tenant) {
+        val tenantJson = gson.toJson(tenant)
         context.dataStore.edit { preferences ->
             preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT)] = tenantJson
         }

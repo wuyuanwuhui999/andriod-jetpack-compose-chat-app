@@ -88,7 +88,7 @@ fun ChatPage(
                         ) {
                             // 租户名称 - 可点击
                             Text(
-                                text = currentTenant?.tenantName ?: "私人空间",
+                                text = currentTenant?.name ?: "私人空间",
                                 modifier = Modifier
                                     .clickable {
                                         // 点击租户名称，弹出租户选择
@@ -343,15 +343,15 @@ fun ChatPage(
         Dialog(onDismissRequest = { chatViewModel.toggleTenantDialog() }) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(Dimens.moduleBorderRadius)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(Dimens.pagePadding)
                 ) {
                     Text(
                         text = "选择租户",
                         style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = Dimens.pagePadding)
                     )
 
                     LazyColumn {
@@ -360,21 +360,12 @@ fun ChatPage(
                             ListItem(
                                 headlineContent = {
                                     Text(
-                                        text = tenant.tenantName,
-                                        color = if (tenant.tenantId == currentTenant?.tenantId)
+                                        text = tenant.name, // 添加空值检查
+                                        color = if (tenant.id == currentTenant?.id)
                                             Color.PrimaryColor
                                         else
                                             Color.Black
                                     )
-                                },
-                                supportingContent = {
-                                    if (tenant.email.isNotBlank()) {
-                                        Text(
-                                            text = tenant.email,
-                                            color = Color.Gray,
-                                            fontSize = Dimens.fontSizeNormal
-                                        )
-                                    }
                                 },
                                 modifier = Modifier.clickable {
                                     chatViewModel.selectTenant(tenant)

@@ -94,9 +94,9 @@ class UserRepository @Inject constructor(
         dataStoreManager.clearAll()
     }
 
-    suspend fun getTenantUserList(): Result<List<TenantUser>> {
+    suspend fun getUserTenantList(): Result<List<Tenant>> {
         return try {
-            val response = apiService.getTenantUserList()
+            val response = apiService.getUserTenantList()
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {

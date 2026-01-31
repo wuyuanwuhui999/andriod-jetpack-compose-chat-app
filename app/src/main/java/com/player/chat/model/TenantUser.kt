@@ -15,27 +15,3 @@ data class TenantUser(
     @SerializedName("disabled") val disabled: Int,
     @SerializedName("email") val email: String
 )
-
-data class TenantUserResponse(
-    @SerializedName("data") val data: List<TenantUser>?,
-    @SerializedName("token") val token: String?,
-    @SerializedName("status") val status: String,
-    @SerializedName("msg") val message: String?,
-    @SerializedName("total") val total: Int?
-)
-
-object DefaultTenantUser {
-    val DEFAULT = TenantUser(
-        id = "",
-        tenantId = "",
-        tenantName = "私人空间",
-        userId = "",
-        roleType = 0,
-        joinDate = "",
-        createBy = "",
-        username = "",
-        avatar = null,
-        disabled = 0,
-        email = ""
-    )
-}

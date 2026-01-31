@@ -25,8 +25,8 @@ class ChatViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val dataStoreManager: DataStoreManager
 ) : ViewModel() {
-    private val _tenantList = MutableStateFlow<List<TenantUser>>(emptyList())
-    val tenantList: StateFlow<List<TenantUser>> = _tenantList.asStateFlow()
+    private val _tenantList = MutableStateFlow<List<Tenant>>(emptyList())
+    val tenantList: StateFlow<List<Tenant>> = _tenantList.asStateFlow()
 
     private val _showTenantDialog = MutableStateFlow(false)
     val showTenantDialog: StateFlow<Boolean> = _showTenantDialog.asStateFlow()
@@ -42,8 +42,8 @@ class ChatViewModel @Inject constructor(
     private val _chatList = MutableStateFlow<List<ChatMessage>>(emptyList())
     val chatList: StateFlow<List<ChatMessage>> = _chatList.asStateFlow()
 
-    private val _currentTenant = MutableStateFlow<TenantUser?>(null)
-    val currentTenant: StateFlow<TenantUser?> = _currentTenant.asStateFlow()
+    private val _currentTenant = MutableStateFlow<Tenant?>(null)
+    val currentTenant: StateFlow<Tenant?> = _currentTenant.asStateFlow()
 
     private val _chatId = MutableStateFlow<String>("")
     val chatId: StateFlow<String> = _chatId.asStateFlow()
@@ -95,7 +95,7 @@ class ChatViewModel @Inject constructor(
             val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 
             // 2. 获取租户列表
-            val result = userRepository.getTenantUserList()
+            val result = userRepository.getUserTenantList()
 
             if (result.isSuccess) {
                 val tenantList = result.getOrNull() ?: emptyList()
@@ -106,26 +106,26 @@ class ChatViewModel @Inject constructor(
                 val selectedTenant = if (tenantList.isNotEmpty()) {
                     // 如果有缓存的租户ID，尝试找到对应的租户
                     cachedTenantId?.let { cachedId ->
-                        tenantList.find { it.tenantId == cachedId }
+                        tenantList.find { it.id == cachedId }
                     } ?: tenantList.first() // 否则选择第一个
                 } else {
                     // 如果没有租户权限，使用默认租户
-                    DefaultTenantUser.DEFAULT
+                    DefaultTenant.PERSONAL_SPACE
                 }
 
                 _currentTenant.value = selectedTenant
 
                 // 保存当前租户到缓存
                 selectedTenant.let {
-                    if (it != DefaultTenantUser.DEFAULT) {
-                        dataStoreManager.saveTenantId(it.tenantId)
+                    if (it != DefaultTenant.PERSONAL_SPACE) {
+                        dataStoreManager.saveTenantId(it.id)
                     }
                     dataStoreManager.saveCurrentTenant(it)
                 }
             } else {
                 // 获取失败，使用默认租户
-                _currentTenant.value = DefaultTenantUser.DEFAULT
-                dataStoreManager.saveCurrentTenant(DefaultTenantUser.DEFAULT)
+                _currentTenant.value = DefaultTenant.PERSONAL_SPACE
+                dataStoreManager.saveCurrentTenant(DefaultTenant.PERSONAL_SPACE)
                 _tenantList.value = emptyList()
                 _isTenantListLoaded.value = true  // 即使失败也标记为已加载
             }
@@ -214,7 +214,7 @@ class ChatViewModel @Inject constructor(
 
             // 准备请求数据
             val token = dataStoreManager.getToken().firstOrNull() ?: ""
-            val tenantId = _currentTenant.value?.tenantId ?: ""
+            val tenantId = _currentTenant.value?.id ?: ""
             val modelId = _selectedModel.value?.id ?: ""
 
             val request = WebSocketManager.ChatRequest(
@@ -354,10 +354,10 @@ class ChatViewModel @Inject constructor(
     }
 
     // 添加租户选择方法
-    fun selectTenant(tenant: TenantUser) {
+    fun selectTenant(tenant: Tenant) {
         viewModelScope.launch {
             _currentTenant.value = tenant
-            dataStoreManager.saveTenantId(tenant.tenantId)
+            dataStoreManager.saveTenantId(tenant.id)
             dataStoreManager.saveCurrentTenant(tenant)
             _showTenantDialog.value = false
 
