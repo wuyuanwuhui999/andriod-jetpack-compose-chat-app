@@ -1,6 +1,8 @@
 package com.player.chat.network
 
 import com.player.chat.model.*
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -27,4 +29,21 @@ interface ApiService {
     @GET("/service/tenant/getUserTenantList")
     suspend fun getUserTenantList(): Response<ApiResponse<List<Tenant>>>
 
+    @GET("/service/chat/getDirectoryList")
+    suspend fun getDirectoryList(@Query("tenantId") tenantId: String): Response<DirectoryListResponse>
+
+    @POST("/service/chat/createDir")
+    @Multipart
+    suspend fun createDirectory(
+        @Part("directory") directory: RequestBody,
+        @Part("tenantId") tenantId: RequestBody
+    ): Response<ApiResponse<Directory>>
+
+    @POST("/service/chat/uploadDoc/{tenantId}/{directoryId}")
+    @Multipart
+    suspend fun uploadDocument(
+        @Path("tenantId") tenantId: String,
+        @Path("directoryId") directoryId: String,
+        @Part file: MultipartBody.Part?
+    ): Response<UploadDocResponse>
 }

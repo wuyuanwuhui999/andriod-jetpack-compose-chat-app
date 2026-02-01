@@ -183,7 +183,7 @@ fun LoginPage(
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.Black
                 ),
-                border = BorderStroke(1.dp, Color.disableTextColor)
+                border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
 
             ) {
                 Text(

@@ -1,5 +1,8 @@
 package com.player.chat.ui.page
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +24,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -33,10 +37,12 @@ import com.player.chat.model.PositionEnum
 import com.player.chat.model.TenantUser
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
+import com.player.chat.ui.components.UploadDocumentDialog
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.ChatViewModel
 import com.player.chat.viewmodel.MainViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +63,7 @@ fun ChatPage(
     val isConnecting by chatViewModel.isConnecting.collectAsState()
     val showModelDialog by chatViewModel.showModelDialog.collectAsState()
     val showMenuDialog by chatViewModel.showMenuDialog.collectAsState()
+    val showUploadDialog by chatViewModel.showUploadDialog.collectAsState()
 
     // 添加租户列表状态
     val tenantList by chatViewModel.tenantList.collectAsState()
@@ -64,6 +71,21 @@ fun ChatPage(
 
     var inputText by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+
+    val context = LocalContext.current // ✅ 在 Composable 里是合法的
+
+    // 添加文件选择器
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val selectedDir = chatViewModel.selectedDirectory.value
+            selectedDir?.let {
+                chatViewModel.uploadDocument(context, uri, it) // 👈 传入 context
+            }
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -426,6 +448,7 @@ fun ChatPage(
 
     // 菜单对话框
     if (showMenuDialog) {
+        val scope = rememberCoroutineScope()  // 添加这行
         Dialog(onDismissRequest = { chatViewModel.toggleMenuDialog() }) {
             Card(
                 modifier = Modifier.fillMaxWidth(0.8f),
@@ -444,17 +467,53 @@ fun ChatPage(
                         ListItem(
                             headlineContent = { Text(item) },
                             modifier = Modifier.clickable {
-                                // TODO: 处理菜单点击
-                                chatViewModel.toggleMenuDialog()
+                                when (index) {
+                                    0 -> {
+                                        chatViewModel.toggleMenuDialog()
+                                        scope.launch {
+                                            kotlinx.coroutines.delay(50)
+                                            chatViewModel.showUploadDialog()
+                                        }
+                                    }
+                                    1 -> {
+                                        // TODO: 我的文档
+                                        chatViewModel.toggleMenuDialog()
+                                    }
+                                    2 -> {
+                                        // TODO: 会话记录
+                                        chatViewModel.toggleMenuDialog()
+                                    }
+                                    3 -> {
+                                        // TODO: 设置提示词
+                                        chatViewModel.toggleMenuDialog()
+                                    }
+                                    4 -> {
+                                        // TODO: 我的提示词
+                                        chatViewModel.toggleMenuDialog()
+                                    }
+                                }
                             }
                         )
                         if (index < menuItems.size - 1) {
                             Divider()
                         }
                     }
+
                 }
             }
         }
+    }
+
+    // 3. 添加上传文档对话框（放在 ChatPage 函数的最后，所有对话框之后）
+    if (showUploadDialog) {
+        UploadDocumentDialog(
+            viewModel = chatViewModel,
+            onDismiss = { chatViewModel.hideUploadDialog() },
+            onUploadSuccess = {
+                // 上传成功后的处理
+                chatViewModel.hideUploadDialog()
+            }
+        )
     }
 
     // 自动获取焦点

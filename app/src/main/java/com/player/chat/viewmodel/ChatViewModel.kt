@@ -1,5 +1,7 @@
 package com.player.chat.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,21 +11,27 @@ import com.player.chat.network.WebSocketMessageHandler
 import com.player.chat.chat.repository.UserRepository
 import com.player.chat.repository.ChatRepository
 import com.player.chat.local.DataStoreManager
+import com.player.chat.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import java.util.UUID
 import javax.inject.Inject
+import androidx.compose.ui.platform.LocalContext
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val userRepository: UserRepository,
-    private val dataStoreManager: DataStoreManager
+    private val dataStoreManager: DataStoreManager,
+    private val apiService: ApiService  // 需要确保 ApiService 已注入
 ) : ViewModel() {
     private val _tenantList = MutableStateFlow<List<Tenant>>(emptyList())
     val tenantList: StateFlow<List<Tenant>> = _tenantList.asStateFlow()
@@ -69,6 +77,22 @@ class ChatViewModel @Inject constructor(
 
     private val _showMenuDialog = MutableStateFlow(false)
     val showMenuDialog: StateFlow<Boolean> = _showMenuDialog.asStateFlow()
+
+    private val _showUploadDialog = MutableStateFlow(false)
+    val showUploadDialog: StateFlow<Boolean> = _showUploadDialog.asStateFlow()
+
+    private val _directoryList = MutableStateFlow<List<Directory>>(emptyList())
+    val directoryList: StateFlow<List<Directory>> = _directoryList.asStateFlow()
+
+    private val _selectedDirectory = MutableStateFlow<Directory?>(null)
+    val selectedDirectory: StateFlow<Directory?> = _selectedDirectory.asStateFlow()
+
+    private val _showCreateDirectoryDialog = MutableStateFlow(false)
+    val showCreateDirectoryDialog: StateFlow<Boolean> = _showCreateDirectoryDialog.asStateFlow()
+
+    private val _isDirectoryLoading = MutableStateFlow(false)
+    val isDirectoryLoading: StateFlow<Boolean> = _isDirectoryLoading.asStateFlow()
+
 
     // WebSocket
     private var webSocketManager: WebSocketManager? = null
@@ -368,6 +392,166 @@ class ChatViewModel @Inject constructor(
 
     fun toggleTenantDialog() {
         _showTenantDialog.value = !_showTenantDialog.value
+    }
+
+    fun toggleUploadDialog() {
+        _showUploadDialog.value = !_showUploadDialog.value
+        if (_showUploadDialog.value) {
+            loadDirectories()
+        } else {
+            _selectedDirectory.value = null
+        }
+    }
+
+    fun showUploadDialog() {
+        _showUploadDialog.value = true
+        _showMenuDialog.value = false
+        loadDirectories()
+    }
+
+    fun hideUploadDialog() {
+        _showUploadDialog.value = false
+        _selectedDirectory.value = null
+    }
+
+    fun selectDirectory(directory: Directory) {
+        _selectedDirectory.value = directory
+    }
+
+    fun showCreateDirectoryDialog() {
+        _showCreateDirectoryDialog.value = true
+    }
+
+    fun hideCreateDirectoryDialog() {
+        _showCreateDirectoryDialog.value = false
+    }
+
+    private fun loadDirectories() {
+        viewModelScope.launch {
+            _isDirectoryLoading.value = true
+            try {
+                val tenantId = _currentTenant.value?.id ?: ""
+                if (tenantId.isNotBlank()) {
+                    val result = chatRepository.getDirectoryList(tenantId)  // 改为使用 ChatRepository
+                    if (result.isSuccess) {
+                        _directoryList.value = result.getOrNull() ?: emptyList()
+                    } else {
+                        // 可以在这里处理错误，例如显示Toast
+                        Log.e("ChatViewModel", "加载目录失败: ${result.exceptionOrNull()?.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "加载目录异常", e)
+            } finally {
+                _isDirectoryLoading.value = false
+            }
+        }
+    }
+
+    fun createDirectory(name: String) {
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id ?: ""
+            if (tenantId.isNotBlank() && name.isNotBlank()) {
+                val result = chatRepository.createDirectory(name, tenantId)  // 改为使用 ChatRepository
+                if (result.isSuccess) {
+                    val newDirectory = result.getOrNull()
+                    newDirectory?.let {
+                        // 添加到列表最上面并选中
+                        _directoryList.value = listOf(it) + _directoryList.value
+                        _selectedDirectory.value = it
+
+                        // 可以在这里显示成功提示
+                        Log.d("ChatViewModel", "创建目录成功: ${it.directory}")
+                    }
+                } else {
+                    Log.e("ChatViewModel", "创建目录失败: ${result.exceptionOrNull()?.message}")
+                    // 可以在这里显示错误提示
+                }
+            }
+        }
+    }
+
+    // 修改文件上传方法
+    fun uploadDocument(context: Context, uri: Uri, directory: Directory) {
+        // 用 context.contentResolver 打开 InputStream 或转成 File
+        try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            // 注意：你可能需要将 InputStream 写入临时文件，因为 Retrofit 需要 File
+            val tempFile = createTempFileFromUri(context, uri)
+            if (tempFile != null) {
+                viewModelScope.launch {
+                    chatRepository.uploadDocument(
+                        tenantId = directory.tenantId,
+                        directoryId = directory.id ?: "",
+                        file = tempFile
+                    ).onSuccess { result ->
+                        // 处理成功
+                    }.onFailure { error ->
+                        // 处理失败
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Upload", "Failed to open URI", e)
+        }
+    }
+
+    // 辅助方法：将 Uri 转为临时 File
+    private fun createTempFileFromUri(context: Context, uri: Uri): File? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val tempFile = File.createTempFile("upload_", ".tmp", context.cacheDir)
+            inputStream?.use { input ->
+                tempFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            tempFile
+        } catch (e: Exception) {
+            Log.e("Upload", "Failed to create temp file", e)
+            null
+        }
+    }
+
+
+    // 修改文件选择方法
+    fun openFilePicker(context: Context) {
+        viewModelScope.launch {
+            selectedDirectory.value?.let { directory ->
+                // 这里应该使用 ActivityResultLauncher，简化处理
+                // 在实际项目中，你需要注册一个 ActivityResultLauncher
+                // 这里只是示例，实际需要从文件选择器的回调中获取 URI
+                // val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                //     type = "*/*"
+                //     putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                //         "text/markdown",
+                //         "text/plain",
+                //         "application/msword",
+                //         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                //         "application/pdf"
+                //     ))
+                //     addCategory(Intent.CATEGORY_OPENABLE)
+                // }
+                // filePickerLauncher.launch(intent)
+
+                // 简化处理，假设文件选择成功并调用上传
+                // 实际项目中需要从 ActivityResult 回调中获取 URI
+            }
+        }
+    }
+
+    // 添加上传文件的方法（从URI）
+    fun uploadDocument(context: Context,uri: Uri) {
+        viewModelScope.launch {
+            selectedDirectory.value?.let { directory ->
+                uploadDocument(context, uri, directory)
+            }
+        }
+    }
+
+    // 辅助扩展函数
+    private fun String.toRequestBody(): RequestBody {
+        return this.toRequestBody("text/plain".toMediaTypeOrNull())
     }
 
 
