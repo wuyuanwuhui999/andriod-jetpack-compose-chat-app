@@ -12,7 +12,6 @@ object Dimens {
     val smallAvater = 30.dp          // 60rpx
     val middleAvater = 40.dp         // 80rpx
     val bigAvater = 60.dp            // 120rpx
-    val miniMusicPlayerSize = 75.dp  // 150rpx
     val smallIconSize = 20.dp        // 40rpx
     val middleIconSize = 25.dp       // 50rpx
     val bigIconSize = 80.dp          // 70rpx
@@ -40,6 +39,7 @@ object Dimens {
     val playIndication = 15.dp       // 30rpx
     val miniPlayerBorderSize = 5.dp  // 10rpx
     val btnHeight = 50.dp            // 100rpx
+    val barHeight = 60.dp
     val redCircle = 7.5.dp           // 15rpx
     val arrowSize = 7.5.dp           // 15rpx
 }

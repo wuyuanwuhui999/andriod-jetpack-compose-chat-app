@@ -37,6 +37,7 @@ import com.player.chat.model.PositionEnum
 import com.player.chat.model.TenantUser
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
+import com.player.chat.ui.components.CustomBottomDialog
 import com.player.chat.ui.components.UploadDocumentDialog
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
@@ -470,10 +471,7 @@ fun ChatPage(
                                 when (index) {
                                     0 -> {
                                         chatViewModel.toggleMenuDialog()
-                                        scope.launch {
-                                            kotlinx.coroutines.delay(50)
-                                            chatViewModel.showUploadDialog()
-                                        }
+                                        chatViewModel.showUploadDialog()
                                     }
                                     1 -> {
                                         // TODO: 我的文档
