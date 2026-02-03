@@ -1,4 +1,3 @@
-// UploadDocumentDialog.kt
 package com.player.chat.ui.components
 
 import androidx.compose.foundation.BorderStroke
@@ -7,8 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -42,99 +43,115 @@ fun UploadDocumentDialog(
     CustomBottomDialog(
         title = "选择文件夹",
         onDismiss = onDismiss,
-        leftIconRes = R.drawable.icon_add, // 使用加号图标作为左侧图标
-        onLeftIconClick = { viewModel.showCreateDirectoryDialog() }, // 点击左侧图标创建文件夹
+        leftIconRes = R.drawable.icon_add,
+        onLeftIconClick = { viewModel.showCreateDirectoryDialog() },
     ) {
-        // 内容区 - 目录列表
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Dimens.pagePadding)
         ) {
-            if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.padding(Dimens.pagePadding).weight(1f)
+            ) {
+                // 内容区 - 白色背景+圆角，高度自适应，溢出滚动
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
+                        .background(Color.White)
+                        .padding(Dimens.pagePadding) // 内边距
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(30.dp),
-                        strokeWidth = 2.dp
-                    )
-                }
-            } else if (directories.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "暂无目录，点击左上角+号创建",
-                        color = Color.Gray
-                    )
-                }
-            } else {
-                LazyColumn {
-                    items(directories) { directory ->
-                        DirectoryItem(
-                            directory = directory,
-                            isSelected = selectedDirectory?.id == directory.id,
-                            onSelect = { viewModel.selectDirectory(directory) }
-                        )
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(30.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    } else if (directories.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "暂无目录，点击左上角+号创建",
+                                color = Color.Gray
+                            )
+                        }
+                    } else {
+                        directories.forEach { directory ->
+                            DirectoryItem(
+                                directory = directory,
+                                isSelected = selectedDirectory?.id == directory.id,
+                                onSelect = { viewModel.selectDirectory(directory) }
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        // 底部按钮区 - 使用Row包装
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Dimens.pagePadding, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // 取消按钮
-            OutlinedButton(
-                onClick = onDismiss,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(Dimens.btnHeight),
-                shape = RoundedCornerShape(Dimens.bigBorderRadius),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.Black
-                ),
-                border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
-            ) {
-                Text("取消")
-            }
 
-            // 确定按钮
-            Button(
-                onClick = {
-                    selectedDirectory?.let { directory ->
-                        // 这里触发文件选择，实际实现需要从外部传入文件选择器
-                    }
-                },
+            // 底部按钮区 - 白色背景，只有内边距
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(Dimens.btnHeight),
-                enabled = selectedDirectory != null,
-                shape = RoundedCornerShape(Dimens.bigBorderRadius),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedDirectory != null)
-                        Color.PrimaryColor
-                    else
-                        Color.disableTextColor,
-                    contentColor = if (selectedDirectory != null)
-                        Color.White
-                    else
-                        Color.Gray
-                )
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(Dimens.pagePadding), // 只设置内边距
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("确定")
+                // 取消按钮
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(Dimens.btnHeight),
+                    shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
+                ) {
+                    Text("取消")
+                }
+
+                // 确定按钮
+                Button(
+                    onClick = {
+                        selectedDirectory?.let { directory ->
+                            // 这里触发文件选择，实际实现需要从外部传入文件选择器
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(Dimens.btnHeight),
+                    enabled = selectedDirectory != null,
+                    shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedDirectory != null)
+                            Color.PrimaryColor
+                        else
+                            Color.disableTextColor,
+                        contentColor = if (selectedDirectory != null)
+                            Color.White
+                        else
+                            Color.Gray
+                    )
+                ) {
+                    Text("确定")
+                }
             }
         }
     }
 
-    // 创建文件夹对话框（仍然保留）
+    // 创建文件夹对话框
     if (showCreateDirectoryDialog) {
         CreateDirectoryDialog(
             viewModel = viewModel,
@@ -149,45 +166,49 @@ fun DirectoryItem(
     isSelected: Boolean,
     onSelect: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelect() }
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        // 目录名称
-        Text(
-            text = directory.directory,
-            color = Color.Black,
-            modifier = Modifier.weight(1f)
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // 单选按钮
-        Box(
+        Row(
             modifier = Modifier
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(
-                    if (isSelected) Color.PrimaryColor else Color.Gray.copy(alpha = 0.5f)
-                ),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .clickable { onSelect() }
+                .padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            if (isSelected) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                )
+            // 目录名称
+            Text(
+                text = directory.directory,
+                color = Color.Black,
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // 单选按钮
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isSelected) Color.PrimaryColor else Color.Gray.copy(alpha = 0.5f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isSelected) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                    )
+                }
             }
         }
-    }
 
-    Divider(color = Color.Gray.copy(alpha = 0.2f))
+        Divider(color = Color.Gray.copy(alpha = 0.2f))
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
