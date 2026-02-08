@@ -102,6 +102,18 @@ class ChatViewModel @Inject constructor(
     private val _isTenantListLoaded = MutableStateFlow(false)
     val isTenantListLoaded: StateFlow<Boolean> = _isTenantListLoaded.asStateFlow()
 
+    private val _showMyDocumentsDialog = MutableStateFlow(false)
+    val showMyDocumentsDialog: StateFlow<Boolean> = _showMyDocumentsDialog.asStateFlow()
+
+    private val _expandedDirectories = MutableStateFlow<Set<String>>(emptySet())
+    val expandedDirectories: StateFlow<Set<String>> = _expandedDirectories.asStateFlow()
+
+    private val _directoryDocuments = MutableStateFlow<Map<String, List<Document>>>(emptyMap())
+    val directoryDocuments: StateFlow<Map<String, List<Document>>> = _directoryDocuments.asStateFlow()
+
+    private val _isDocumentsLoading = MutableStateFlow(false)
+    val isDocumentsLoading: StateFlow<Boolean> = _isDocumentsLoading.asStateFlow()
+
 
     init {
         loadTenantInfo()
@@ -552,6 +564,98 @@ class ChatViewModel @Inject constructor(
     // 辅助扩展函数
     private fun String.toRequestBody(): RequestBody {
         return this.toRequestBody("text/plain".toMediaTypeOrNull())
+    }
+
+    suspend fun getDocListByDirId(tenantId: String, directoryId: String): Result<List<Document>> {
+        return try {
+            val response = apiService.getDocListByDirId(tenantId, directoryId)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "获取文档列表失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 添加切换我的文档对话框方法
+    fun toggleMyDocumentsDialog() {
+        _showMyDocumentsDialog.value = !_showMyDocumentsDialog.value
+        if (_showMyDocumentsDialog.value) {
+            loadDirectories() // 打开对话框时加载目录
+        } else {
+            // 关闭对话框时清空展开状态和文档数据
+            _expandedDirectories.value = emptySet()
+            _directoryDocuments.value = emptyMap()
+        }
+    }
+
+
+    // 切换目录展开状态并加载文档
+    fun toggleDirectoryExpanded(directory: Directory) {
+        viewModelScope.launch {
+            val directoryId = directory.id ?: return@launch
+            val currentExpanded = _expandedDirectories.value.toMutableSet()
+
+            if (currentExpanded.contains(directoryId)) {
+                // 如果已经展开，则收起
+                currentExpanded.remove(directoryId)
+                _expandedDirectories.value = currentExpanded
+            } else {
+                // 如果未展开，则展开并加载文档
+                _isDocumentsLoading.value = true
+                try {
+                    val tenantId = _currentTenant.value?.id ?: ""
+                    if (tenantId.isNotBlank()) {
+                        val result = chatRepository.getDocListByDirId(tenantId, directoryId)
+                        if (result.isSuccess) {
+                            val documents: List<Document> = (result.getOrNull() ?: emptyList()) as List<Document>
+                            // 更新文档映射
+                            val currentMap = _directoryDocuments.value.toMutableMap()
+                            currentMap[directoryId] = documents
+                            _directoryDocuments.value = currentMap
+
+                            // 添加到展开集合
+                            currentExpanded.add(directoryId)
+                            _expandedDirectories.value = currentExpanded
+                        } else {
+                            // 可以在这里处理错误
+                            Log.e("ChatViewModel", "加载文档失败: ${result.exceptionOrNull()?.message}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("ChatViewModel", "加载文档异常", e)
+                } finally {
+                    _isDocumentsLoading.value = false
+                }
+            }
+        }
+    }
+
+    // 删除文档
+    fun deleteDocument(docId: String, directoryId: String) {
+        viewModelScope.launch {
+            try {
+                val result = chatRepository.deleteDocument(docId)
+                if (result.isSuccess && result.getOrNull() ?: 0 > 0) {
+                    // 删除成功，更新本地数据
+                    val currentMap = _directoryDocuments.value.toMutableMap()
+                    val documents = currentMap[directoryId]?.toMutableList() ?: mutableListOf()
+                    documents.removeAll { it.id == docId }
+                    currentMap[directoryId] = documents
+                    _directoryDocuments.value = currentMap
+
+                    // 可以在这里显示成功提示
+                    Log.d("ChatViewModel", "删除文档成功: $docId")
+                } else {
+                    // 可以在这里显示错误提示
+                    Log.e("ChatViewModel", "删除文档失败")
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "删除文档异常", e)
+            }
+        }
     }
 
 

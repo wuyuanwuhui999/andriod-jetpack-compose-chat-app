@@ -37,14 +37,3 @@ data class CreateDirectoryRequest(
     val directory: String,
     val tenantId: String
 )
-
-data class UploadDocResponse(
-    @SerializedName("data")
-    val data: String? = null,
-
-    @SerializedName("status")
-    val status: String,
-
-    @SerializedName("msg")
-    val message: String?
-)

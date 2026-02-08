@@ -45,5 +45,17 @@ interface ApiService {
         @Path("tenantId") tenantId: String,
         @Path("directoryId") directoryId: String,
         @Part file: MultipartBody.Part?
-    ): Response<UploadDocResponse>
+    ): Response<ApiResponse<Int>>
+
+    // 获取目录下的文档列表
+    @GET("/service/chat/getDocListByDirId")
+    suspend fun getDocListByDirId(
+        @Query("tenantId") tenantId: String,
+        @Query("directoryId") directoryId: String
+    ): Response<ApiResponse<List<Document>>>
+
+    // 删除文档
+    @POST("/service/chat/deleteDoc/{docId}")
+    suspend fun deleteDocument(@Path("docId") docId: String): Response<ApiResponse<Int>>
+
 }

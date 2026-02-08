@@ -43,7 +43,7 @@ import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.ChatViewModel
 import com.player.chat.viewmodel.MainViewModel
-import kotlinx.coroutines.launch
+import com.player.chat.ui.components.MyDocumentsDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,6 +72,8 @@ fun ChatPage(
 
     var inputText by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+    val showMyDocumentsDialog by chatViewModel.showMyDocumentsDialog.collectAsState()
+
 
     val context = LocalContext.current // ✅ 在 Composable 里是合法的
 
@@ -470,12 +472,10 @@ fun ChatPage(
                             modifier = Modifier.clickable {
                                 when (index) {
                                     0 -> {
-                                        chatViewModel.toggleMenuDialog()
                                         chatViewModel.showUploadDialog()
                                     }
                                     1 -> {
-                                        // TODO: 我的文档
-                                        chatViewModel.toggleMenuDialog()
+                                        chatViewModel.toggleMyDocumentsDialog() // 打开我的文档对话框
                                     }
                                     2 -> {
                                         // TODO: 会话记录
@@ -490,6 +490,7 @@ fun ChatPage(
                                         chatViewModel.toggleMenuDialog()
                                     }
                                 }
+                                chatViewModel.toggleMenuDialog()
                             }
                         )
                         if (index < menuItems.size - 1) {
@@ -511,6 +512,13 @@ fun ChatPage(
                 // 上传成功后的处理
                 chatViewModel.hideUploadDialog()
             }
+        )
+    }
+
+    if (showMyDocumentsDialog) {
+        MyDocumentsDialog(
+            viewModel = chatViewModel,
+            onDismiss = { chatViewModel.toggleMyDocumentsDialog() }
         )
     }
 

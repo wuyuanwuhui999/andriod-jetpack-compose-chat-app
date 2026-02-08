@@ -2,6 +2,7 @@ package com.player.chat.repository
 
 import com.player.chat.model.ChatModel
 import com.player.chat.model.Directory
+import com.player.chat.model.Document
 import com.player.chat.network.ApiService
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -80,6 +81,38 @@ class ChatRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        } as Result<String>
+    }
+
+    suspend fun getDocListByDirId(tenantId: String, directoryId: String): Result<List<Document>> {
+        return try {
+            val response = apiService.getDocListByDirId(tenantId, directoryId)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "获取文档列表失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
+
+    suspend fun deleteDocument(docId: String): Result<Int> {
+        return try {
+            val response = apiService.deleteDocument(docId)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val deletedCount = response.body()?.data ?: 0
+                if (deletedCount > 0) {
+                    Result.success(deletedCount)
+                } else {
+                    Result.failure(Exception("删除失败"))
+                }
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "删除文档失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }

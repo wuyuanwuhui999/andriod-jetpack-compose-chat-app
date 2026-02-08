@@ -12,7 +12,7 @@ object Dimens {
     val smallAvater = 30.dp          // 60rpx
     val middleAvater = 40.dp         // 80rpx
     val bigAvater = 60.dp            // 120rpx
-    val smallIconSize = 20.dp        // 40rpx
+    val smallIconSize = 15.dp        // 40rpx
     val middleIconSize = 25.dp       // 50rpx
     val bigIconSize = 80.dp          // 70rpx
     val bigMargin = 40.dp
@@ -21,7 +21,6 @@ object Dimens {
     val middleMargin = 10.dp         // 20rpx
     val fontSizeNormal = 14.sp       // 30rpx - 注意：字体大小使用.sp
     val fontSizeBig = 20.sp          // 40rpx - 注意：字体大小使用.sp
-    val swiperHeight = 150.dp        // 300rpx
     val lineHeight = 15.dp           // 30rpx
     val lineWidth = 2.5.dp           // 5rpx
     val movieImgHeight = 150.dp      // 300rpx

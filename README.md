@@ -1,7 +1,7 @@
 开发者：吴怨吴悔
 **jetpack compose 聊天应用 UI**
 
-一个集成了 AI 智能对话和文档管理功能的 Flutter 应用，支持多平台部署。
+一个集成了 AI 智能对话和文档管理功能的 jetpack compose 应用，支持多平台部署。
 
 **开发者信息**
 
@@ -12,7 +12,7 @@
 
 **项目简介**
 
-本项目是一个多功能 Flutter 应用，主要包含以下核心功能：
+本项目是一个多功能 jetpack compose 应用，主要包含以下核心功能：
 
 * AI 智能聊天助手（支持连接 qwen3:8b 本地大模型）
 * RAG 文档查询功能（支持文档上传、管理和查询）
@@ -169,29 +169,11 @@ github地址：https://github.com/wuyuanwuhui99/vue3-ts-toutiao-app-ui
 **安装与运行**
 
 # 克隆项目
-git clone https://github.com/wuyuanwuhui999/flutter-chat-app-ui.git
-
-# 进入项目目录
-cd flutter-chat-app-ui
-
-# 获取依赖
-flutter pub get
-
-# 运行项目
-flutter run
-
-根据需要选择运行的平台（Android、iOS、Web、Windows、macOS、Linux）。
+git clone https://github.com/wuyuanwuhui999/andriod-jetpack-compose-chat-app.git
 
 
 音乐播放器正在开发中，音乐数据来自于python爬虫程序，爬取酷狗音乐数据，敬请关注
 
-接口和数据请在本地电脑中，暂时没有购买和部署服务器，仅限本地调试，如有需要调试请联系本人启动外网映射
-
-本地调试请把 http://192.168.0.5:5001 改成 http://254a2y1767.qicp.vip    
-该地址是映射到本人电脑的地址，需要本人电脑开机才能访问，一般在工作日晚上八点半之后或者周末白天会开机   
-如需了解是否已开机，请用浏览器直接打开该地址：http://254a2y1767.qicp.vip，如出现以下提示，则正常使用   
-![外网映射正常访问提示](外网映射正常访问提示.png)
-
 本站所有音乐和图片均来自互联网收集而来，版权归原创者所有，本网站只提供web页面服务，并不提供资源存储，也不参与录制、上传 若本站收录的节目无意侵犯了贵司版权，请联系
 
-联系方式：（微信）wuwenqiang_99、（邮箱）275018723@qq.com
+联系方式：275018723@qq.com
