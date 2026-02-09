@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -37,6 +36,7 @@ import com.player.chat.model.PositionEnum
 import com.player.chat.model.TenantUser
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
+import com.player.chat.ui.components.ChatHistoryDialog
 import com.player.chat.ui.components.CustomBottomDialog
 import com.player.chat.ui.components.UploadDocumentDialog
 import com.player.chat.ui.theme.Color
@@ -73,7 +73,7 @@ fun ChatPage(
     var inputText by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val showMyDocumentsDialog by chatViewModel.showMyDocumentsDialog.collectAsState()
-
+    val showChatHistoryDialog by chatViewModel.showChatHistoryDialog.collectAsState()
 
     val context = LocalContext.current // ✅ 在 Composable 里是合法的
 
@@ -472,14 +472,16 @@ fun ChatPage(
                             modifier = Modifier.clickable {
                                 when (index) {
                                     0 -> {
+                                        // TODO: 上传文档
                                         chatViewModel.showUploadDialog()
                                     }
                                     1 -> {
+                                        // TODO: 我的文档
                                         chatViewModel.toggleMyDocumentsDialog() // 打开我的文档对话框
                                     }
                                     2 -> {
                                         // TODO: 会话记录
-                                        chatViewModel.toggleMenuDialog()
+                                        chatViewModel.toggleChatHistoryDialog()
                                     }
                                     3 -> {
                                         // TODO: 设置提示词
@@ -521,6 +523,14 @@ fun ChatPage(
             onDismiss = { chatViewModel.toggleMyDocumentsDialog() }
         )
     }
+
+    if (showChatHistoryDialog) {
+        ChatHistoryDialog(
+            viewModel = chatViewModel,
+            onDismiss = { chatViewModel.toggleChatHistoryDialog() }
+        )
+    }
+
 
     // 自动获取焦点
     LaunchedEffect(Unit) {

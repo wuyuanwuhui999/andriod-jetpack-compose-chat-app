@@ -1,5 +1,6 @@
 package com.player.chat.repository
 
+import com.player.chat.model.ChatHistory
 import com.player.chat.model.ChatModel
 import com.player.chat.model.Directory
 import com.player.chat.model.Document
@@ -114,5 +115,20 @@ class ChatRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getChatHistory(tenantId: String, pageSize: Int, pageNum: Int): Result<List<ChatHistory>> {
+        return try {
+            val response = apiService.getChatHistory(tenantId, pageSize, pageNum)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "获取会话记录失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
 
 }

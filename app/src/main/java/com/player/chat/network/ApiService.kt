@@ -58,4 +58,11 @@ interface ApiService {
     @POST("/service/chat/deleteDoc/{docId}")
     suspend fun deleteDocument(@Path("docId") docId: String): Response<ApiResponse<Int>>
 
+    @GET("/service/chat/getChatHistory")
+    suspend fun getChatHistory(
+        @Query("tenantId") tenantId: String,
+        @Query("pageSize") pageSize: Int,
+        @Query("pageNum") pageNum: Int
+    ): Response<ApiResponse<List<ChatHistory>>>
+
 }

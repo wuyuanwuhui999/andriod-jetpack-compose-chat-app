@@ -25,6 +25,7 @@ import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 import androidx.compose.ui.platform.LocalContext
+import com.player.chat.utils.CommonUtils.formatRelativeTime
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
@@ -114,6 +115,25 @@ class ChatViewModel @Inject constructor(
     private val _isDocumentsLoading = MutableStateFlow(false)
     val isDocumentsLoading: StateFlow<Boolean> = _isDocumentsLoading.asStateFlow()
 
+    private val _chatHistoryList = MutableStateFlow<List<ChatHistory>>(emptyList())
+    val chatHistoryList: StateFlow<List<ChatHistory>> = _chatHistoryList.asStateFlow()
+
+    private val _groupedChatHistory = MutableStateFlow<Map<String, List<ChatHistory>>>(emptyMap())
+    val groupedChatHistory: StateFlow<Map<String, List<ChatHistory>>> = _groupedChatHistory.asStateFlow()
+
+    private val _isChatHistoryLoading = MutableStateFlow(false)
+    val isChatHistoryLoading: StateFlow<Boolean> = _isChatHistoryLoading.asStateFlow()
+
+    private val _hasMoreChatHistory = MutableStateFlow(true)
+    val hasMoreChatHistory: StateFlow<Boolean> = _hasMoreChatHistory.asStateFlow()
+
+    private val _currentChatHistoryPage = MutableStateFlow(1)
+    val currentChatHistoryPage: StateFlow<Int> = _currentChatHistoryPage.asStateFlow()
+
+    private val _showChatHistoryDialog = MutableStateFlow(false)
+    val showChatHistoryDialog: StateFlow<Boolean> = _showChatHistoryDialog.asStateFlow()
+
+    private var pageSize = 20
 
     init {
         loadTenantInfo()
@@ -389,19 +409,6 @@ class ChatViewModel @Inject constructor(
         _showMenuDialog.value = !_showMenuDialog.value
     }
 
-    // 添加租户选择方法
-    fun selectTenant(tenant: Tenant) {
-        viewModelScope.launch {
-            _currentTenant.value = tenant
-            dataStoreManager.saveTenantId(tenant.id)
-            dataStoreManager.saveCurrentTenant(tenant)
-            _showTenantDialog.value = false
-
-            // 切换租户后，可以清空当前聊天或进行其他操作
-            startNewChat()
-        }
-    }
-
     fun toggleTenantDialog() {
         _showTenantDialog.value = !_showTenantDialog.value
     }
@@ -655,6 +662,153 @@ class ChatViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "删除文档异常", e)
             }
+        }
+    }
+
+    // 加载会话记录
+    fun loadChatHistory() {
+        viewModelScope.launch {
+            _isChatHistoryLoading.value = true
+            _currentChatHistoryPage.value = 1
+
+            try {
+                // 获取当前租户ID
+                val tenantId = _currentTenant.value?.id ?: ""
+
+                val result = chatRepository.getChatHistory(tenantId, pageSize, 1)
+                if (result.isSuccess) {
+                    val historyList = result.getOrNull() ?: emptyList()
+                    _chatHistoryList.value = historyList
+                    _hasMoreChatHistory.value = historyList.size >= pageSize
+                    updateGroupedChatHistory(historyList)
+                } else {
+                    // 可以显示错误提示
+                    Log.e("ChatViewModel", "加载会话记录失败: ${result.exceptionOrNull()?.message}")
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "加载会话记录异常", e)
+            } finally {
+                _isChatHistoryLoading.value = false
+            }
+        }
+    }
+
+    // 加载更多会话记录（带tenantId）
+    fun loadMoreChatHistory() {
+        viewModelScope.launch {
+            if (_isChatHistoryLoading.value || !_hasMoreChatHistory.value) return@launch
+
+            _isChatHistoryLoading.value = true
+            val nextPage = _currentChatHistoryPage.value + 1
+
+            try {
+                // 获取当前租户ID
+                val tenantId = _currentTenant.value?.id ?: ""
+
+                val result = chatRepository.getChatHistory(tenantId, pageSize, nextPage)
+                if (result.isSuccess) {
+                    val newHistoryList = result.getOrNull() ?: emptyList()
+                    val currentList = _chatHistoryList.value.toMutableList()
+                    currentList.addAll(newHistoryList)
+
+                    _chatHistoryList.value = currentList
+                    _currentChatHistoryPage.value = nextPage
+                    _hasMoreChatHistory.value = newHistoryList.size >= pageSize
+                    updateGroupedChatHistory(currentList)
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "加载更多会话记录异常", e)
+            } finally {
+                _isChatHistoryLoading.value = false
+            }
+        }
+    }
+
+    // 更新分组数据
+    private fun updateGroupedChatHistory(historyList: List<ChatHistory>) {
+        val grouped = mutableMapOf<String, MutableList<ChatHistory>>()
+
+        historyList.forEach { history ->
+            // 使用formatRelativeTime获取相对时间分组
+            val timeGroup = formatRelativeTime(history.createTime)
+
+            if (!grouped.containsKey(timeGroup)) {
+                grouped[timeGroup] = mutableListOf()
+            }
+            grouped[timeGroup]?.add(history)
+        }
+
+        _groupedChatHistory.value = grouped
+    }
+
+    // 加载会话记录到聊天
+    fun loadChatHistoryToChat(history: ChatHistory) {
+        viewModelScope.launch {
+            // 清空当前聊天
+            _chatList.value = emptyList()
+
+            // 更新chatId
+            _chatId.value = history.chatId
+            dataStoreManager.saveChatId(history.chatId)
+
+            // 创建用户消息
+            val userMessage = ChatMessage(
+                position = PositionEnum.RIGHT,
+                responseContent = history.prompt
+            )
+
+            // 创建AI回复消息
+            val aiMessage = ChatMessage(
+                position = PositionEnum.LEFT,
+                thinkContent = history.thinkContent,
+                responseContent = history.responseContent ?: history.content
+            )
+
+            // 添加到聊天列表
+            _chatList.value = listOf(userMessage, aiMessage)
+
+            // 更新当前租户和模型（如果有的话）
+            // 这里可以根据需要从history中提取相关信息
+        }
+    }
+
+    // 重置会话记录状态
+    private fun resetChatHistory() {
+        _chatHistoryList.value = emptyList()
+        _groupedChatHistory.value = emptyMap()
+        _currentChatHistoryPage.value = 1
+        _hasMoreChatHistory.value = true
+    }
+
+    fun selectTenant(tenant: Tenant) {
+        viewModelScope.launch {
+            _currentTenant.value = tenant
+            dataStoreManager.saveTenantId(tenant.id)
+            dataStoreManager.saveCurrentTenant(tenant)
+            _showTenantDialog.value = false
+
+            // 切换租户后，清空当前聊天
+            startNewChat()
+
+            // 重置会话记录（因为租户变了，之前的会话记录不再适用）
+            resetChatHistory()
+        }
+    }
+
+    // 在toggleChatHistoryDialog中添加租户检查
+    fun toggleChatHistoryDialog() {
+        if (_showChatHistoryDialog.value) {
+            _showChatHistoryDialog.value = false
+            resetChatHistory()
+        } else {
+            // 检查是否有当前租户
+            if (_currentTenant.value == null) {
+                // 可以显示提示信息
+                Log.w("ChatViewModel", "没有选择租户，无法加载会话记录")
+                return
+            }
+            _showChatHistoryDialog.value = true
+            loadChatHistory()
         }
     }
 
