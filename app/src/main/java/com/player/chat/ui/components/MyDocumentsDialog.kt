@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,6 +22,7 @@ import com.player.chat.model.Document
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.ChatViewModel
 import com.player.chat.R
+import com.player.chat.ui.theme.Color
 import com.player.chat.utils.CommonUtils.formatRelativeTime
 
 @Composable
@@ -138,7 +138,7 @@ fun MyDocumentsDialog(
                     .height(Dimens.btnHeight),
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = com.player.chat.ui.theme.Color.PrimaryColor
+                    containerColor = Color.PrimaryColor
                 )
             ) {
                 Text("关闭")

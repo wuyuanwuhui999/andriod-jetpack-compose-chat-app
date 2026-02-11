@@ -43,6 +43,8 @@ import com.player.chat.viewmodel.ChatViewModel
 import com.player.chat.viewmodel.MainViewModel
 import com.player.chat.ui.components.MyDocumentsDialog
 import com.player.chat.navigation.Screens
+import com.player.chat.ui.components.CustomBottomOption
+import com.player.chat.ui.components.OptionItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -369,89 +371,56 @@ fun ChatPage(
 
     // 租户选择对话框
     if (showTenantDialog) {
-        Dialog(onDismissRequest = { chatViewModel.toggleTenantDialog() }) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(Dimens.moduleBorderRadius)
-            ) {
-                Column(
-                    modifier = Modifier.padding(Dimens.pagePadding)
-                ) {
-                    Text(
-                        text = "选择租户",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = Dimens.pagePadding)
-                    )
-
-                    LazyColumn {
-                        items(tenantList.size) { index ->
-                            val tenant = tenantList[index]
-                            ListItem(
-                                headlineContent = {
-                                    Text(
-                                        text = tenant.name, // 添加空值检查
-                                        color = if (tenant.id == currentTenant?.id)
-                                            Color.PrimaryColor
-                                        else
-                                            Color.Black
-                                    )
-                                },
-                                modifier = Modifier.clickable {
-                                    chatViewModel.selectTenant(tenant)
-                                }
-                            )
-                            if (index < tenantList.size - 1) {
-                                Divider()
-                            }
-                        }
-                    }
-                }
+        // 将租户列表转换为 OptionItem 列表
+        val tenantOptions = remember(tenantList) {
+            tenantList.map { tenant ->
+                OptionItem(
+                    name = tenant.name,
+                    value = tenant.id
+                )
             }
         }
+
+        CustomBottomOption(
+            options = tenantOptions,
+            selectedValue = currentTenant?.id ?: "",
+            onOptionSelected = { value, index ->
+                // 根据选中的 value（租户ID）找到对应的租户对象
+                val selectedTenant = tenantList.find { it.id == value }
+                selectedTenant?.let {
+                    chatViewModel.selectTenant(it)
+                }
+            },
+            onDismiss = { chatViewModel.toggleTenantDialog() }
+        )
     }
 
     // 模型选择对话框
-    if (showModelDialog && modelList.isNotEmpty()) {
-        Dialog(onDismissRequest = { chatViewModel.toggleModelDialog() }) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "选择模型",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    LazyColumn {
-                        items(modelList.size) { index ->
-                            val model = modelList[index]
-                            ListItem(
-                                headlineContent = {
-                                    Text(
-                                        model.modelName,
-                                        color = if (model.id == selectedModel?.id)
-                                            Color.PrimaryColor
-                                        else
-                                            Color.Black
-                                    )
-                                },
-                                modifier = Modifier.clickable {
-                                    chatViewModel.selectModel(model)
-                                }
-                            )
-                            if (index < modelList.size - 1) {
-                                Divider()
-                            }
-                        }
-                    }
-                }
+    if (showModelDialog) {
+        // 将模型列表转换为 OptionItem 列表
+        val modelOptions = remember(modelList) {
+            modelList.map { model ->
+                OptionItem(
+                    name = model.modelName,
+                    value = model.id
+                )
             }
         }
+
+        CustomBottomOption(
+            options = modelOptions,
+            selectedValue = selectedModel?.id ?: "",
+            onOptionSelected = { value, index ->
+                // 根据选中的 value（模型ID）找到对应的模型对象
+                val selectedModel = modelList.find { it.id == value }
+                selectedModel?.let {
+                    chatViewModel.selectModel(it)
+                }
+            },
+            onDismiss = { chatViewModel.toggleModelDialog() }
+        )
     }
+
 
     // 菜单对话框
     if (showMenuDialog) {

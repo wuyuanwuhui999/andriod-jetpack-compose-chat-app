@@ -13,16 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.player.chat.R
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
+import com.player.chat.ui.components.CustomBottomOption
+import com.player.chat.ui.components.OptionItem
 import com.player.chat.ui.theme.Dimens
-import com.player.chat.ui.theme.Color as AppColor
 import com.player.chat.viewmodel.MainViewModel
 import com.player.chat.viewmodel.UserViewModel
 import com.player.chat.ui.theme.Color
@@ -45,7 +43,7 @@ fun UserPage(
                 title = {
                     Text(
                         text = currentTenant?.name ?: "私人空间",
-                        color = AppColor.Black
+                        color = Color.Black
                     )
                 },
                 navigationIcon = {
@@ -55,14 +53,14 @@ fun UserPage(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "返回",
-                            tint = AppColor.Black
+                            tint = Color.Black
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AppColor.White,
-                    titleContentColor = AppColor.Black,
-                    navigationIconContentColor = AppColor.Black
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    navigationIconContentColor = Color.Black
                 )
             )
         }
@@ -71,7 +69,7 @@ fun UserPage(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(AppColor.pageBackgroundColor),
+                .background(Color.pageBackgroundColor),
             contentPadding = PaddingValues(Dimens.pagePadding),
             verticalArrangement = Arrangement.spacedBy(Dimens.pagePadding)
         ) {
@@ -98,7 +96,7 @@ fun UserPage(
                         ) {
                             Text(
                                 text = "头像",
-                                color = AppColor.Black,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Medium
                             )
                             Avatar(
@@ -107,7 +105,7 @@ fun UserPage(
                             )
                         }
 
-                        Divider(color = AppColor.Gray.copy(alpha = 0.2f))
+                        Divider(color = Color.Gray.copy(alpha = 0.2f))
 
                         // 昵称
                         Row(
@@ -117,16 +115,16 @@ fun UserPage(
                         ) {
                             Text(
                                 text = "昵称",
-                                color = AppColor.Black,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 text = currentUser?.username ?: "",
-                                color = AppColor.Gray
+                                color = Color.Gray
                             )
                         }
 
-                        Divider(color = AppColor.Gray.copy(alpha = 0.2f))
+                        Divider(color = Color.Gray.copy(alpha = 0.2f))
 
                         // 邮箱
                         Row(
@@ -136,16 +134,16 @@ fun UserPage(
                         ) {
                             Text(
                                 text = "邮箱",
-                                color = AppColor.Black,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 text = currentUser?.email ?: "",
-                                color = AppColor.Gray
+                                color = Color.Gray
                             )
                         }
 
-                        Divider(color = AppColor.Gray.copy(alpha = 0.2f))
+                        Divider(color = Color.Gray.copy(alpha = 0.2f))
 
                         // 性别
                         Row(
@@ -155,7 +153,7 @@ fun UserPage(
                         ) {
                             Text(
                                 text = "性别",
-                                color = AppColor.Black,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
@@ -164,11 +162,11 @@ fun UserPage(
                                     1 -> "女"
                                     else -> "未知"
                                 },
-                                color = AppColor.Gray
+                                color = Color.Gray
                             )
                         }
 
-                        Divider(color = AppColor.Gray.copy(alpha = 0.2f))
+                        Divider(color = Color.Gray.copy(alpha = 0.2f))
 
                         // 地区
                         Row(
@@ -178,16 +176,16 @@ fun UserPage(
                         ) {
                             Text(
                                 text = "地区",
-                                color = AppColor.Black,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 text = currentUser?.region ?: "未设置",
-                                color = AppColor.Gray
+                                color = Color.Gray
                             )
                         }
 
-                        Divider(color = AppColor.Gray.copy(alpha = 0.2f))
+                        Divider(color = Color.Gray.copy(alpha = 0.2f))
 
                         // 个性签名
                         Row(
@@ -197,12 +195,12 @@ fun UserPage(
                         ) {
                             Text(
                                 text = "个性签名",
-                                color = AppColor.Black,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 text = currentUser?.sign ?: "无时无刻不想你",
-                                color = AppColor.Gray,
+                                color = Color.Gray,
                                 maxLines = 1
                             )
                         }
@@ -228,7 +226,7 @@ fun UserPage(
                             containerColor = Color.White,
                             contentColor = Color.Black
                         ),
-                        border = BorderStroke(Dimens.borderSize, AppColor.disableTextColor)
+                        border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
 
                     ) {
                         Text(
@@ -252,7 +250,7 @@ fun UserPage(
                             containerColor = Color.White,
                             contentColor = Color.Black
                         ),
-                        border = BorderStroke(Dimens.borderSize, AppColor.disableTextColor)
+                        border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
 
                     ) {
                         Text(
@@ -276,7 +274,7 @@ fun UserPage(
                             containerColor = Color.White,
                             contentColor = Color.Black
                         ),
-                        border = BorderStroke(Dimens.borderSize, AppColor.disableTextColor)
+                        border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
 
                     ) {
                         Text(
@@ -308,39 +306,29 @@ fun UserPage(
         }
     }
 
-    // 租户选择对话框
+    // 租户选择对话框 - 使用 CustomBottomOption
     if (showTenantDialog) {
-        AlertDialog(
-            onDismissRequest = { userViewModel.hideTenantDialog() },
-            title = { Text("选择租户") },
-            text = {
-                Column {
-                    tenantList.forEach { tenant ->
-                        ListItem(
-                            headlineContent = {
-                                Text(
-                                    text = tenant.name,
-                                    color = if (tenant.id == currentTenant?.id)
-                                        AppColor.PrimaryColor
-                                    else
-                                        AppColor.Black
-                                )
-                            },
-                            modifier = Modifier.clickable {
-                                userViewModel.selectTenant(tenant)
-                            }
-                        )
-                        Divider()
-                    }
+        // 将租户列表转换为 OptionItem 列表
+        val tenantOptions = remember(tenantList) {
+            tenantList.map { tenant ->
+                OptionItem(
+                    name = tenant.name,
+                    value = tenant.id
+                )
+            }
+        }
+
+        CustomBottomOption(
+            options = tenantOptions,
+            selectedValue = currentTenant?.id ?: "", // 当前选中的租户ID
+            onOptionSelected = { value, index ->
+                // 根据选中的 value（租户ID）找到对应的租户对象
+                val selectedTenant = tenantList.find { it.id == value }
+                selectedTenant?.let {
+                    userViewModel.selectTenant(it) // 调用 ViewModel 的方法切换租户
                 }
             },
-            confirmButton = {
-                TextButton(
-                    onClick = { userViewModel.hideTenantDialog() }
-                ) {
-                    Text("取消")
-                }
-            }
+            onDismiss = { userViewModel.hideTenantDialog() }
         )
     }
 
