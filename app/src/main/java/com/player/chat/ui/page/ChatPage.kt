@@ -33,17 +33,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.player.chat.R
 import com.player.chat.model.PositionEnum
-import com.player.chat.model.TenantUser
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
 import com.player.chat.ui.components.ChatHistoryDialog
-import com.player.chat.ui.components.CustomBottomDialog
 import com.player.chat.ui.components.UploadDocumentDialog
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.ChatViewModel
 import com.player.chat.viewmodel.MainViewModel
 import com.player.chat.ui.components.MyDocumentsDialog
+import com.player.chat.navigation.Screens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +145,12 @@ fun ChatPage(
             },
             navigationIcon = {
                 Box(
-                    modifier = Modifier.padding(horizontal = Dimens.pagePadding)
+                    modifier = Modifier
+                        .padding(horizontal = Dimens.pagePadding)
+                        .clickable {
+                            navController.navigate(Screens.User.route)
+                        }
+
                 ) {
                     Avatar(
                         avatarUrl = user?.avatar,

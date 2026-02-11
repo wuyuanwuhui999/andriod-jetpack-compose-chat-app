@@ -84,10 +84,10 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    fun getCurrentTenant(): Flow<TenantUser?> = context.dataStore.data
+    fun getCurrentTenant(): Flow<Tenant?> = context.dataStore.data
         .map { preferences ->
             val tenantJson = preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT)]
-            tenantJson?.let { gson.fromJson(it, TenantUser::class.java) }
+            tenantJson?.let { gson.fromJson(it, Tenant::class.java) }
         }
 
     // 聊天ID

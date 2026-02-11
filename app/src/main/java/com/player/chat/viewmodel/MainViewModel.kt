@@ -121,4 +121,12 @@ class MainViewModel @Inject constructor(
             _token.value = token
         }
     }
+
+    fun clearUserData() {
+        viewModelScope.launch {
+            dataStoreManager.clearAll()
+            _currentUser.value = null
+            _token.value = null
+        }
+    }
 }

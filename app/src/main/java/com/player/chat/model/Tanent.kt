@@ -46,18 +46,18 @@ data class Tenant(
     val status: TenantStatus,
 
     // 如果 API 返回的是 create_date，这里需要保持 @SerializedName 一致
-    @SerializedName("create_date")
+    @SerializedName("createDate")
     val createDate: Date? = null,
 
-    @SerializedName("update_date")
+    @SerializedName("updateDate")
     val updateDate: Date? = null,
 
     // 与 TenantUser 保持一致，但注意 API 实际返回的字段名
-    @SerializedName("created_by")
-    val createBy: String,
+    @SerializedName("createdBy")
+    val createdBy: String,
 
-    @SerializedName("updated_by")
-    val updateBy: String? = null
+    @SerializedName("updatedBy")
+    val updatedBy: String? = null
 )
 
 object DefaultTenant {
@@ -73,7 +73,7 @@ object DefaultTenant {
         status = TenantStatus.ENABLED,
         createDate = null,
         updateDate = null,
-        createBy = "",
-        updateBy = null
+        createdBy = "",
+        updatedBy = null
     )
 }
