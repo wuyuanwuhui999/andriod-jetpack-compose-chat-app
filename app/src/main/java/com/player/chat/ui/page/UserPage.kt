@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
+import com.player.chat.ui.components.CustomAlertDialog
 import com.player.chat.ui.components.CustomBottomOption
 import com.player.chat.ui.components.OptionItem
 import com.player.chat.ui.theme.Dimens
@@ -334,29 +335,21 @@ fun UserPage(
 
     // 退出登录确认对话框
     if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { userViewModel.hideLogoutDialog() },
-            title = { Text("退出登录") },
-            text = { Text("确定要退出登录吗？") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        userViewModel.logout()
-                        // 退出登录后清空返回栈并跳转到登录页
-                        navController.navigate("login") {
-                            popUpTo(0) { inclusive = true } // 清空所有页面
-                        }
-                        userViewModel.hideLogoutDialog()
-                    }
-                ) {
-                    Text("确定", color = Color.Red)
+        CustomAlertDialog(
+            title="退出登录",
+            onConfirm = {
+                userViewModel.logout()
+                // 退出登录后清空返回栈并跳转到登录页
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true } // 清空所有页面
                 }
+                userViewModel.hideLogoutDialog()
             },
-            dismissButton = {
-                TextButton(onClick = { userViewModel.hideLogoutDialog() }) {
-                    Text("取消")
-                }
+            onDismiss = {
+                userViewModel.hideLogoutDialog()
             }
-        )
+        ){
+            Text("确定要退出登录吗？")
+        }
     }
 }
