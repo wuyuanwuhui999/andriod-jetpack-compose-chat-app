@@ -65,4 +65,11 @@ interface ApiService {
         @Query("pageNum") pageNum: Int
     ): Response<ApiResponse<List<ChatHistory>>>
 
+    @GET("/service/tenant/getTenantUserList")
+    suspend fun getTenantUserList(
+        @Query("tenantId") tenantId: String,
+        @Query("pageNum") pageNum: Int,
+        @Query("pageSize") pageSize: Int
+    ): Response<ApiResponse<List<TenantUser>>>
+
 }

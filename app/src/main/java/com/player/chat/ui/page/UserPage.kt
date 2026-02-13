@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.player.chat.navigation.Screens
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
 import com.player.chat.ui.components.CustomAlertDialog
@@ -241,7 +242,7 @@ fun UserPage(
                     // 租户管理
                     OutlinedButton(
                         onClick = {
-                            // TODO: 租户管理
+                            navController.navigate(Screens.TenantManage.route)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -280,6 +281,7 @@ fun UserPage(
                     ) {
                         Text(
                             text = "修改密码",
+
                             fontSize = Dimens.fontSizeNormal,
                         )
                     }

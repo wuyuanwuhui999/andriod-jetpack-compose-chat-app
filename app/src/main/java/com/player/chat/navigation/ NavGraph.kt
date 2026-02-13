@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.player.chat.ui.page.ChatPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
+import com.player.chat.ui.page.TenantManagePage
 import com.player.chat.ui.page.UserPage
 
 @Composable
@@ -28,6 +29,8 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Screens.User.route) {
             UserPage(navController = navController)
         }
-
+        composable(Screens.TenantManage.route) {
+            TenantManagePage(navController = navController)
+        }
     }
 }

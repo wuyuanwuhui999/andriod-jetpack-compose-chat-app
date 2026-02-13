@@ -11,7 +11,6 @@ import com.player.chat.network.WebSocketMessageHandler
 import com.player.chat.chat.repository.UserRepository
 import com.player.chat.repository.ChatRepository
 import com.player.chat.local.DataStoreManager
-import com.player.chat.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +23,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
-import androidx.compose.ui.platform.LocalContext
+import com.player.chat.repository.TenantRepository
 import com.player.chat.utils.CommonUtils.formatRelativeTime
 
 @HiltViewModel
@@ -32,7 +31,7 @@ class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val userRepository: UserRepository,
     private val dataStoreManager: DataStoreManager,
-    private val apiService: ApiService  // 需要确保 ApiService 已注入
+    private val tenantRepository: TenantRepository  // 添加 TenantRepository
 ) : ViewModel() {
     private val _tenantList = MutableStateFlow<List<Tenant>>(emptyList())
     val tenantList: StateFlow<List<Tenant>> = _tenantList.asStateFlow()
@@ -145,27 +144,25 @@ class ChatViewModel @Inject constructor(
     private fun loadTenantInfo() {
         viewModelScope.launch {
             _isLoading.value = true
-            _isTenantListLoaded.value = false  // 重置加载状态
+            _isTenantListLoaded.value = false
 
             // 1. 尝试从缓存获取租户ID
             val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 
-            // 2. 获取租户列表
-            val result = userRepository.getUserTenantList()
+            // 2. 使用 TenantRepository 获取租户列表
+            val result = tenantRepository.getUserTenantList()
 
             if (result.isSuccess) {
                 val tenantList = result.getOrNull() ?: emptyList()
-                _tenantList.value = tenantList // 保存租户列表
-                _isTenantListLoaded.value = true  // 标记为已加载
+                _tenantList.value = tenantList
+                _isTenantListLoaded.value = true
 
                 // 3. 选择租户
                 val selectedTenant = if (tenantList.isNotEmpty()) {
-                    // 如果有缓存的租户ID，尝试找到对应的租户
                     cachedTenantId?.let { cachedId ->
                         tenantList.find { it.id == cachedId }
-                    } ?: tenantList.first() // 否则选择第一个
+                    } ?: tenantList.first()
                 } else {
-                    // 如果没有租户权限，使用默认租户
                     DefaultTenant.PERSONAL_SPACE
                 }
 
@@ -183,7 +180,7 @@ class ChatViewModel @Inject constructor(
                 _currentTenant.value = DefaultTenant.PERSONAL_SPACE
                 dataStoreManager.saveCurrentTenant(DefaultTenant.PERSONAL_SPACE)
                 _tenantList.value = emptyList()
-                _isTenantListLoaded.value = true  // 即使失败也标记为已加载
+                _isTenantListLoaded.value = true
             }
 
             _isLoading.value = false
@@ -451,7 +448,7 @@ class ChatViewModel @Inject constructor(
             try {
                 val tenantId = _currentTenant.value?.id ?: ""
                 if (tenantId.isNotBlank()) {
-                    val result = chatRepository.getDirectoryList(tenantId)  // 改为使用 ChatRepository
+                    val result = chatRepository.getDirectoryList(tenantId)
                     if (result.isSuccess) {
                         _directoryList.value = result.getOrNull() ?: emptyList()
                     } else {
@@ -471,7 +468,7 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             val tenantId = _currentTenant.value?.id ?: ""
             if (tenantId.isNotBlank() && name.isNotBlank()) {
-                val result = chatRepository.createDirectory(name, tenantId)  // 改为使用 ChatRepository
+                val result = chatRepository.createDirectory(name, tenantId)
                 if (result.isSuccess) {
                     val newDirectory = result.getOrNull()
                     newDirectory?.let {
@@ -573,18 +570,7 @@ class ChatViewModel @Inject constructor(
         return this.toRequestBody("text/plain".toMediaTypeOrNull())
     }
 
-    suspend fun getDocListByDirId(tenantId: String, directoryId: String): Result<List<Document>> {
-        return try {
-            val response = apiService.getDocListByDirId(tenantId, directoryId)
-            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
-                Result.success(response.body()?.data ?: emptyList())
-            } else {
-                Result.failure(Exception(response.body()?.message ?: "获取文档列表失败"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    // 注意：删除了有问题的 getDocListByDirId 方法，因为 ChatRepository 中已经有这个方法了
 
     // 添加切换我的文档对话框方法
     fun toggleMyDocumentsDialog() {
@@ -615,6 +601,7 @@ class ChatViewModel @Inject constructor(
                 try {
                     val tenantId = _currentTenant.value?.id ?: ""
                     if (tenantId.isNotBlank()) {
+                        // 使用 chatRepository.getDocListByDirId 而不是已删除的方法
                         val result = chatRepository.getDocListByDirId(tenantId, directoryId)
                         if (result.isSuccess) {
                             val documents: List<Document> = (result.getOrNull() ?: emptyList()) as List<Document>

@@ -8,6 +8,7 @@ import com.player.chat.local.DataStoreManager
 import com.player.chat.network.ApiService
 import com.player.chat.network.NetworkInterceptor
 import com.player.chat.repository.ChatRepository
+import com.player.chat.repository.TenantRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 import com.player.chat.config.Config
+import com.player.chat.viewmodel.ChatViewModel
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -82,9 +84,34 @@ object AppModule {
     fun provideChatRepository(apiService: ApiService): ChatRepository {
         return ChatRepository(apiService)
     }
+
+    @Provides
+    @Singleton
+    fun provideTenantRepository(
+        apiService: ApiService
+    ): TenantRepository {
+        return TenantRepository(apiService)
+    }
+
+    // 将 provideChatViewModel 方法移到这里，而不是放在 DetailedLoggingInterceptor 内部
+    @Provides
+    @Singleton
+    fun provideChatViewModel(
+        chatRepository: ChatRepository,
+        userRepository: UserRepository,
+        dataStoreManager: DataStoreManager,
+        tenantRepository: TenantRepository
+    ): ChatViewModel {
+        return ChatViewModel(
+            chatRepository,
+            userRepository,
+            dataStoreManager,
+            tenantRepository
+        )
+    }
 }
 
-// 详细的日志拦截器
+// 将这个类定义在 AppModule 对象外部
 class DetailedLoggingInterceptor : Interceptor {
     companion object {
         private const val TAG = "NetworkLog"
