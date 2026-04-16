@@ -34,7 +34,7 @@ fun EmailLogin(
 
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Dimens.pagePadding)
+        verticalArrangement = Arrangement.spacedBy(Dimens.middleGap)
     ) {
         // 邮箱输入框
         OutlinedTextField(

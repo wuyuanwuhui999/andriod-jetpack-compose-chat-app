@@ -47,7 +47,7 @@ fun UploadDocumentDialog(
                 .fillMaxSize()
         ) {
             Column(
-                modifier = Modifier.padding(Dimens.pagePadding).weight(1f)
+                modifier = Modifier.padding(Dimens.middleGap).weight(1f)
             ) {
                 // 内容区 - 白色背景+圆角，高度自适应，溢出滚动
                 Column(
@@ -55,7 +55,7 @@ fun UploadDocumentDialog(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
                         .background(Color.White)
-                        .padding(Dimens.pagePadding) // 内边距
+                        .padding(Dimens.middleGap) // 内边距
                         .verticalScroll(rememberScrollState())
                 ) {
                     if (isLoading) {
@@ -100,7 +100,7 @@ fun UploadDocumentDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(Dimens.pagePadding), // 只设置内边距
+                    .padding(Dimens.middleGap), // 只设置内边距
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // 取消按钮

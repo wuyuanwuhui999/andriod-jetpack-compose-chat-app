@@ -75,7 +75,7 @@ fun TenantManagePage(
                         Text(
                             text = "租户管理 - ${currentTenant?.name ?: ""}",
                             color = Color.Black,
-                            fontSize = Dimens.fontSizeNormal,
+                            fontSize = Dimens.normalFontSize,
                             fontWeight = FontWeight.Medium
                         )
                     }
@@ -136,7 +136,7 @@ fun TenantManagePage(
                             color = Color.PrimaryColor,
                             strokeWidth = 3.dp
                         )
-                        Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                        Spacer(modifier = Modifier.height(Dimens.middleGap))
                         Text(
                             text = "加载中...",
                             color = Color.Gray
@@ -158,7 +158,7 @@ fun TenantManagePage(
                             modifier = Modifier.size(60.dp),
                             tint = Color.Gray.copy(alpha = 0.5f)
                         )
-                        Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                        Spacer(modifier = Modifier.height(Dimens.middleGap))
                         Text(
                             text = "暂无租户用户",
                             color = Color.Gray
@@ -184,7 +184,7 @@ fun TenantManagePage(
                             Divider(
                                 color = Color.Gray.copy(alpha = 0.2f),
                                 thickness = 0.5.dp,
-                                modifier = Modifier.padding(horizontal = Dimens.pagePadding)
+                                modifier = Modifier.padding(horizontal = Dimens.middleGap)
                             )
                         }
                     }
@@ -224,7 +224,7 @@ fun TenantManagePage(
                     Text(
                         text = "没有更多数据了",
                         color = Color.White,
-                        fontSize = Dimens.fontSizeNormal
+                        fontSize = Dimens.normalFontSize
                     )
                 }
             }
@@ -247,7 +247,7 @@ fun TenantUserItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
-            .padding(horizontal = Dimens.pagePadding, vertical = 12.dp),
+            .padding(horizontal = Dimens.middleGap, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 圆形用户头像
@@ -282,7 +282,7 @@ fun TenantUserItem(
             }
         }
 
-        Spacer(modifier = Modifier.width(Dimens.pagePadding))
+        Spacer(modifier = Modifier.width(Dimens.middleGap))
 
         // 用户信息
         Column(
@@ -293,7 +293,7 @@ fun TenantUserItem(
             Text(
                 text = tenantUser.username.ifEmpty { "未设置昵称" },
                 color = Color.Black,
-                fontSize = Dimens.fontSizeNormal,
+                fontSize = Dimens.normalFontSize,
                 fontWeight = FontWeight.Medium
             )
 
@@ -303,7 +303,7 @@ fun TenantUserItem(
             Text(
                 text = "工号: ${tenantUser.id.takeLast(8)}", // 取ID后8位作为工号展示
                 color = Color.Gray,
-                fontSize = Dimens.fontSizeNormal
+                fontSize = Dimens.normalFontSize
             )
         }
 
@@ -329,7 +329,7 @@ fun TenantUserItem(
                     2 -> Color.SecondaryColor
                     else -> Color.Gray
                 },
-                fontSize = Dimens.fontSizeNormal,
+                fontSize = Dimens.normalFontSize,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
         }

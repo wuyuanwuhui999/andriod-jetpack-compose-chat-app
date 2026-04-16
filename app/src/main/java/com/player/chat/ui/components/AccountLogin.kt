@@ -34,7 +34,7 @@ fun AccountLogin(
 
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Dimens.pagePadding)
+        verticalArrangement = Arrangement.spacedBy(Dimens.middleGap)
     ) {
         // 账号输入框
         OutlinedTextField(

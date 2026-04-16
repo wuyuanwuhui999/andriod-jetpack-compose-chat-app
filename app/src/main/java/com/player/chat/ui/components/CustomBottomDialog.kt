@@ -47,7 +47,7 @@ fun CustomBottomDialog(
                     .background(Color.White),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.width(Dimens.pagePadding))
+                Spacer(modifier = Modifier.width(Dimens.middleGap))
                 // 左侧图标（可选 + 可点击）
                 if (leftIconRes != null) {
                     IconButton(
@@ -84,7 +84,7 @@ fun CustomBottomDialog(
                         tint = Color.Gray
                     )
                 }
-                Spacer(modifier = Modifier.width(Dimens.pagePadding))
+                Spacer(modifier = Modifier.width(Dimens.middleGap))
             }
 
             // 分隔线

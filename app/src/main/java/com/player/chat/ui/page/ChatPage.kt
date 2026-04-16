@@ -148,7 +148,7 @@ fun ChatPage(
             navigationIcon = {
                 Box(
                     modifier = Modifier
-                        .padding(horizontal = Dimens.pagePadding)
+                        .padding(horizontal = Dimens.middleGap)
                         .clickable {
                             navController.navigate(Screens.User.route)
                         }
@@ -198,7 +198,7 @@ fun ChatPage(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(Dimens.pagePadding),
+                    contentPadding = PaddingValues(Dimens.middleGap),
                 ) {
                     items(chatList) { message ->
                         ChatBubble(
@@ -215,7 +215,7 @@ fun ChatPage(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = Dimens.pagePadding, vertical = Dimens.pagePadding)
+                .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap)
                 .background(Color.pageBackgroundColor),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -263,7 +263,7 @@ fun ChatPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(horizontal = Dimens.pagePadding, vertical = Dimens.pagePadding)
+                .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -291,7 +291,7 @@ fun ChatPage(
                     modifier = Modifier
                         .weight(1f)
                         .background(Color.pageBackgroundColor, RoundedCornerShape(Dimens.bigBorderRadius))
-                        .padding(horizontal = Dimens.pagePadding, vertical = Dimens.pagePadding)
+                        .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap)
                         .focusRequester(focusRequester),
                     textStyle = TextStyle.Default.copy(color = Color.Black),
                     cursorBrush = SolidColor(Color.PrimaryColor),
@@ -524,7 +524,7 @@ fun ChatBubble(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = Dimens.pagePadding),
+                    .padding(vertical = Dimens.middleGap),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.Start
             ) {
@@ -551,7 +551,7 @@ fun ChatBubble(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(Dimens.pagePadding))
+                Spacer(modifier = Modifier.width(Dimens.middleGap))
 
                 Column(
                     modifier = Modifier.weight(1f)
@@ -570,17 +570,17 @@ fun ChatBubble(
                                         color = Color.Gray.copy(alpha = 0.2f),
                                         shape = RoundedCornerShape(Dimens.btnBorderRadius)
                                     )
-                                    .padding(Dimens.pagePadding),
+                                    .padding(Dimens.middleGap),
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 Text(
                                     text = "思考：${message.thinkContent}",
                                     color = Color.Gray,
-                                    fontSize = Dimens.fontSizeNormal
+                                    fontSize = Dimens.normalFontSize
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                        Spacer(modifier = Modifier.height(Dimens.middleGap))
                     }
 
                     // AI回复内容 - 使用自适应宽度
@@ -595,7 +595,7 @@ fun ChatBubble(
                                     color = Color.White,
                                     shape = RoundedCornerShape(Dimens.btnBorderRadius)
                                 )
-                                .padding(Dimens.pagePadding),
+                                .padding(Dimens.middleGap),
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Text(
@@ -613,7 +613,7 @@ fun ChatBubble(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = Dimens.pagePadding),
+                    .padding(vertical = Dimens.middleGap),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.End
             ) {
@@ -633,7 +633,7 @@ fun ChatBubble(
                                     color = Color.White,
                                     shape = RoundedCornerShape(Dimens.btnBorderRadius)
                                 )
-                                .padding(Dimens.pagePadding),
+                                .padding(Dimens.middleGap),
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
@@ -642,7 +642,7 @@ fun ChatBubble(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.width(Dimens.pagePadding))
+                Spacer(modifier = Modifier.width(Dimens.middleGap))
                 // 用户头像容器 - 相对定位
                 Box(
                     modifier = Modifier.align(Alignment.Top)

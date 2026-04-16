@@ -60,7 +60,7 @@ fun ChatHistoryDialog(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Dimens.pagePadding)
+                .padding(Dimens.middleGap)
         ) {
             // 内容区
             Column(
@@ -69,7 +69,7 @@ fun ChatHistoryDialog(
                     .weight(1f)
                     .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
                     .background(Color.White)
-                    .padding(Dimens.pagePadding)
+                    .padding(Dimens.middleGap)
             ) {
                 if (isLoading && chatHistoryList.isEmpty()) {
                     Box(
@@ -91,7 +91,7 @@ fun ChatHistoryDialog(
                 } else {
                     LazyColumn(
                         state = lazyListState,
-                        verticalArrangement = Arrangement.spacedBy(Dimens.pagePadding)
+                        verticalArrangement = Arrangement.spacedBy(Dimens.middleGap)
                     ) {
                         // 分组显示会话记录
                         groupedHistory.forEach { (timeGroup, historyList) ->
@@ -110,7 +110,7 @@ fun ChatHistoryDialog(
                             itemsIndexed(historyList) { index,history ->
                                 Column(){
                                     // 显示提示词（最多2行）
-                                    Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                                    Spacer(modifier = Modifier.height(Dimens.middleGap))
                                     Text(
                                         text = history.prompt,
                                         color = Color.Black,
@@ -123,7 +123,7 @@ fun ChatHistoryDialog(
                                         }
                                     )
                                     if(index != historyList.size - 1){
-                                        Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                                        Spacer(modifier = Modifier.height(Dimens.middleGap))
                                         // 分隔线
                                         Divider(color = Color.Gray.copy(alpha = 0.2f))
                                     }
@@ -153,7 +153,7 @@ fun ChatHistoryDialog(
                                 ) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
-                                        strokeWidth = 2.dp
+                                        strokeWidth = Dimens.strokeWidth
                                     )
                                 }
                             } else if (!hasMoreData && chatHistoryList.isNotEmpty()) {
@@ -189,7 +189,7 @@ fun ChatHistoryItem(
             .clip(RoundedCornerShape(Dimens.btnBorderRadius))
             .background(Color.pageBackgroundColor)
             .clickable { onClick() }
-            .padding(Dimens.pagePadding)
+            .padding(Dimens.middleGap)
     ) {
         // 显示提示词（最多2行）
         Text(

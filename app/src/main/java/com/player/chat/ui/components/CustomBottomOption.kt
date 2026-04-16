@@ -41,8 +41,8 @@ fun CustomBottomOption(
                 .fillMaxWidth()
                 .clickable(enabled = false) {} // 阻止点击透传
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = Dimens.pagePadding)
-                .padding(bottom = Dimens.pagePadding)
+                .padding(horizontal = Dimens.middleGap)
+                .padding(bottom = Dimens.middleGap)
         ) {
             // 选项卡片
             Card(
@@ -68,7 +68,7 @@ fun CustomBottomOption(
                         ) {
                             Text(
                                 text = option.name,
-                                fontSize = Dimens.fontSizeNormal,
+                                fontSize = Dimens.normalFontSize,
                                 color = if (option.value == selectedValue) {
                                     Color.PrimaryColor
                                 } else {
@@ -90,7 +90,7 @@ fun CustomBottomOption(
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.pagePadding))
+            Spacer(modifier = Modifier.height(Dimens.middleGap))
 
             // 取消按钮
             Button(
@@ -106,7 +106,7 @@ fun CustomBottomOption(
             ) {
                 Text(
                     text = "取消",
-                    fontSize = Dimens.fontSizeNormal,
+                    fontSize = Dimens.normalFontSize,
                 )
             }
         }

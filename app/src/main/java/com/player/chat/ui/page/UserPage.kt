@@ -72,8 +72,8 @@ fun UserPage(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(Color.pageBackgroundColor),
-            contentPadding = PaddingValues(Dimens.pagePadding),
-            verticalArrangement = Arrangement.spacedBy(Dimens.pagePadding)
+            contentPadding = PaddingValues(Dimens.middleGap),
+            verticalArrangement = Arrangement.spacedBy(Dimens.middleGap)
         ) {
             // 用户信息卡片
             item {
@@ -87,8 +87,8 @@ fun UserPage(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(Dimens.pagePadding),
-                        verticalArrangement = Arrangement.spacedBy(Dimens.pagePadding)
+                            .padding(Dimens.middleGap),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.middleGap)
                     ) {
                         // 头像
                         Row(
@@ -233,11 +233,11 @@ fun UserPage(
                     ) {
                         Text(
                             text = "切换租户",
-                            fontSize = Dimens.fontSizeNormal,
+                            fontSize = Dimens.normalFontSize,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                    Spacer(modifier = Modifier.height(Dimens.middleGap))
 
                     // 租户管理
                     OutlinedButton(
@@ -257,11 +257,11 @@ fun UserPage(
                     ) {
                         Text(
                             text = "租户管理",
-                            fontSize = Dimens.fontSizeNormal,
+                            fontSize = Dimens.normalFontSize,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                    Spacer(modifier = Modifier.height(Dimens.middleGap))
 
                     // 修改密码按钮
                     OutlinedButton(
@@ -282,11 +282,11 @@ fun UserPage(
                         Text(
                             text = "修改密码",
 
-                            fontSize = Dimens.fontSizeNormal,
+                            fontSize = Dimens.normalFontSize,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(Dimens.pagePadding))
+                    Spacer(modifier = Modifier.height(Dimens.middleGap))
 
                     // 退出登录
                     Button(

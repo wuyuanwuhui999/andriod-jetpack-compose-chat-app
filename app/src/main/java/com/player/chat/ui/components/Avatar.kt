@@ -27,7 +27,7 @@ fun Avatar(
 ) {
     val sizeDp: Dp = when (size) {
         AvatarSize.BIG -> Dimens.bigAvater
-        AvatarSize.MIDDLE -> Dimens.middleAvater
+        AvatarSize.MIDDLE -> Dimens.middleAvatar
         AvatarSize.SMALL -> Dimens.smallAvater
     }
 

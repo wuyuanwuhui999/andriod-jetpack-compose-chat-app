@@ -60,7 +60,7 @@ fun CustomAlertDialog(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(Dimens.pagePadding)
+                    .padding(Dimens.middleGap)
                     .wrapContentSize(),
                 contentAlignment = Alignment.Center
             ) {
@@ -106,7 +106,7 @@ fun CustomAlertDialog(
                 ) {
                     Text(
                         text = "取消",
-                        fontSize = Dimens.fontSizeNormal,
+                        fontSize = Dimens.normalFontSize,
                     )
                 }
 
@@ -137,7 +137,7 @@ fun CustomAlertDialog(
                 ) {
                     Text(
                         text = "确定",
-                        fontSize = Dimens.fontSizeNormal,
+                        fontSize = Dimens.normalFontSize,
                     )
                 }
             }

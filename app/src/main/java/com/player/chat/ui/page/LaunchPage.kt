@@ -57,10 +57,10 @@ fun LaunchPage(
                     .size(Dimens.bigIconSize),
                 contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.height(Dimens.bigMargin))
+            Spacer(modifier = Modifier.height(Dimens.bigGap))
             Text(
                 text = "欢迎使用",
-                fontSize = Dimens.fontSizeBig,
+                fontSize = Dimens.bigFontSize,
             )
         }
     }

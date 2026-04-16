@@ -76,7 +76,7 @@ fun MyDocumentsDialog(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Dimens.pagePadding)
+                .padding(Dimens.middleGap)
         ) {
             // 内容区 - 白色背景+圆角，高度自适应
             Column(
@@ -85,7 +85,7 @@ fun MyDocumentsDialog(
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
                     .background(Color.White)
-                    .padding(Dimens.pagePadding)
+                    .padding(Dimens.middleGap)
             ) {
                 if (isLoading) {
                     Box(
@@ -95,7 +95,7 @@ fun MyDocumentsDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(Dimens.middleAvater),
+                            modifier = Modifier.size(Dimens.middleAvatar),
                             strokeWidth = Dimens.borderSize
                         )
                     }
@@ -128,7 +128,7 @@ fun MyDocumentsDialog(
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.pagePadding))
+            Spacer(modifier = Modifier.height(Dimens.middleGap))
 
             // 底部关闭按钮
             Button(
@@ -163,7 +163,7 @@ fun DocumentsItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onDirectoryClick() }
-                .padding(vertical = Dimens.pagePadding),
+                .padding(vertical = Dimens.middleGap),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -171,12 +171,12 @@ fun DocumentsItem(
             Text(
                 text = directory.directory,
                 color = com.player.chat.ui.theme.Color.Black,
-                fontSize = Dimens.fontSizeNormal,
+                fontSize = Dimens.normalFontSize,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f)
             )
 
-            Spacer(modifier = Modifier.width(Dimens.pagePadding))
+            Spacer(modifier = Modifier.width(Dimens.middleGap))
 
             // 箭头图标
             Icon(
@@ -195,7 +195,7 @@ fun DocumentsItem(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = Dimens.pagePadding)
+                    .padding(start = Dimens.middleGap)
             ) {
                 documents.forEach { document ->
                     SwipeToDeleteDocumentItem(
@@ -209,7 +209,7 @@ fun DocumentsItem(
                         text = "该目录下暂无文档",
                         color = com.player.chat.ui.theme.Color.Gray,
                         modifier = Modifier
-                            .padding(vertical = Dimens.pagePadding)
+                            .padding(vertical = Dimens.middleGap)
                             .fillMaxWidth()
                     )
                 }
@@ -282,7 +282,7 @@ fun SwipeToDeleteDocumentItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = Dimens.pagePadding),
+                    .padding(horizontal = Dimens.middleGap),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -290,14 +290,14 @@ fun SwipeToDeleteDocumentItem(
                 Text(
                     text = document.name,
                     color = Color.Black,
-                    fontSize = Dimens.fontSizeNormal,
+                    fontSize = Dimens.normalFontSize,
                     modifier = Modifier.weight(1f)
                 )
                 // 文档信息
                 Text(
                     text = formatRelativeTime(document.createTime),
                     color = Color.Gray,
-                    fontSize = Dimens.fontSizeNormal
+                    fontSize = Dimens.normalFontSize
                 )
             }
         }

@@ -59,17 +59,17 @@ fun LoginPage(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = Dimens.pagePadding),
+                .padding(horizontal = Dimens.middleGap),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Logo (占位)
-            Spacer(modifier = Modifier.height(Dimens.bigMargin))
+            Spacer(modifier = Modifier.height(Dimens.bigGap))
             Icon(
                 painter = painterResource(R.drawable.icon_ai),
                 contentDescription = "icon",
                 modifier = Modifier.width(Dimens.bigIconSize).height(Dimens.bigIconSize)
             )
-            Spacer(modifier = Modifier.height(Dimens.bigMargin))
+            Spacer(modifier = Modifier.height(Dimens.bigGap))
             // 选项卡
             TabRow(
                 selectedTabIndex = selectedTab,
@@ -105,7 +105,7 @@ fun LoginPage(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Dimens.pagePadding))
+            Spacer(modifier = Modifier.height(Dimens.middleGap))
 
             // 登录面板
             when (selectedTab) {
@@ -120,7 +120,7 @@ fun LoginPage(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Dimens.pagePadding))
+            Spacer(modifier = Modifier.height(Dimens.middleGap))
 
             // 登录按钮
             Button(
@@ -163,13 +163,13 @@ fun LoginPage(
                         Text(
                             text = "登录",
                             color = Color.White,
-                            fontSize = Dimens.fontSizeNormal,
+                            fontSize = Dimens.normalFontSize,
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.pagePadding))
+            Spacer(modifier = Modifier.height(Dimens.middleGap))
 
             // 注册按钮
             OutlinedButton(
@@ -188,11 +188,11 @@ fun LoginPage(
             ) {
                 Text(
                     text = "注册",
-                    fontSize = Dimens.fontSizeNormal,
+                    fontSize = Dimens.normalFontSize,
                 )
             }
 
-            Spacer(modifier = Modifier.height(Dimens.pagePadding))
+            Spacer(modifier = Modifier.height(Dimens.middleGap))
 
             // 找回密码按钮
             OutlinedButton(
@@ -210,7 +210,7 @@ fun LoginPage(
             ) {
                 Text(
                     text = "找回密码",
-                    fontSize = Dimens.fontSizeNormal,
+                    fontSize = Dimens.normalFontSize,
                 )
             }
         }
