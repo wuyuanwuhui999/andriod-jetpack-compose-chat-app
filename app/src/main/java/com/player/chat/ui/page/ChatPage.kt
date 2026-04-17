@@ -224,17 +224,17 @@ fun ChatPage(
                 onClick = { chatViewModel.toggleThinkMode() },
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = if (thinkMode) Color.PrimaryColor else Color.Gray,
+                    contentColor = if (thinkMode) Color.Primary else Color.Gray,
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(
                     width = Dimens.borderSize,
-                    color = if (thinkMode) Color.PrimaryColor else Color.Gray
+                    color = if (thinkMode) Color.Primary else Color.Gray
                 )
             ) {
                 Text(
                     text = "思考模式",
-                    color = if (thinkMode) Color.PrimaryColor else Color.Gray
+                    color = if (thinkMode) Color.Primary else Color.Gray
                 )
             }
 
@@ -294,7 +294,7 @@ fun ChatPage(
                         .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap)
                         .focusRequester(focusRequester),
                     textStyle = TextStyle.Default.copy(color = Color.Black),
-                    cursorBrush = SolidColor(Color.PrimaryColor),
+                    cursorBrush = SolidColor(Color.Primary),
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                     singleLine = true,
                     decorationBox = { innerTextField ->
@@ -328,13 +328,13 @@ fun ChatPage(
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
                             strokeWidth = 2.dp,
-                            color = if (inputText.isNotBlank()) Color.PrimaryColor else Color.Gray
+                            color = if (inputText.isNotBlank()) Color.Primary else Color.Gray
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.Send,
                             contentDescription = "发送",
-                            tint = if (inputText.isNotBlank()) Color.PrimaryColor else Color.Gray,
+                            tint = if (inputText.isNotBlank()) Color.Primary else Color.Gray,
                             modifier = Modifier.rotate(-30f)
                         )
                     }
@@ -537,7 +537,7 @@ fun ChatBubble(
                         painter = painterResource(R.drawable.icon_ai),
                         contentDescription = "AI",
                         modifier = Modifier
-                            .size(Dimens.smallAvater)
+                            .size(Dimens.smallAvatar)
                     )
 
                     // 三角形箭头 - 固定在头像中间

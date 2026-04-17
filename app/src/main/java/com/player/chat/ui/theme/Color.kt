@@ -32,7 +32,7 @@ object Color {
     @ColorInt const val TRANSPARENT = 0x00000000.toInt()
 
     // Compose Material3 颜色定义
-    val PrimaryColor = ComposeColor(PRIMARY_COLOR)
+    val Primary = ComposeColor(PRIMARY_COLOR)
     val SecondaryColor = ComposeColor(SECONDARY_COLOR)
     val BackgroundColor = ComposeColor(BACKGROUND_COLOR)
     val TextColor = ComposeColor(TEXT_COLOR)

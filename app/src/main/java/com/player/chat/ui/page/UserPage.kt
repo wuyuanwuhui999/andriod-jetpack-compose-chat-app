@@ -298,7 +298,7 @@ fun UserPage(
                             .height(Dimens.btnHeight),
                         shape = RoundedCornerShape(Dimens.bigBorderRadius),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor =Color.PrimaryColor,
+                            containerColor =Color.Primary,
                             contentColor = Color.White
                         )
                     ) {

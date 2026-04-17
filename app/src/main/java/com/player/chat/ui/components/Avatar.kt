@@ -26,9 +26,9 @@ fun Avatar(
     modifier: Modifier = Modifier
 ) {
     val sizeDp: Dp = when (size) {
-        AvatarSize.BIG -> Dimens.bigAvater
+        AvatarSize.BIG -> Dimens.smallAvatar
         AvatarSize.MIDDLE -> Dimens.middleAvatar
-        AvatarSize.SMALL -> Dimens.smallAvater
+        AvatarSize.SMALL -> Dimens.smallAvatar
     }
 
     val finalUrl = if (!avatarUrl.isNullOrBlank()) {

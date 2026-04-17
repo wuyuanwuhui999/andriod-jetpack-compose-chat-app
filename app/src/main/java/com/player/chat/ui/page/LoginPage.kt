@@ -74,12 +74,12 @@ fun LoginPage(
             TabRow(
                 selectedTabIndex = selectedTab,
                 modifier = Modifier.fillMaxWidth(),
-                contentColor = Color.PrimaryColor,
+                contentColor = Color.Primary,
                 indicator = @Composable { tabPositions ->
                     TabRowDefaults.Indicator(  // 修改这里：使用 SecondaryIndicator
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
                         height = Dimens.borderSize,
-                        color = Color.PrimaryColor
+                        color = Color.Primary
                     )
                 }
             ) {
@@ -89,7 +89,7 @@ fun LoginPage(
                     text = {
                         Text(
                             text = "账号密码登录",
-                            color = if (selectedTab == 0) Color.PrimaryColor else Color.Gray
+                            color = if (selectedTab == 0) Color.Primary else Color.Gray
                         )
                     }
                 )
@@ -99,7 +99,7 @@ fun LoginPage(
                     text = {
                         Text(
                             text = "邮箱验证码登录",
-                            color = if (selectedTab == 1) Color.PrimaryColor else Color.Gray
+                            color = if (selectedTab == 1) Color.Primary else Color.Gray
                         )
                     }
                 )
@@ -148,7 +148,7 @@ fun LoginPage(
                     .height(Dimens.btnHeight),
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.PrimaryColor
+                    containerColor = Color.Primary
                 )
             ) {
                 when (loginState.value) {

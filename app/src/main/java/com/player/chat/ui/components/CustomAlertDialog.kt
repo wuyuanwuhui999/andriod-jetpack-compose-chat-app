@@ -126,7 +126,7 @@ fun CustomAlertDialog(
                         .fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.PrimaryColor
+                        contentColor = Color.Primary
                     ),
                     shape = RoundedCornerShape( // 确定按钮右下角圆角
                         topStart = 0.dp,

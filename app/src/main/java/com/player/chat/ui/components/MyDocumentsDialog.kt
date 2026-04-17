@@ -138,7 +138,7 @@ fun MyDocumentsDialog(
                     .height(Dimens.btnHeight),
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.PrimaryColor
+                    containerColor = Color.Primary
                 )
             ) {
                 Text("关闭")

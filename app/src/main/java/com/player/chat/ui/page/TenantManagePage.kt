@@ -110,7 +110,7 @@ fun TenantManagePage(
                     containerColor = Color.White,
                     titleContentColor = Color.Black,
                     navigationIconContentColor = Color.Black,
-                    actionIconContentColor = Color.PrimaryColor
+                    actionIconContentColor = Color.Primary
                 )
             )
         }
@@ -133,7 +133,7 @@ fun TenantManagePage(
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(40.dp),
-                            color = Color.PrimaryColor,
+                            color = Color.Primary,
                             strokeWidth = 3.dp
                         )
                         Spacer(modifier = Modifier.height(Dimens.middleGap))
@@ -200,7 +200,7 @@ fun TenantManagePage(
                             ) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),
-                                    color = Color.PrimaryColor,
+                                    color = Color.Primary,
                                     strokeWidth = 2.dp
                                 )
                             }
@@ -313,7 +313,7 @@ fun TenantUserItem(
                 .wrapContentSize(),
             shape = RoundedCornerShape(4.dp),
             color = when (tenantUser.roleType) {
-                1 -> Color.PrimaryColor.copy(alpha = 0.1f) // 管理员
+                1 -> Color.Primary.copy(alpha = 0.1f) // 管理员
                 2 -> Color.SecondaryColor.copy(alpha = 0.1f) // 普通成员
                 else -> Color.Gray.copy(alpha = 0.1f)
             }
@@ -325,7 +325,7 @@ fun TenantUserItem(
                     else -> "访客"
                 },
                 color = when (tenantUser.roleType) {
-                    1 -> Color.PrimaryColor
+                    1 -> Color.Primary
                     2 -> Color.SecondaryColor
                     else -> Color.Gray
                 },

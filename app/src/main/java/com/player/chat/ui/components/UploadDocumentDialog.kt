@@ -132,7 +132,7 @@ fun UploadDocumentDialog(
                     shape = RoundedCornerShape(Dimens.bigBorderRadius),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedDirectory != null)
-                            Color.PrimaryColor
+                            Color.Primary
                         else
                             Color.disableTextColor,
                         contentColor = if (selectedDirectory != null)
@@ -188,7 +188,7 @@ fun DirectoryItem(
                     .size(20.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isSelected) Color.PrimaryColor else Color.Gray.copy(alpha = 0.5f)
+                        if (isSelected) Color.Primary else Color.Gray.copy(alpha = 0.5f)
                     ),
                 contentAlignment = Alignment.Center
             ) {

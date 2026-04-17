@@ -70,7 +70,7 @@ fun CustomBottomOption(
                                 text = option.name,
                                 fontSize = Dimens.normalFontSize,
                                 color = if (option.value == selectedValue) {
-                                    Color.PrimaryColor
+                                    Color.Primary
                                 } else {
                                     Color.Black
                                 },
