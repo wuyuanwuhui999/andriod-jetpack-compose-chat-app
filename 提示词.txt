@@ -13,7 +13,8 @@
   - 完整页面放在 `ui/page/`
   - 可复用组件放在 `ui/components/`
 - 所有数据模型放在 `models/` 目录下。
-- 所有工具方法放在 `utils/`
+- 所有工具方法放在 `utils/` 目录下
+- 请求后端的方法放在 `urepository/` 目录下
 - 所有viewmodel放到 `viewmodel/` 目录下
 - 所有 API 请求方法（包括 Retrofit 服务接口）统一放在 `ApiService.kt` 文件中。
 
@@ -32,7 +33,7 @@
   - 主标题：`theme/Dimens.bigFontSize`
 
 ## 3. 颜色与主题规范
-- 页面背景色：`theme/Colors.Primary`
+- 页面背景色：`theme/Colors.PageBackground`
 - 应用主色调：`Colors.Primary`
 - 按钮颜色：
   - 确定/激活按钮背景：`Colors.Primary`，文字白色 `Colors.White`

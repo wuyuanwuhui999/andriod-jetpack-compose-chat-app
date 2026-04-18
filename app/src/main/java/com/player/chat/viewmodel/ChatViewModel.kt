@@ -134,11 +134,24 @@ class ChatViewModel @Inject constructor(
 
     private var pageSize = 20
 
+    private val _currentPrompt = MutableStateFlow<Prompt?>(null)
+    val currentPrompt: StateFlow<Prompt?> = _currentPrompt.asStateFlow()
+
+    private val _showPromptDialog = MutableStateFlow(false)
+    val showPromptDialog: StateFlow<Boolean> = _showPromptDialog.asStateFlow()
+
+    private val _promptText = MutableStateFlow("")
+    val promptText: StateFlow<String> = _promptText.asStateFlow()
+
+    private val _isUpdatingPrompt = MutableStateFlow(false)
+    val isUpdatingPrompt: StateFlow<Boolean> = _isUpdatingPrompt.asStateFlow()
+
     init {
         loadTenantInfo()
         loadModelList()
         loadSettings()
         addGreetingMessage()
+        loadPrompt()
     }
 
     private fun loadTenantInfo() {
@@ -804,5 +817,99 @@ class ChatViewModel @Inject constructor(
         super.onCleared()
         webSocketManager?.closeWebSocket()
         webSocketManager = null
+    }
+
+    /**
+     * 加载当前租户的提示词
+     */
+    private fun loadPrompt() {
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id ?: return@launch
+            try {
+                val result = chatRepository.getPrompt(tenantId)
+                if (result.isSuccess) {
+                    val prompt = result.getOrNull()
+                    _currentPrompt.value = prompt
+                    _promptText.value = prompt?.prompt ?: ""
+                } else {
+                    // 如果没有提示词，使用默认提示词
+                    _promptText.value = "你是一个智能助手"
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "加载提示词失败", e)
+                _promptText.value = "你是一个智能助手"
+            }
+        }
+    }
+
+    /**
+     * 显示提示词修改对话框
+     */
+    fun showPromptDialog() {
+        // 刷新当前提示词内容
+        _promptText.value = _currentPrompt.value?.prompt ?: ""
+        _showPromptDialog.value = true
+    }
+
+    /**
+     * 隐藏提示词修改对话框
+     */
+    fun hidePromptDialog() {
+        _showPromptDialog.value = false
+    }
+
+    /**
+     * 更新提示词文本（用于输入框绑定）
+     */
+    fun updatePromptText(text: String) {
+        _promptText.value = text
+    }
+
+    /**
+     * 保存提示词到后端
+     * @return Result<Boolean> 是否保存成功
+     */
+    suspend fun savePrompt(): Result<Boolean> {
+        val currentPromptValue = _currentPrompt.value
+        val tenantId = _currentTenant.value?.id ?: return Result.failure(Exception("未选择租户"))
+        val userId = dataStoreManager.getUser().firstOrNull()?.id ?: return Result.failure(Exception("用户未登录"))
+        val promptContent = _promptText.value
+
+        if (promptContent.isBlank()) {
+            return Result.failure(Exception("提示词不能为空"))
+        }
+
+        _isUpdatingPrompt.value = true
+
+        return try {
+            val request = UpdatePromptRequest(
+                id = currentPromptValue?.id ?: "",
+                tenantId = tenantId,
+                userId = userId,
+                prompt = promptContent
+            )
+
+            val result = chatRepository.updatePrompt(request)
+
+            if (result.isSuccess) {
+                // 更新本地缓存的提示词
+                val updatedPrompt = Prompt(
+                    id = currentPromptValue?.id ?: "",
+                    tenantId = tenantId,
+                    userId = userId,
+                    prompt = promptContent,
+                    createTime = currentPromptValue?.createTime,
+                    updateTime = null
+                )
+                _currentPrompt.value = updatedPrompt
+                Result.success(true)
+            } else {
+                Result.failure(result.exceptionOrNull() ?: Exception("保存失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        } finally {
+            _isUpdatingPrompt.value = false
+        }
     }
 }

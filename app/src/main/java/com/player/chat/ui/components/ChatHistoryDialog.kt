@@ -187,7 +187,7 @@ fun ChatHistoryItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(Dimens.btnBorderRadius))
-            .background(Color.pageBackgroundColor)
+            .background(Color.PageBackground)
             .clickable { onClick() }
             .padding(Dimens.middleGap)
     ) {

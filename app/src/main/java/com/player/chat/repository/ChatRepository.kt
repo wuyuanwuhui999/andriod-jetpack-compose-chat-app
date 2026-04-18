@@ -4,6 +4,8 @@ import com.player.chat.model.ChatHistory
 import com.player.chat.model.ChatModel
 import com.player.chat.model.Directory
 import com.player.chat.model.Document
+import com.player.chat.model.Prompt
+import com.player.chat.model.UpdatePromptRequest
 import com.player.chat.network.ApiService
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -129,6 +131,43 @@ class ChatRepository @Inject constructor(
         }
     }
 
+    /**
+     * 获取提示词
+     * @param tenantId 租户ID
+     */
+    suspend fun getPrompt(tenantId: String): Result<Prompt> {
+        return try {
+            val response = apiService.getPrompt(tenantId)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val prompt = response.body()?.data
+                if (prompt != null) {
+                    Result.success(prompt)
+                } else {
+                    Result.failure(Exception("提示词不存在"))
+                }
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "获取提示词失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
+    /**
+     * 更新提示词
+     * @param request 更新提示词请求
+     */
+    suspend fun updatePrompt(request: UpdatePromptRequest): Result<Boolean> {
+        return try {
+            val response = apiService.updatePrompt(request)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(true)
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "更新提示词失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
 }

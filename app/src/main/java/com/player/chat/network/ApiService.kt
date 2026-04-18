@@ -72,4 +72,16 @@ interface ApiService {
         @Query("pageSize") pageSize: Int
     ): Response<ApiResponse<List<TenantUser>>>
 
+    // 获取提示词
+    @GET("/service/prompt/getPrompt")
+    suspend fun getPrompt(
+        @Query("tenantId") tenantId: String
+    ): Response<ApiResponse<Prompt>>
+
+    // 更新提示词
+    @POST("/service/prompt/updatePrompt")
+    suspend fun updatePrompt(
+        @Body request: UpdatePromptRequest
+    ): Response<ApiResponse<Any>>
+
 }

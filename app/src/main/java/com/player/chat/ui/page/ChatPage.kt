@@ -45,6 +45,7 @@ import com.player.chat.ui.components.MyDocumentsDialog
 import com.player.chat.navigation.Screens
 import com.player.chat.ui.components.CustomBottomOption
 import com.player.chat.ui.components.OptionItem
+import com.player.chat.ui.components.PromptEditDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +76,7 @@ fun ChatPage(
     val focusRequester = remember { FocusRequester() }
     val showMyDocumentsDialog by chatViewModel.showMyDocumentsDialog.collectAsState()
     val showChatHistoryDialog by chatViewModel.showChatHistoryDialog.collectAsState()
+    val showPromptDialog by chatViewModel.showPromptDialog.collectAsState()
 
     val context = LocalContext.current // ✅ 在 Composable 里是合法的
 
@@ -93,7 +95,7 @@ fun ChatPage(
 
     Column(
         modifier = Modifier
-            .fillMaxSize().background(Color.pageBackgroundColor)
+            .fillMaxSize().background(Color.PageBackground)
     ) {
         // 1. 顶部标题栏
         TopAppBar(
@@ -185,7 +187,7 @@ fun ChatPage(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .background(Color.pageBackgroundColor)
+                .background(Color.PageBackground)
                 .fillMaxWidth()
         ) {
             if (isLoading && modelList.isEmpty()) {
@@ -216,7 +218,7 @@ fun ChatPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap)
-                .background(Color.pageBackgroundColor),
+                .background(Color.PageBackground),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // 思考模式按钮
@@ -290,7 +292,7 @@ fun ChatPage(
                     onValueChange = { inputText = it },
                     modifier = Modifier
                         .weight(1f)
-                        .background(Color.pageBackgroundColor, RoundedCornerShape(Dimens.bigBorderRadius))
+                        .background(Color.PageBackground, RoundedCornerShape(Dimens.bigBorderRadius))
                         .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap)
                         .focusRequester(focusRequester),
                     textStyle = TextStyle.Default.copy(color = Color.Black),
@@ -435,8 +437,7 @@ fun ChatPage(
                         "上传文档",
                         "我的文档",
                         "会话记录",
-                        "设置提示词",
-                        "我的提示词"
+                        "修改提示词",
                     )
 
                     menuItems.forEachIndexed { index, item ->
@@ -457,11 +458,8 @@ fun ChatPage(
                                         chatViewModel.toggleChatHistoryDialog()
                                     }
                                     3 -> {
-                                        // TODO: 设置提示词
-                                        chatViewModel.toggleMenuDialog()
-                                    }
-                                    4 -> {
-                                        // TODO: 我的提示词
+                                        // 修改提示词
+                                        chatViewModel.showPromptDialog()
                                         chatViewModel.toggleMenuDialog()
                                     }
                                 }
@@ -501,6 +499,17 @@ fun ChatPage(
         ChatHistoryDialog(
             viewModel = chatViewModel,
             onDismiss = { chatViewModel.toggleChatHistoryDialog() }
+        )
+    }
+
+    if (showPromptDialog) {
+        PromptEditDialog(
+            viewModel = chatViewModel,
+            onDismiss = { chatViewModel.hidePromptDialog() },
+            onSuccess = {
+                // 可以在这里显示成功提示
+                // 例如通过 Toast 或 Snackbar
+            }
         )
     }
 

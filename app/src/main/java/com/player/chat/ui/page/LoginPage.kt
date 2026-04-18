@@ -30,8 +30,8 @@ fun LoginPage(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val loginState = viewModel.loginState.collectAsState()
-    var account by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var account by remember { mutableStateOf("吴时吴刻") }
+    var password by remember { mutableStateOf("123456") }
     var email by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
 
@@ -53,7 +53,7 @@ fun LoginPage(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color.pageBackgroundColor
+        containerColor = Color.PageBackground
     ) { paddingValues ->
         Column(
             modifier = Modifier

@@ -99,7 +99,7 @@ fun CustomBottomDialog(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .background(Color.pageBackgroundColor) // 浅灰色背景
+                    .background(Color.PageBackground) // 浅灰色背景
             ) {
                 content()
             }

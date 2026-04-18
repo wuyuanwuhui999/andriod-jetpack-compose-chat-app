@@ -118,7 +118,7 @@ fun TenantManagePage(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.pageBackgroundColor)
+                .background(Color.PageBackground)
                 .padding(paddingValues)
         ) {
             if (isLoading) {

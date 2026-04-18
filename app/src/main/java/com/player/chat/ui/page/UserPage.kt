@@ -71,7 +71,7 @@ fun UserPage(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.pageBackgroundColor),
+                .background(Color.PageBackground),
             contentPadding = PaddingValues(Dimens.middleGap),
             verticalArrangement = Arrangement.spacedBy(Dimens.middleGap)
         ) {
