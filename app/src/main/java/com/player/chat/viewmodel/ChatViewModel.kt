@@ -188,18 +188,23 @@ class ChatViewModel @Inject constructor(
                     }
                     dataStoreManager.saveCurrentTenant(it)
                 }
+
+                // 加载当前租户的提示词
+                loadPrompt()
             } else {
                 // 获取失败，使用默认租户
                 _currentTenant.value = DefaultTenant.PERSONAL_SPACE
                 dataStoreManager.saveCurrentTenant(DefaultTenant.PERSONAL_SPACE)
                 _tenantList.value = emptyList()
                 _isTenantListLoaded.value = true
+
+                // 加载默认租户的提示词
+                loadPrompt()
             }
 
             _isLoading.value = false
         }
     }
-
 
     private fun loadModelList() {
         viewModelScope.launch {
@@ -282,6 +287,7 @@ class ChatViewModel @Inject constructor(
             val token = dataStoreManager.getToken().firstOrNull() ?: ""
             val tenantId = _currentTenant.value?.id ?: ""
             val modelId = _selectedModel.value?.id ?: ""
+            val systemPrompt = _currentPrompt.value?.prompt ?: "你是一个智能助手"  // 获取当前提示词
 
             val request = WebSocketManager.ChatRequest(
                 modelId = modelId,
@@ -289,6 +295,7 @@ class ChatViewModel @Inject constructor(
                 chatId = currentChatId,
                 tenantId = tenantId,
                 prompt = message,
+                systemPrompt = systemPrompt,  // 添加提示词
                 showThink = _thinkMode.value,
                 language = _language.value
             )
@@ -792,6 +799,9 @@ class ChatViewModel @Inject constructor(
 
             // 重置会话记录（因为租户变了，之前的会话记录不再适用）
             resetChatHistory()
+
+            // 切换租户后重新加载提示词
+            loadPrompt()
         }
     }
 
@@ -821,6 +831,7 @@ class ChatViewModel @Inject constructor(
 
     /**
      * 加载当前租户的提示词
+     * 在初始化加载租户后自动调用，切换租户时也会重新加载
      */
     private fun loadPrompt() {
         viewModelScope.launch {
@@ -831,9 +842,11 @@ class ChatViewModel @Inject constructor(
                     val prompt = result.getOrNull()
                     _currentPrompt.value = prompt
                     _promptText.value = prompt?.prompt ?: ""
+                    Log.d("ChatViewModel", "加载提示词成功: ${prompt?.prompt}")
                 } else {
                     // 如果没有提示词，使用默认提示词
                     _promptText.value = "你是一个智能助手"
+                    Log.d("ChatViewModel", "使用默认提示词")
                 }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "加载提示词失败", e)
@@ -844,9 +857,10 @@ class ChatViewModel @Inject constructor(
 
     /**
      * 显示提示词修改对话框
+     * 直接使用已加载的提示词数据，无需重新请求接口
      */
     fun showPromptDialog() {
-        // 刷新当前提示词内容
+        // 刷新当前提示词内容（使用已缓存的数据）
         _promptText.value = _currentPrompt.value?.prompt ?: ""
         _showPromptDialog.value = true
     }

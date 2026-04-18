@@ -460,7 +460,6 @@ fun ChatPage(
                                     3 -> {
                                         // 修改提示词
                                         chatViewModel.showPromptDialog()
-                                        chatViewModel.toggleMenuDialog()
                                     }
                                 }
                                 chatViewModel.toggleMenuDialog()

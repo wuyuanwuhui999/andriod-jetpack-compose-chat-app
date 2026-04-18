@@ -9,18 +9,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.player.chat.R
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.ChatViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
@@ -37,14 +42,23 @@ fun PromptEditDialog(
 ) {
     val promptText by viewModel.promptText.collectAsState()
     val isUpdating by viewModel.isUpdatingPrompt.collectAsState()
-
     val scope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
+    // 对话框显示时自动获取焦点
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.5f))
-            .clickable { onDismiss() }
+            .clickable {
+                focusManager.clearFocus()
+                onDismiss()
+            }
     ) {
         Column(
             modifier = Modifier
@@ -75,11 +89,14 @@ fun PromptEditDialog(
 
                 // 右侧关闭按钮
                 IconButton(
-                    onClick = onDismiss,
+                    onClick = {
+                        focusManager.clearFocus()
+                        onDismiss()
+                    },
                     modifier = Modifier.size(Dimens.smallIconSize)
                 ) {
                     Icon(
-                        painter = painterResource(id = com.player.chat.R.drawable.icon_close),
+                        painter = painterResource(id = R.drawable.icon_close),
                         contentDescription = "关闭",
                         tint = Color.Gray
                     )
@@ -102,81 +119,99 @@ fun PromptEditDialog(
                     .background(Color.PageBackground)
                     .padding(Dimens.middleGap)
             ) {
-                // 白色背景圆角矩形
-                Column(
+                // 白色背景圆角矩形 - 多行文本输入框容器
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
                         .background(Color.White)
                         .padding(Dimens.middleGap)
                 ) {
-                    // 文本框
+                    // 修复点：这里调整了 BasicTextField 的结构
+                    // 将 innerTextField() 提到最外层，或者确保 DecorationBox 不会遮挡点击
                     BasicTextField(
                         value = promptText,
                         onValueChange = { viewModel.updatePromptText(it) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
-                            .background(Color.PageBackground)
-                            .padding(Dimens.smallGap),
-                        textStyle = TextStyle.Default.copy(color = Color.Black),
+                            .height(Dimens.textareaHeight)
+                            .focusRequester(focusRequester),
+                        textStyle = TextStyle.Default.copy(
+                            color = Color.Black,
+                            fontSize = Dimens.normalFontSize,
+                            lineHeight = 20.sp
+                        ),
                         cursorBrush = SolidColor(Color.Primary),
                         decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.CenterStart
+                            // 1. 移除了外层的 Box 包裹，或者确保它不覆盖点击
+                            // 2. 直接使用 innerTextField，并在其下方绘制背景和占位符
+
+                            // 绘制背景（使用 Modifier 而不是额外的 Box）
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(Dimens.smallGap) // 保持原有的内边距
                             ) {
+                                // 占位符：当输入框为空时显示
                                 if (promptText.isEmpty()) {
                                     Text(
                                         text = "请输入提示词...",
-                                        color = Color.Gray
+                                        color = Color.Gray,
+                                        fontSize = Dimens.normalFontSize,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .align(Alignment.Start) // 左对齐
                                     )
                                 }
-                                innerTextField()
+                                // 实际输入框 - 关键：它现在可以正确接收输入
+                                // 使用 weight(1f) 让输入框占据剩余空间
+                                Box(modifier = Modifier.weight(1f)) {
+                                    innerTextField()
+                                }
                             }
                         }
                     )
+                }
 
-                    Spacer(modifier = Modifier.height(Dimens.middleGap))
+                Spacer(modifier = Modifier.height(Dimens.middleGap))
 
-                    // 确定按钮
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                val result = viewModel.savePrompt()
-                                if (result.isSuccess) {
-                                    // 接口调用成功后，弹出msg提示
-                                    onSuccess()
-                                    onDismiss()
-                                } else {
-                                    // 显示错误信息
-                                    val errorMsg = result.exceptionOrNull()?.message ?: "保存失败"
-                                    // 可以通过Toast或Snackbar显示错误信息
-                                }
+                // 确定按钮
+                Button(
+                    onClick = {
+                        focusManager.clearFocus()
+                        scope.launch {
+                            val result = viewModel.savePrompt()
+                            if (result.isSuccess) {
+                                onSuccess()
+                                onDismiss()
+                            } else {
+                                // 显示错误信息
+                                val errorMsg = result.exceptionOrNull()?.message ?: "保存失败"
+                                // 可以通过Toast或Snackbar显示错误信息
                             }
-                        },
-                        enabled = promptText.isNotBlank() && !isUpdating,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(Dimens.btnHeight),
-                        shape = RoundedCornerShape(Dimens.btnHeight / 2),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (promptText.isNotBlank()) Color.Primary else Color.Gray,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        if (isUpdating) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = "确定",
-                                fontSize = Dimens.normalFontSize
-                            )
                         }
+                    },
+                    enabled = promptText.isNotBlank() && !isUpdating,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimens.btnHeight),
+                    shape = RoundedCornerShape(Dimens.btnHeight / 2),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (promptText.isNotBlank()) Color.Primary else Color.Gray,
+                        contentColor = Color.White
+                    )
+                ) {
+                    if (isUpdating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "确定",
+                            fontSize = Dimens.normalFontSize
+                        )
                     }
                 }
             }

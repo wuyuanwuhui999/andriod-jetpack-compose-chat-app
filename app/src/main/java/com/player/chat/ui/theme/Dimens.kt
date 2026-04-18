@@ -32,6 +32,7 @@ object Dimens {
     val inputHeight = 40.dp
     val btnHeight = 50.dp
     val barHeight = 60.dp
+    val textareaHeight = 200.dp
 
     // Font Sizes
     val normalFontSize = 14.sp
