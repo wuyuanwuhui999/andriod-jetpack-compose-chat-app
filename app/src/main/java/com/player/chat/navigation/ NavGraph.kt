@@ -8,7 +8,7 @@ import com.player.chat.ui.page.ChatPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
 import com.player.chat.ui.page.TenantManagePage
-import com.player.chat.ui.page.UserPage
+import com.player.chat.ui.page.UserPage  // 确保这行存在且只导入一次
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -25,7 +25,6 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Screens.Chat.route) {
             ChatPage(navController = navController)
         }
-
         composable(Screens.User.route) {
             UserPage(navController = navController)
         }

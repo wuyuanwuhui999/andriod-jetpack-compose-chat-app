@@ -3,6 +3,11 @@ package com.player.chat.chat.repository
 import com.player.chat.local.DataStoreManager
 import com.player.chat.network.ApiService
 import com.player.chat.model.*
+import kotlinx.coroutines.flow.firstOrNull
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import javax.inject.Inject
 
 class UserRepository @Inject constructor(
@@ -113,5 +118,57 @@ class UserRepository @Inject constructor(
         // 需要先在DataStoreManager中添加相关方法
         // 为简化，这里直接返回null
         return null
+    }
+
+    /**
+     * 更新用户头像
+     * @param file 头像文件
+     * @return Result<String> 返回头像的相对路径
+     */
+    suspend fun updateAvatar(file: File): Result<String> {
+        return try {
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+            val response = apiService.updateAvatar(filePart)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val avatarPath = response.body()?.data
+                if (!avatarPath.isNullOrBlank()) {
+                    // 更新本地缓存的用户头像
+                    val currentUser = dataStoreManager.getUser().firstOrNull()
+                    currentUser?.let { user ->
+                        val updatedUser = user.copy(avatar = avatarPath)
+                        dataStoreManager.saveUser(updatedUser)
+                    }
+                    Result.success(avatarPath)
+                } else {
+                    Result.failure(Exception("头像上传成功但返回路径为空"))
+                }
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "头像上传失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 更新用户信息
+     * @param user 更新后的用户对象
+     * @return Result<Boolean> 是否更新成功
+     */
+    suspend fun updateUser(user: User): Result<Boolean> {
+        return try {
+            val response = apiService.updateUser(user)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                // 更新本地缓存
+                dataStoreManager.saveUser(user)
+                Result.success(true)
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "更新用户信息失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

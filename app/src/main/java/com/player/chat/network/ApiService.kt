@@ -84,4 +84,22 @@ interface ApiService {
         @Body request: UpdatePromptRequest
     ): Response<ApiResponse<Any>>
 
+    /**
+     * 更新用户头像
+     * @param file 头像文件
+     */
+    @POST("/service/user/updateAvater")
+    @Multipart
+    suspend fun updateAvatar(
+        @Part file: MultipartBody.Part
+    ): Response<ApiResponse<String>>
+
+    /**
+     * 更新用户信息
+     * @param user 用户对象
+     */
+    @POST("/service/user/updateUser")
+    suspend fun updateUser(
+        @Body user: User
+    ): Response<ApiResponse<Any>>
 }

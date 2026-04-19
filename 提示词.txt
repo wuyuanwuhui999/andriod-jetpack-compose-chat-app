@@ -14,9 +14,9 @@
   - 可复用组件放在 `ui/components/`
 - 所有数据模型放在 `models/` 目录下。
 - 所有工具方法放在 `utils/` 目录下
-- 请求后端的方法放在 `urepository/` 目录下
+- 请求后端的方法放在 `repository/` 目录下
 - 所有viewmodel放到 `viewmodel/` 目录下
-- 所有 API 请求方法（包括 Retrofit 服务接口）统一放在 `ApiService.kt` 文件中。
+- 所有 API 请求接口（包括 Retrofit 服务接口）统一放在 `ApiService.kt` 文件中。
 
 ## 2. 间距与尺寸规范
 - **所有间距**（padding、margin、图标间距、按钮间距、图文间距、布局间距、边距、条目上下间隔等）统一使用 `theme/Dimens.middleGap`。
