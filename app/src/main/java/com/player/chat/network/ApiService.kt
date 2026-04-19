@@ -102,4 +102,13 @@ interface ApiService {
     suspend fun updateUser(
         @Body user: User
     ): Response<ApiResponse<Any>>
+
+    /**
+     * 修改密码
+     * @param request 修改密码请求
+     */
+    @POST("/service/user/updatePassword")
+    suspend fun updatePassword(
+        @Body request: UpdatePasswordRequest
+    ): Response<ApiResponse<Int>>
 }

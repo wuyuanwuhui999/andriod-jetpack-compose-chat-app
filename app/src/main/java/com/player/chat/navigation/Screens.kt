@@ -6,4 +6,7 @@ sealed class Screens(val route: String) {
     object Chat : Screens("chat")
     object User : Screens("user")
     object TenantManage : Screens("tenant_manage")
+
+    object UpdatePassword : Screens("update_password")  // 新增
+
 }

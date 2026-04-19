@@ -171,4 +171,29 @@ class UserRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * 修改密码
+     * @param oldPassword 旧密码（已MD5加密）
+     * @param newPassword 新密码（已MD5加密）
+     * @return Result<Int> 返回影响行数
+     */
+    suspend fun updatePassword(oldPassword: String, newPassword: String): Result<Int> {
+        return try {
+            val request = UpdatePasswordRequest(oldPassword, newPassword)
+            val response = apiService.updatePassword(request)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val data = response.body()?.data ?: 0
+                if (data > 0) {
+                    Result.success(data)
+                } else {
+                    Result.failure(Exception("密码修改失败，请检查旧密码是否正确"))
+                }
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "密码修改失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

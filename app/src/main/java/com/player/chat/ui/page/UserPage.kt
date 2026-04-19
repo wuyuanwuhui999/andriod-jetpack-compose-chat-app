@@ -4,6 +4,7 @@ package com.player.chat.ui.page
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -362,6 +363,29 @@ fun UserPage(
                     Text(
                         text = "退出登录",
                         fontSize = Dimens.normalFontSize
+                    )
+                }
+            }
+
+            item {
+                Button(
+                    onClick = {
+                        navController.navigate(Screens.UpdatePassword.route)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimens.btnHeight),
+                    shape = RoundedCornerShape(Dimens.btnHeight / 2),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Primary
+                    ),
+                    border = BorderStroke(Dimens.borderSize, Color.Primary)
+                ) {
+                    Text(
+                        text = "修改密码",
+                        fontSize = Dimens.normalFontSize,
+                        color = Color.Primary
                     )
                 }
             }

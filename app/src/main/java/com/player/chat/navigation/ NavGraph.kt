@@ -8,6 +8,7 @@ import com.player.chat.ui.page.ChatPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
 import com.player.chat.ui.page.TenantManagePage
+import com.player.chat.ui.page.UpdatePasswordPage
 import com.player.chat.ui.page.UserPage  // 确保这行存在且只导入一次
 
 @Composable
@@ -30,6 +31,9 @@ fun AppNavGraph(navController: NavHostController) {
         }
         composable(Screens.TenantManage.route) {
             TenantManagePage(navController = navController)
+        }
+        composable(Screens.UpdatePassword.route) {
+            UpdatePasswordPage(navController = navController)
         }
     }
 }
