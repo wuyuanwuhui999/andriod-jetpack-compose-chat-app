@@ -7,6 +7,8 @@ sealed class Screens(val route: String) {
     object User : Screens("user")
     object TenantManage : Screens("tenant_manage")
 
-    object UpdatePassword : Screens("update_password")  // 新增
+    object UpdatePassword : Screens("update_password")
+    object ForgetPassword : Screens("forget_password")
+    object ResetPassword : Screens("reset_password")
 
 }

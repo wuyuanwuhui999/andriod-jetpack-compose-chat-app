@@ -19,9 +19,9 @@ interface ApiService {
     @POST("/service/user/loginByEmail")
     suspend fun loginByEmail(@Body request: EmailLoginRequest): Response<ApiResponse<User>>
 
-    // 发送验证码
+    // 发送验证码 - 修改返回类型
     @POST("/service/user/sendEmailVertifyCode")
-    suspend fun sendEmailVerifyCode(@Body request: SendEmailRequest): Response<ApiResponse<Unit>>
+    suspend fun sendEmailVerifyCode(@Body request: SendEmailRequest): Response<ApiResponse<Int>>
 
     @GET("/service/chat/getModelList")
     suspend fun getModelList(): Response<ApiResponse<List<ChatModel>>>
@@ -111,4 +111,13 @@ interface ApiService {
     suspend fun updatePassword(
         @Body request: UpdatePasswordRequest
     ): Response<ApiResponse<Int>>
+
+    /**
+     * 重置密码
+     * @param request 重置密码请求
+     */
+    @POST("/service/user/resetPassword")
+    suspend fun resetPassword(
+        @Body request: ResetPasswordRequest
+    ): Response<ApiResponse<User>>
 }

@@ -378,14 +378,13 @@ fun UserPage(
                     shape = RoundedCornerShape(Dimens.btnHeight / 2),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color.Primary
+                        contentColor = Color.Black
                     ),
-                    border = BorderStroke(Dimens.borderSize, Color.Primary)
+                    border = BorderStroke(Dimens.borderSize, Color.Gray)
                 ) {
                     Text(
                         text = "修改密码",
                         fontSize = Dimens.normalFontSize,
-                        color = Color.Primary
                     )
                 }
             }

@@ -196,4 +196,27 @@ class UserRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * 重置密码
+     * @param email 邮箱
+     * @param code 验证码
+     * @param password 新密码（已MD5加密）
+     * @return Result<Pair<User?, String?>> 返回用户信息和token
+     */
+    suspend fun resetPassword(email: String, code: String, password: String): Result<Pair<User?, String?>> {
+        return try {
+            val request = ResetPasswordRequest(email, code, password)
+            val response = apiService.resetPassword(request)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                val user = response.body()?.data
+                val token = response.body()?.token
+                Result.success(Pair(user, token))
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "重置密码失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

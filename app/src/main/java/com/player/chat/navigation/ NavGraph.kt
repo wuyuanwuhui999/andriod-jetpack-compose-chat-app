@@ -5,8 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.player.chat.ui.page.ChatPage
+import com.player.chat.ui.page.ForgetPasswordPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
+import com.player.chat.ui.page.ResetPasswordPage
 import com.player.chat.ui.page.TenantManagePage
 import com.player.chat.ui.page.UpdatePasswordPage
 import com.player.chat.ui.page.UserPage  // 确保这行存在且只导入一次
@@ -34,6 +36,14 @@ fun AppNavGraph(navController: NavHostController) {
         }
         composable(Screens.UpdatePassword.route) {
             UpdatePasswordPage(navController = navController)
+        }
+        // 在 AppNavGraph 函数中添加
+        composable(Screens.ForgetPassword.route) {
+            ForgetPasswordPage(navController = navController)
+        }
+        composable(Screens.ResetPassword.route) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            ResetPasswordPage(navController = navController, email = email)
         }
     }
 }

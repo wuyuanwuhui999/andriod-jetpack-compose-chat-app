@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -194,24 +195,23 @@ fun LoginPage(
 
             Spacer(modifier = Modifier.height(Dimens.middleGap))
 
-            // 找回密码按钮
-            OutlinedButton(
+            // 忘记密码按钮
+            TextButton(
                 onClick = {
-                    // TODO: 找回密码逻辑
+                    navController.navigate(Screens.ForgetPassword.route)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
-                shape = RoundedCornerShape(Dimens.bigBorderRadius),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.Black
-                ),
-                border = BorderStroke(1.dp, Color.disableTextColor) // ✅ 正确写法
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = Color.subTitleColor
+                )
             ) {
                 Text(
-                    text = "找回密码",
+                    text = "忘记密码？",
                     fontSize = Dimens.normalFontSize,
-                )
+                    color = Color.subTitleColor,
+                    textDecoration = TextDecoration.Underline                 )
             }
         }
     }
