@@ -1,6 +1,7 @@
 // ResetPasswordPage.kt
 package com.player.chat.ui.page
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -53,16 +53,8 @@ fun ResetPasswordPage(
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    // 焦点状态
-    var isCodeFocused by remember { mutableStateOf(false) }
-    var isPasswordFocused by remember { mutableStateOf(false) }
-    var isConfirmFocused by remember { mutableStateOf(false) }
-
     // 加载状态
     var isLoading by remember { mutableStateOf(false) }
-
-    // 错误信息
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     // 验证表单是否有效
     val isFormValid = remember(code, newPassword, confirmPassword) {
@@ -139,7 +131,6 @@ fun ResetPasswordPage(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // 左侧标签
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = "验证码",
@@ -154,18 +145,13 @@ fun ResetPasswordPage(
                             )
                         }
 
-                        // 验证码输入框
                         BasicTextField(
                             value = code,
-                            onValueChange = {
-                                code = it
-                                errorMessage = null
-                            },
+                            onValueChange = { code = it },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(start = Dimens.middleGap)
                                 .focusRequester(codeFocusRequester)
-                                .onFocusChanged { isCodeFocused = it.isFocused }
                                 .background(Color.Transparent),
                             textStyle = LocalTextStyle.current.copy(
                                 color = Color.Black,
@@ -202,7 +188,6 @@ fun ResetPasswordPage(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // 左侧标签
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = "新密码",
@@ -217,57 +202,38 @@ fun ResetPasswordPage(
                             )
                         }
 
-                        // 新密码输入框
-                        Column(
+                        BasicTextField(
+                            value = newPassword,
+                            onValueChange = { newPassword = it },
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = Dimens.middleGap),
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            BasicTextField(
-                                value = newPassword,
-                                onValueChange = {
-                                    newPassword = it
-                                    errorMessage = null
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .focusRequester(passwordFocusRequester)
-                                    .onFocusChanged { isPasswordFocused = it.isFocused }
-                                    .background(Color.Transparent),
-                                textStyle = LocalTextStyle.current.copy(
-                                    color = Color.Black,
-                                    fontSize = Dimens.normalFontSize,
-                                    textAlign = TextAlign.Left
-                                ),
-                                visualTransformation = PasswordVisualTransformation(),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.CenterStart
-                                    ) {
-                                        if (newPassword.isEmpty()) {
-                                            Text(
-                                                text = "请输入新密码",
-                                                color = Color.Gray,
-                                                fontSize = Dimens.normalFontSize
-                                            )
-                                        }
-                                        innerTextField()
+                                .padding(start = Dimens.middleGap)
+                                .focusRequester(passwordFocusRequester)
+                                .background(Color.Transparent),
+                            textStyle = LocalTextStyle.current.copy(
+                                color = Color.Black,
+                                fontSize = Dimens.normalFontSize,
+                                textAlign = TextAlign.Left
+                            ),
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            singleLine = true,
+                            decorationBox = { innerTextField ->
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    if (newPassword.isEmpty()) {
+                                        Text(
+                                            text = "请输入新密码",
+                                            color = Color.Gray,
+                                            fontSize = Dimens.normalFontSize
+                                        )
                                     }
+                                    innerTextField()
                                 }
-                            )
-                            if (newPassword.isNotBlank() && (newPassword.length < 6 || newPassword.length > 18)) {
-                                Text(
-                                    text = "密码长度6-18位",
-                                    color = Color.Red,
-                                    fontSize = Dimens.normalFontSize,
-                                    modifier = Modifier.padding(top = Dimens.smallGap)
-                                )
                             }
-                        }
+                        )
                     }
 
                     Divider(color = Color.Gray.copy(alpha = 0.2f))
@@ -280,7 +246,6 @@ fun ResetPasswordPage(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // 左侧标签
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = "确认密码",
@@ -295,71 +260,40 @@ fun ResetPasswordPage(
                             )
                         }
 
-                        // 确认密码输入框
-                        Column(
+                        BasicTextField(
+                            value = confirmPassword,
+                            onValueChange = { confirmPassword = it },
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = Dimens.middleGap),
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            BasicTextField(
-                                value = confirmPassword,
-                                onValueChange = {
-                                    confirmPassword = it
-                                    errorMessage = null
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .focusRequester(confirmFocusRequester)
-                                    .onFocusChanged { isConfirmFocused = it.isFocused }
-                                    .background(Color.Transparent),
-                                textStyle = LocalTextStyle.current.copy(
-                                    color = Color.Black,
-                                    fontSize = Dimens.normalFontSize,
-                                    textAlign = TextAlign.Left
-                                ),
-                                visualTransformation = PasswordVisualTransformation(),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.CenterStart
-                                    ) {
-                                        if (confirmPassword.isEmpty()) {
-                                            Text(
-                                                text = "请再次输入密码",
-                                                color = Color.Gray,
-                                                fontSize = Dimens.normalFontSize
-                                            )
-                                        }
-                                        innerTextField()
+                                .padding(start = Dimens.middleGap)
+                                .focusRequester(confirmFocusRequester)
+                                .background(Color.Transparent),
+                            textStyle = LocalTextStyle.current.copy(
+                                color = Color.Black,
+                                fontSize = Dimens.normalFontSize,
+                                textAlign = TextAlign.Left
+                            ),
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            singleLine = true,
+                            decorationBox = { innerTextField ->
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    if (confirmPassword.isEmpty()) {
+                                        Text(
+                                            text = "请再次输入密码",
+                                            color = Color.Gray,
+                                            fontSize = Dimens.normalFontSize
+                                        )
                                     }
+                                    innerTextField()
                                 }
-                            )
-                            if (confirmPassword.isNotBlank() && newPassword != confirmPassword) {
-                                Text(
-                                    text = "两次输入的密码不一致",
-                                    color = Color.Red,
-                                    fontSize = Dimens.normalFontSize,
-                                    modifier = Modifier.padding(top = Dimens.smallGap)
-                                )
                             }
-                        }
+                        )
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.middleGap))
-
-            // 错误提示
-            if (errorMessage != null) {
-                Text(
-                    text = errorMessage ?: "",
-                    color = Color.Red,
-                    fontSize = Dimens.normalFontSize,
-                    modifier = Modifier.padding(vertical = Dimens.smallGap)
-                )
             }
 
             Spacer(modifier = Modifier.height(Dimens.middleGap))
@@ -368,30 +302,54 @@ fun ResetPasswordPage(
             Button(
                 onClick = {
                     focusManager.clearFocus()
+
+                    // 表单验证 - 使用 Toast 提示
+                    when {
+                        code.isBlank() -> {
+                            Toast.makeText(context, "请输入验证码", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        newPassword.isBlank() -> {
+                            Toast.makeText(context, "请输入新密码", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        confirmPassword.isBlank() -> {
+                            Toast.makeText(context, "请确认密码", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        newPassword.length < 6 || newPassword.length > 18 -> {
+                            Toast.makeText(context, "密码长度需为6-18位", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        newPassword != confirmPassword -> {
+                            Toast.makeText(context, "两次输入的密码不一致", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                    }
+
                     scope.launch {
                         isLoading = true
-                        errorMessage = null
 
                         val result = viewModel.resetPassword(email, code, newPassword)
 
                         isLoading = false
 
                         if (result.isSuccess) {
-                            android.widget.Toast.makeText(
+                            Toast.makeText(
                                 context,
                                 "密码重置成功",
-                                android.widget.Toast.LENGTH_SHORT
+                                Toast.LENGTH_SHORT
                             ).show()
-                            // 跳转到 ChatPage，并清空返回栈
                             navController.navigate(Screens.Chat.route) {
                                 popUpTo(0) { inclusive = true }
                             }
                         } else {
-                            errorMessage = result.exceptionOrNull()?.message ?: "重置密码失败，请稍后重试"
+                            val errorMsg = result.exceptionOrNull()?.message ?: "重置密码失败，请稍后重试"
+                            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
-                enabled = isFormValid && !isLoading,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),

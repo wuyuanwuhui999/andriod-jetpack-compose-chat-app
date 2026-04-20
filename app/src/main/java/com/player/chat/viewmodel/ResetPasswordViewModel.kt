@@ -1,17 +1,14 @@
-// ResetPasswordViewModel.kt
 package com.player.chat.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.player.chat.chat.repository.UserRepository
 import com.player.chat.local.DataStoreManager
-import com.player.chat.model.User
 import com.player.chat.utils.CommonUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -38,10 +35,12 @@ class ResetPasswordViewModel @Inject constructor(
      */
     suspend fun resetPassword(email: String, code: String, newPassword: String): Result<Boolean> {
         return try {
+
             _isLoading.value = true
 
             // MD5加密新密码
             val encryptedPassword = CommonUtils.md5(newPassword)
+            Log.d("ResetPassword", "新密码(MD5加密后): $encryptedPassword")
 
             val result = userRepository.resetPassword(email, code, encryptedPassword)
 

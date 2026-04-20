@@ -1,5 +1,6 @@
 package com.player.chat.chat.repository
 
+import android.util.Log
 import com.player.chat.local.DataStoreManager
 import com.player.chat.network.ApiService
 import com.player.chat.model.*
@@ -197,6 +198,8 @@ class UserRepository @Inject constructor(
         }
     }
 
+    // 在 UserRepository.kt 中添加 resetPassword 方法并打印日志
+
     /**
      * 重置密码
      * @param email 邮箱
@@ -206,16 +209,49 @@ class UserRepository @Inject constructor(
      */
     suspend fun resetPassword(email: String, code: String, password: String): Result<Pair<User?, String?>> {
         return try {
+            Log.d("UserRepository", "========== 调用重置密码接口 ==========")
+            Log.d("UserRepository", "请求地址: /service/user/resetPassword")
+            Log.d("UserRepository", "请求参数 - email: $email")
+            Log.d("UserRepository", "请求参数 - code: $code")
+            Log.d("UserRepository", "请求参数 - password: $password")
+
             val request = ResetPasswordRequest(email, code, password)
+
+            // 打印完整请求参数
+            val gson = com.google.gson.Gson()
+            val requestJson = gson.toJson(request)
+            Log.d("UserRepository", "请求参数JSON: $requestJson")
+
             val response = apiService.resetPassword(request)
-            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
-                val user = response.body()?.data
-                val token = response.body()?.token
-                Result.success(Pair(user, token))
+
+            Log.d("UserRepository", "响应状态码: ${response.code()}")
+            Log.d("UserRepository", "响应是否成功: ${response.isSuccessful}")
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                Log.d("UserRepository", "响应body: ${gson.toJson(body)}")
+                Log.d("UserRepository", "响应status: ${body?.status}")
+                Log.d("UserRepository", "响应msg: ${body?.message}")
+                Log.d("UserRepository", "响应data: ${body?.data}")
+                Log.d("UserRepository", "响应token: ${body?.token}")
+
+                if (body?.status == "SUCCESS") {
+                    val user = body.data
+                    val token = body.token
+                    Log.d("UserRepository", "重置密码成功 - user: $user, token: $token")
+                    Result.success(Pair(user, token))
+                } else {
+                    val errorMsg = body?.message ?: "重置密码失败"
+                    Log.e("UserRepository", "重置密码失败: $errorMsg")
+                    Result.failure(Exception(errorMsg))
+                }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "重置密码失败"))
+                val errorBody = response.errorBody()?.string()
+                Log.e("UserRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
             }
         } catch (e: Exception) {
+            Log.e("UserRepository", "重置密码异常", e)
             Result.failure(e)
         }
     }

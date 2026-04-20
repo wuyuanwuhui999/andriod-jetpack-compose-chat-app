@@ -1,6 +1,7 @@
 // ForgetPasswordPage.kt
 package com.player.chat.ui.page
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -203,9 +204,19 @@ fun ForgetPasswordPage(
             Button(
                 onClick = {
                     focusManager.clearFocus()
+
+                    // 表单验证 - 使用 Toast 提示
+                    if (email.isBlank()) {
+                        Toast.makeText(context, "请输入邮箱", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        Toast.makeText(context, "请输入正确的邮箱格式", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
                     scope.launch {
                         isLoading = true
-                        errorMessage = null
 
                         val result = viewModel.sendVerificationCode(email)
 
@@ -213,17 +224,17 @@ fun ForgetPasswordPage(
 
                         if (result.isSuccess) {
                             val msg = result.getOrNull() ?: "验证码已发送"
-                            android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
-                            // 跳转到重置密码页面，传递邮箱
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                             navController.navigate("${Screens.ResetPassword.route}?email=${email}") {
                                 popUpTo(Screens.ForgetPassword.route) { inclusive = true }
                             }
                         } else {
-                            errorMessage = result.exceptionOrNull()?.message ?: "发送失败，请稍后重试"
+                            val errorMsg = result.exceptionOrNull()?.message ?: "发送失败，请稍后重试"
+                            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
-                enabled = isEmailValid && !isLoading,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
