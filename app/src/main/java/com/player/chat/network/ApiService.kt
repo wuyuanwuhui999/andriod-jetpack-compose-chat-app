@@ -120,4 +120,24 @@ interface ApiService {
     suspend fun resetPassword(
         @Body request: ResetPasswordRequest
     ): Response<ApiResponse<User>>
+
+    /**
+     * 用户注册
+     * @param user 用户信息
+     */
+    @POST("/service/user/register")
+    suspend fun register(
+        @Body user: User
+    ): Response<ApiResponse<User>>
+
+    // ApiService.kt - 添加 verifyUser 接口
+
+    /**
+     * 校验用户是否存在（账号或邮箱）
+     * @param request 校验请求
+     */
+    @POST("/service/user/vertifyUser")
+    suspend fun verifyUser(
+        @Body request: VerifyUserRequest
+    ): Response<ApiResponse<Int>>
 }

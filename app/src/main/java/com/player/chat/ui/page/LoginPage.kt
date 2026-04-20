@@ -175,7 +175,7 @@ fun LoginPage(
             // 注册按钮
             OutlinedButton(
                 onClick = {
-                    // TODO: 注册逻辑
+                    navController.navigate(Screens.Register.route)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,7 +185,6 @@ fun LoginPage(
                     contentColor = Color.Black
                 ),
                 border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
-
             ) {
                 Text(
                     text = "注册",

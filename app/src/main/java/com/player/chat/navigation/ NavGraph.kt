@@ -8,6 +8,7 @@ import com.player.chat.ui.page.ChatPage
 import com.player.chat.ui.page.ForgetPasswordPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
+import com.player.chat.ui.page.RegisterPage
 import com.player.chat.ui.page.ResetPasswordPage
 import com.player.chat.ui.page.TenantManagePage
 import com.player.chat.ui.page.UpdatePasswordPage
@@ -44,6 +45,10 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Screens.ResetPassword.route) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
             ResetPasswordPage(navController = navController, email = email)
+        }
+
+        composable(Screens.Register.route) {
+            RegisterPage(navController = navController)
         }
     }
 }

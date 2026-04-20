@@ -255,4 +255,131 @@ class UserRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * 注册用户
+     * @param userAccount 账号
+     * @param username 用户名
+     * @param password 密码（已MD5加密）
+     * @param telephone 电话
+     * @param email 邮箱
+     * @param sex 性别 0-男 1-女
+     * @param birthday 出生日期
+     * @param region 地区
+     * @param sign 个性签名
+     * @return Result<Pair<User?, String?>> 返回用户信息和token
+     */
+    suspend fun register(
+        userAccount: String,
+        username: String,
+        password: String,
+        telephone: String,
+        email: String,
+        sex: Int,
+        birthday: String,
+        region: String,
+        sign: String
+    ): Result<Pair<User?, String?>> {
+        return try {
+            Log.d("UserRepository", "========== 调用注册接口 ==========")
+            Log.d("UserRepository", "请求地址: /service/user/register")
+
+            val user = User(
+                id = "",
+                userAccount = userAccount,
+                createDate = "",
+                updateDate = "",
+                username = username,
+                telephone = telephone,
+                email = email,
+                avatar = null,
+                birthday = birthday.ifEmpty { null },
+                sex = sex,
+                role = "",
+                password = password,
+                sign = sign.ifEmpty { null },
+                region = region.ifEmpty { null },
+                disabled = 0,
+                permission = 0
+            )
+
+            val gson = com.google.gson.Gson()
+            val requestJson = gson.toJson(user)
+            Log.d("UserRepository", "请求参数JSON: $requestJson")
+
+            val response = apiService.register(user)
+
+            Log.d("UserRepository", "响应状态码: ${response.code()}")
+            Log.d("UserRepository", "响应是否成功: ${response.isSuccessful}")
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                Log.d("UserRepository", "响应body: ${gson.toJson(body)}")
+                Log.d("UserRepository", "响应status: ${body?.status}")
+                Log.d("UserRepository", "响应msg: ${body?.message}")
+                Log.d("UserRepository", "响应data: ${body?.data}")
+                Log.d("UserRepository", "响应token: ${body?.token}")
+
+                if (body?.status == "SUCCESS") {
+                    val registeredUser = body.data
+                    val token = body.token
+                    Log.d("UserRepository", "注册成功 - user: $registeredUser, token: $token")
+                    Result.success(Pair(registeredUser, token))
+                } else {
+                    val errorMsg = body?.message ?: "注册失败"
+                    Log.e("UserRepository", "注册失败: $errorMsg")
+                    Result.failure(Exception(errorMsg))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("UserRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "注册异常", e)
+            Result.failure(e)
+        }
+    }
+
+    // UserRepository.kt - 添加 checkUserExists 方法
+
+    /**
+     * 校验用户是否存在（账号或邮箱）
+     * @param userAccount 账号（可选）
+     * @param email 邮箱（可选）
+     * @return Result<Int> 返回存在数量，>0表示存在
+     */
+    suspend fun checkUserExists(userAccount: String?, email: String?): Result<Int> {
+        return try {
+            Log.d("UserRepository", "========== 调用校验用户接口 ==========")
+            Log.d("UserRepository", "请求地址: /service/user/vertifyUser")
+
+            val request = VerifyUserRequest(userAccount, email)
+            val gson = com.google.gson.Gson()
+            Log.d("UserRepository", "请求参数JSON: ${gson.toJson(request)}")
+
+            val response = apiService.verifyUser(request)
+
+            Log.d("UserRepository", "响应状态码: ${response.code()}")
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                Log.d("UserRepository", "响应body: ${gson.toJson(body)}")
+
+                if (body?.status == "SUCCESS") {
+                    val data = body.data ?: 0
+                    Result.success(data)
+                } else {
+                    Result.failure(Exception(body?.message ?: "校验失败"))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("UserRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "校验异常", e)
+            Result.failure(e)
+        }
+    }
 }
