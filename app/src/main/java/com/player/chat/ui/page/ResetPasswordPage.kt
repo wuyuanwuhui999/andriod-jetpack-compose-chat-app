@@ -68,19 +68,14 @@ fun ResetPasswordPage(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "重置密码",
-                            color = Color.Black,
-                            fontSize = Dimens.normalFontSize,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = "重置密码",
+                        color = Color.Black,
+                        fontSize = Dimens.normalFontSize,
+                        fontWeight = FontWeight.Medium
+                    )
                 },
                 navigationIcon = {
                     IconButton(
@@ -94,7 +89,7 @@ fun ResetPasswordPage(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White,
                     titleContentColor = Color.Black,
                     navigationIconContentColor = Color.Black
