@@ -100,7 +100,7 @@ fun LoginPage(
                     text = {
                         Text(
                             text = "邮箱验证码登录",
-                            color = if (selectedTab == 1) Color.Primary else Color.Gray
+                            color = if (selectedTab == 1) Color.Primary else Color.subTitleColor
                         )
                     }
                 )

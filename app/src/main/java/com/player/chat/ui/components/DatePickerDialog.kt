@@ -23,6 +23,7 @@ fun DatePickerDialog(
     initialDate: String? = null
 ) {
     val calendar = Calendar.getInstance()
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
 
     // 解析初始日期
     initialDate?.let {
@@ -62,10 +63,10 @@ fun DatePickerDialog(
                     modifier = Modifier.padding(bottom = Dimens.middleGap)
                 )
 
-                // 日期选择器
+                // 日期选择器 - 动态设置年份范围，从1900年到当前年份
                 DatePicker(
                     state = rememberDatePickerState(
-                        yearRange = IntRange(1900, 2024),
+                        yearRange = IntRange(1900, currentYear),
                         initialSelectedDateMillis = calendar.timeInMillis
                     ),
                     modifier = Modifier.fillMaxWidth(),
