@@ -454,6 +454,7 @@ fun RegisterPage(
 
 /**
  * 普通输入框组件
+ * 修改说明：修复 placeholder 显示问题，输入框占据剩余宽度，左侧标签固定宽度
  */
 @Composable
 fun RegisterInputRow(
@@ -472,10 +473,13 @@ fun RegisterInputRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = Dimens.middleGap),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // 左侧标签 - 固定宽度，保证对齐
+        Row(
+            modifier = Modifier.width(70.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = label,
                 color = Color.Black,
@@ -491,45 +495,62 @@ fun RegisterInputRow(
             }
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        ) {
-            BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier
-                    .width(200.dp)
-                    .focusRequester(focusRequester)
-                    .background(Color.Transparent),
-                textStyle = LocalTextStyle.current.copy(
-                    color = when {
-                        isError -> Color.Red
-                        !isValid -> Color.Red
-                        else -> Color.Black
-                    },
-                    fontSize = Dimens.normalFontSize,
-                    textAlign = TextAlign.Left
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-                singleLine = true,
-                decorationBox = { innerTextField ->
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        if (value.isEmpty()) {
-                            Text(
-                                text = placeholder,
-                                color = Color.Gray,
-                                fontSize = Dimens.normalFontSize
-                            )
-                        }
-                        innerTextField()
-                    }
-                }
-            )
+        Spacer(modifier = Modifier.width(Dimens.smallGap))
 
+        // 输入框区域 - 占据剩余宽度
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // 输入框容器 - 占据剩余空间，可点击获取焦点
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .clickable { focusRequester.requestFocus() }
+            ) {
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .background(Color.Transparent),
+                    textStyle = LocalTextStyle.current.copy(
+                        color = when {
+                            isError -> Color.Red
+                            !isValid -> Color.Red
+                            else -> Color.Black
+                        },
+                        fontSize = Dimens.normalFontSize
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                    singleLine = true,
+                    decorationBox = { innerTextField ->
+                        // 关键修复：使用 Box 并正确处理内容对齐
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            // 当输入框为空时显示 placeholder
+                            if (value.isEmpty()) {
+                                Text(
+                                    text = placeholder,
+                                    color = Color.Gray,
+                                    fontSize = Dimens.normalFontSize
+                                )
+                            }
+                            // 始终显示输入框内容（透明背景）
+                            innerTextField()
+                        }
+                    }
+                )
+            }
+
+            // 加载指示器（仅在需要时显示）
             if (isLoading) {
                 Spacer(modifier = Modifier.width(Dimens.smallGap))
                 CircularProgressIndicator(
@@ -544,6 +565,7 @@ fun RegisterInputRow(
 
 /**
  * 密码输入框组件
+ * 修改说明：修复 placeholder 显示问题，输入框占据剩余宽度
  */
 @Composable
 fun RegisterPasswordRow(
@@ -559,10 +581,13 @@ fun RegisterPasswordRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = Dimens.middleGap),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // 左侧标签 - 固定宽度
+        Row(
+            modifier = Modifier.width(70.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = label,
                 color = Color.Black,
@@ -578,42 +603,54 @@ fun RegisterPasswordRow(
             }
         }
 
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
+        Spacer(modifier = Modifier.width(Dimens.smallGap))
+
+        // 输入框区域 - 占据剩余宽度
+        Box(
             modifier = Modifier
-                .width(200.dp)
-                .focusRequester(focusRequester)
-                .background(Color.Transparent),
-            textStyle = LocalTextStyle.current.copy(
-                color = if (isError) Color.Red else Color.Black,
-                fontSize = Dimens.normalFontSize,
-                textAlign = TextAlign.Left
-            ),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (value.isEmpty()) {
-                        Text(
-                            text = placeholder,
-                            color = Color.Gray,
-                            fontSize = Dimens.normalFontSize
-                        )
+                .weight(1f)
+                .fillMaxWidth()
+                .clickable { focusRequester.requestFocus() }
+        ) {
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .background(Color.Transparent),
+                textStyle = LocalTextStyle.current.copy(
+                    color = if (isError) Color.Red else Color.Black,
+                    fontSize = Dimens.normalFontSize
+                ),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        // 当输入框为空时显示 placeholder
+                        if (value.isEmpty()) {
+                            Text(
+                                text = placeholder,
+                                color = Color.Gray,
+                                fontSize = Dimens.normalFontSize
+                            )
+                        }
+                        // 始终显示输入框内容
+                        innerTextField()
                     }
-                    innerTextField()
                 }
-            }
-        )
+            )
+        }
     }
 }
 
 /**
  * 性别选择组件
+ * 修改说明：调整布局，标签固定宽度
  */
 @Composable
 fun RegisterGenderRow(
@@ -626,17 +663,22 @@ fun RegisterGenderRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = Dimens.middleGap),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        // 左侧标签 - 固定宽度
         Text(
+            modifier = Modifier.width(70.dp),
             text = label,
             color = Color.Black,
             fontWeight = FontWeight.Medium,
             fontSize = Dimens.normalFontSize
         )
 
+        Spacer(modifier = Modifier.width(Dimens.smallGap))
+
+        // 右侧选项区域
         Row(
+            modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.spacedBy(Dimens.middleGap)
         ) {
             options.forEach { gender ->
@@ -671,6 +713,7 @@ fun RegisterGenderRow(
 
 /**
  * 日期选择组件
+ * 修改说明：调整布局，标签固定宽度
  */
 @Composable
 fun RegisterDateRow(
@@ -684,17 +727,22 @@ fun RegisterDateRow(
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(vertical = Dimens.middleGap),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        // 左侧标签 - 固定宽度
         Text(
+            modifier = Modifier.width(70.dp),
             text = label,
             color = Color.Black,
             fontWeight = FontWeight.Medium,
             fontSize = Dimens.normalFontSize
         )
 
+        Spacer(modifier = Modifier.width(Dimens.smallGap))
+
+        // 右侧值区域 - 占据剩余宽度
         Text(
+            modifier = Modifier.weight(1f),
             text = if (value.isBlank()) placeholder else value,
             color = if (value.isBlank()) Color.Gray else Color.Black,
             fontSize = Dimens.normalFontSize
