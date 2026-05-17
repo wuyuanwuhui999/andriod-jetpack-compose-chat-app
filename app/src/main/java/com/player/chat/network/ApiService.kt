@@ -130,8 +130,6 @@ interface ApiService {
         @Body user: User
     ): Response<ApiResponse<User>>
 
-    // ApiService.kt - 添加 verifyUser 接口
-
     /**
      * 校验用户是否存在（账号或邮箱）
      * @param request 校验请求
@@ -140,4 +138,14 @@ interface ApiService {
     suspend fun verifyUser(
         @Body request: VerifyUserRequest
     ): Response<ApiResponse<Int>>
+
+    /**
+     * 获取租户用户信息
+     * @param tenantId 租户ID
+     * @return 租户用户信息列表
+     */
+    @GET("/service/tenant/getTenantUser")
+    suspend fun getTenantUser(
+        @Query("tenantId") tenantId: String?
+    ): Response<ApiResponse<List<TenantUserInfo>>>
 }

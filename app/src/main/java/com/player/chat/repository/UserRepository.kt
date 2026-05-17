@@ -382,4 +382,40 @@ class UserRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    // chat/repository/UserRepository.kt - 添加以下方法
+
+    /**
+     * 获取租户用户信息
+     * @param tenantId 租户ID
+     * @return Result<List<TenantUserInfo>>
+     */
+    suspend fun getTenantUserInfo(tenantId: String): Result<List<TenantUserInfo>> {
+        return try {
+            Log.d("UserRepository", "========== 获取租户用户信息 ==========")
+            Log.d("UserRepository", "请求参数 - tenantId: $tenantId")
+
+            val response = apiService.getTenantUser(tenantId)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    val userInfoList = body.data ?: emptyList()
+                    Log.d("UserRepository", "获取租户用户信息成功，数量: ${userInfoList.size}")
+                    Result.success(userInfoList)
+                } else {
+                    val errorMsg = body?.message ?: "获取租户用户信息失败"
+                    Log.e("UserRepository", "获取租户用户信息失败: $errorMsg")
+                    Result.failure(Exception(errorMsg))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("UserRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "获取租户用户信息异常", e)
+            Result.failure(e)
+        }
+    }
 }

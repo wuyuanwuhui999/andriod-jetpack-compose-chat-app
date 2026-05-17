@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.player.chat.chat.repository.UserRepository
 import com.player.chat.local.DataStoreManager
+import com.player.chat.model.Tenant
+import com.player.chat.model.TenantUserInfo
 import com.player.chat.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,12 @@ class MainViewModel @Inject constructor(
 
     // 用于在 LaunchPage 中监听验证结果
     val isTokenValid: StateFlow<Boolean?> = _isTokenValid.asStateFlow()
+
+    private val _currentTenantUser = MutableStateFlow<TenantUserInfo?>(null)
+    val currentTenantUser: StateFlow<TenantUserInfo?> = _currentTenantUser.asStateFlow()
+
+    private val _tenantUserLoading = MutableStateFlow(false)
+    val tenantUserLoading: StateFlow<Boolean> = _tenantUserLoading.asStateFlow()
 
     init {
         loadUserData()
@@ -127,6 +135,111 @@ class MainViewModel @Inject constructor(
             dataStoreManager.clearAll()
             _currentUser.value = null
             _token.value = null
+        }
+    }
+
+    /**
+     * 加载租户用户信息
+     * 流程：
+     * 1. 从缓存获取 tenantId
+     * 2. 获取用户加入的租户列表
+     * 3. 判断缓存的 tenantId 是否有效
+     * 4. 调用接口获取租户用户信息
+     * 5. 保存到 DataStoreManager
+     */
+    fun loadTenantUserInfo() {
+        viewModelScope.launch {
+            _tenantUserLoading.value = true
+
+            try {
+                // 1. 获取缓存的租户ID
+                val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
+
+                // 2. 获取用户加入的租户列表
+                val tenantListResult = userRepository.getUserTenantList()
+
+                if (tenantListResult.isSuccess) {
+                    val tenantList = tenantListResult.getOrNull() ?: emptyList()
+
+                    // 3. 判断缓存的 tenantId 是否有效
+                    val isValidTenant = cachedTenantId != null && tenantList.any { it.id == cachedTenantId }
+                    val finalTenantId = if (isValidTenant) cachedTenantId else "public"
+
+                    // 4. 调用接口获取租户用户信息
+                    val result = userRepository.getTenantUserInfo(finalTenantId)
+
+                    if (result.isSuccess) {
+                        val userInfoList = result.getOrNull() ?: emptyList()
+                        // 取第一条数据（当前租户下的当前用户信息）
+                        val currentUserInfo = userInfoList.firstOrNull()
+
+                        if (currentUserInfo != null) {
+                            // 5. 保存到 DataStoreManager
+                            dataStoreManager.saveCurrentTenantUser(currentUserInfo)
+                            _currentTenantUser.value = currentUserInfo
+
+                            Log.d("MainViewModel", "租户用户信息加载成功: tenantId=${currentUserInfo.tenantId}, roleType=${currentUserInfo.roleType}")
+                        } else {
+                            Log.w("MainViewModel", "租户用户信息为空，可能用户未加入该租户")
+                            _currentTenantUser.value = null
+                        }
+                    } else {
+                        val error = result.exceptionOrNull()
+                        Log.e("MainViewModel", "获取租户用户信息失败: ${error?.message}")
+                        _currentTenantUser.value = null
+                    }
+                } else {
+                    Log.e("MainViewModel", "获取租户列表失败: ${tenantListResult.exceptionOrNull()?.message}")
+                    // 租户列表获取失败，使用默认 tenantId = "public"
+                    val result = userRepository.getTenantUserInfo("public")
+                    if (result.isSuccess) {
+                        val userInfoList = result.getOrNull() ?: emptyList()
+                        val currentUserInfo = userInfoList.firstOrNull()
+                        currentUserInfo?.let {
+                            dataStoreManager.saveCurrentTenantUser(it)
+                            _currentTenantUser.value = it
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "加载租户用户信息异常", e)
+            } finally {
+                _tenantUserLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * 切换租户时重新加载租户用户信息
+     * @param tenantId 新选择的租户ID
+     * @param tenantList 租户列表（用于验证）
+     */
+    fun refreshTenantUserInfo(tenantId: String, tenantList: List<Tenant>) {
+        viewModelScope.launch {
+            _tenantUserLoading.value = true
+
+            try {
+                // 判断 tenantId 是否有效
+                val isValidTenant = tenantList.any { it.id == tenantId }
+                val finalTenantId = if (isValidTenant) tenantId else "public"
+
+                val result = userRepository.getTenantUserInfo(finalTenantId)
+
+                if (result.isSuccess) {
+                    val userInfoList = result.getOrNull() ?: emptyList()
+                    val currentUserInfo = userInfoList.firstOrNull()
+
+                    if (currentUserInfo != null) {
+                        dataStoreManager.saveCurrentTenantUser(currentUserInfo)
+                        _currentTenantUser.value = currentUserInfo
+                        Log.d("MainViewModel", "切换租户后重新加载租户用户信息成功: tenantId=${currentUserInfo.tenantId}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "刷新租户用户信息异常", e)
+            } finally {
+                _tenantUserLoading.value = false
+            }
         }
     }
 }

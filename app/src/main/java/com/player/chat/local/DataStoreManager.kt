@@ -13,6 +13,7 @@ import com.player.chat.model.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import com.player.chat.model.TenantUser
+import com.player.chat.model.TenantUserInfo
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
@@ -125,4 +126,32 @@ class DataStoreManager(private val context: Context) {
         .map { preferences ->
             preferences[booleanPreferencesKey(PreferenceKeys.THINK_MODE)] ?: false
         }
+
+    /**
+     * 保存当前租户用户信息
+     */
+    suspend fun saveCurrentTenantUser(tenantUserInfo: TenantUserInfo) {
+        val tenantUserJson = gson.toJson(tenantUserInfo)
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT_USER)] = tenantUserJson
+        }
+    }
+
+    /**
+     * 获取当前租户用户信息
+     */
+    fun getCurrentTenantUser(): Flow<TenantUserInfo?> = context.dataStore.data
+        .map { preferences ->
+            val tenantUserJson = preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT_USER)]
+            tenantUserJson?.let { gson.fromJson(it, TenantUserInfo::class.java) }
+        }
+
+    /**
+     * 清除租户用户信息
+     */
+    suspend fun clearCurrentTenantUser() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(stringPreferencesKey(PreferenceKeys.CURRENT_TENANT_USER))
+        }
+    }
 }

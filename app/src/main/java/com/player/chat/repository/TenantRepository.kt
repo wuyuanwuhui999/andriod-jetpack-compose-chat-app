@@ -1,11 +1,10 @@
 package com.player.chat.repository
 
 import android.util.Log
-import com.player.chat.model.ApiResponse
 import com.player.chat.model.Tenant
 import com.player.chat.model.TenantUser
+import com.player.chat.model.TenantUserInfo
 import com.player.chat.network.ApiService
-import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -128,5 +127,68 @@ class TenantRepository @Inject constructor(
     ): Result<TenantUser> {
         // TODO: 当后端提供更新租户用户角色接口时实现
         return Result.failure(UnsupportedOperationException("接口暂未实现"))
+    }
+
+    // repository/TenantRepository.kt - 添加以下方法
+
+    /**
+     * 获取租户用户信息
+     * @param tenantId 租户ID
+     * @return Result<List<TenantUserInfo>>
+     */
+    suspend fun getTenantUserInfo(tenantId: String?): Result<List<TenantUserInfo>> {
+        return try {
+            Log.d("TenantRepository", "========== 获取租户用户信息 ==========")
+            Log.d("TenantRepository", "请求参数 - tenantId: $tenantId")
+
+            val response = apiService.getTenantUser(tenantId)
+
+            Log.d("TenantRepository", "响应状态码: ${response.code()}")
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    val userInfoList = body.data ?: emptyList()
+                    Log.d("TenantRepository", "获取租户用户信息成功，数量: ${userInfoList.size}")
+                    Result.success(userInfoList)
+                } else {
+                    val errorMsg = body?.message ?: "获取租户用户信息失败"
+                    Log.e("TenantRepository", "获取租户用户信息失败: $errorMsg")
+                    Result.failure(Exception(errorMsg))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("TenantRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TenantRepository", "获取租户用户信息异常", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 智能获取租户用户信息
+     * 根据缓存的 tenantId 判断是否有效，无效则使用默认值 "public"
+     * @param cachedTenantId 缓存的租户ID
+     * @param tenantList 用户加入的租户列表
+     * @return Result<List<TenantUserInfo>>
+     */
+    suspend fun getTenantUserInfoSmartly(
+        cachedTenantId: String?,
+        tenantList: List<Tenant>
+    ): Result<List<TenantUserInfo>> {
+        // 判断缓存的 tenantId 是否在租户列表中有效
+        val isValidTenant = cachedTenantId != null && tenantList.any { it.id == cachedTenantId }
+
+        val finalTenantId = if (isValidTenant) {
+            Log.d("TenantRepository", "使用缓存的租户ID: $cachedTenantId")
+            cachedTenantId
+        } else {
+            Log.d("TenantRepository", "缓存的租户ID无效或不存在，使用默认租户: public")
+            "public"
+        }
+
+        return getTenantUserInfo(finalTenantId)
     }
 }

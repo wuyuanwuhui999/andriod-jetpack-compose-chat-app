@@ -38,6 +38,7 @@ import java.util.*
 /**
  * 用户信息页面
  * 支持查看和编辑用户信息，包括头像上传、昵称、电话、邮箱、性别、出生日期、地区、个性签名等
+ * 同时展示当前租户的角色信息（租户角色、工号、加入时间）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +54,10 @@ fun UserPage(
     val showTenantDialog by userViewModel.showTenantDialog.collectAsState()
     val showLogoutDialog by userViewModel.showLogoutDialog.collectAsState()
     val updateResult by userViewModel.updateResult.collectAsState()
+
+    // 获取当前租户用户信息
+    val currentTenantUser by mainViewModel.currentTenantUser.collectAsState()
+    val tenantUserLoading by mainViewModel.tenantUserLoading.collectAsState()
 
     val context = LocalContext.current
 
@@ -95,19 +100,28 @@ fun UserPage(
     // 监听更新结果，显示提示
     LaunchedEffect(updateResult) {
         updateResult?.let { result ->
-            // 可以在这里添加 Toast 或 Snackbar 提示
             when (result) {
                 is UpdateResult.Success -> {
-                    // 显示成功提示
                     android.widget.Toast.makeText(context, result.message, android.widget.Toast.LENGTH_SHORT).show()
                 }
                 is UpdateResult.Error -> {
-                    // 显示错误提示
                     android.widget.Toast.makeText(context, result.message, android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
             kotlinx.coroutines.delay(2000)
             userViewModel.resetUpdateResult()
+        }
+    }
+
+    // 初始化加载租户用户信息
+    LaunchedEffect(Unit) {
+        mainViewModel.loadTenantUserInfo()
+    }
+
+    // 监听租户变化，当租户切换时重新加载租户用户信息
+    LaunchedEffect(currentTenant?.id) {
+        if (currentTenant != null && tenantList.isNotEmpty()) {
+            mainViewModel.refreshTenantUserInfo(currentTenant!!.id, tenantList)
         }
     }
 
@@ -169,7 +183,7 @@ fun UserPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(Dimens.middleGap),
-                        verticalArrangement = Arrangement.spacedBy(0.dp)  // 分隔线自带间距，不需要额外间距
+                        verticalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
                         // 头像 - 可点击
                         Row(
@@ -343,6 +357,118 @@ fun UserPage(
                                 showEditDialog = true
                             }
                         )
+
+                        Divider(color = Color.Gray.copy(alpha = 0.2f))
+
+                        // 租户角色信息展示
+                        if (tenantUserLoading) {
+                            // 加载中状态
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = Dimens.middleGap),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "租户角色",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = Dimens.normalFontSize
+                                )
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(Dimens.smallIconSize),
+                                    strokeWidth = Dimens.strokeWidth
+                                )
+                            }
+                        } else {
+                            currentTenantUser?.let { tenantUser ->
+                                // 租户角色
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = Dimens.middleGap),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "租户角色",
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = Dimens.normalFontSize
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = when (tenantUser.roleType) {
+                                            2 -> Color.Primary.copy(alpha = 0.1f)  // 超级管理员
+                                            1 -> Color.SecondaryColor.copy(alpha = 0.1f)  // 租户管理员
+                                            else -> Color.Gray.copy(alpha = 0.1f)  // 普通用户
+                                        }
+                                    ) {
+                                        Text(
+                                            text = when (tenantUser.roleType) {
+                                                2 -> "超级管理员"
+                                                1 -> "租户管理员"
+                                                else -> "普通用户"
+                                            },
+                                            color = when (tenantUser.roleType) {
+                                                2 -> Color.Primary
+                                                1 -> Color.SecondaryColor
+                                                else -> Color.Gray
+                                            },
+                                            fontSize = Dimens.normalFontSize,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+
+                                Divider(color = Color.Gray.copy(alpha = 0.2f))
+
+                                // 工号（取用户ID后8位）
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = Dimens.middleGap),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "工号",
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = Dimens.normalFontSize
+                                    )
+                                    Text(
+                                        text = tenantUser.userId.takeLast(8),
+                                        color = Color.Gray,
+                                        fontSize = Dimens.normalFontSize
+                                    )
+                                }
+
+                                Divider(color = Color.Gray.copy(alpha = 0.2f))
+
+                                // 加入时间
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = Dimens.middleGap),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "加入时间",
+                                        color = Color.Black,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = Dimens.normalFontSize
+                                    )
+                                    Text(
+                                        text = tenantUser.joinDate,
+                                        color = Color.Gray,
+                                        fontSize = Dimens.normalFontSize
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -367,6 +493,7 @@ fun UserPage(
                 }
             }
 
+            // 修改密码按钮
             item {
                 Button(
                     onClick = {
