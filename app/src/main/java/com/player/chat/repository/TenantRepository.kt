@@ -85,7 +85,6 @@ class TenantRepository @Inject constructor(
                 Result.failure(result.exceptionOrNull() ?: Exception("获取租户信息失败"))
             }
         } catch (e: Exception) {
-            Log.e("TenantRepository", "获取租户信息异常", e)
             Result.failure(e)
         }
     }
@@ -183,10 +182,8 @@ class TenantRepository @Inject constructor(
         val isValidTenant = cachedTenantId != null && tenantList.any { it.id == cachedTenantId }
 
         val finalTenantId = if (isValidTenant) {
-            Log.d("TenantRepository", "使用缓存的租户ID: $cachedTenantId")
             cachedTenantId
         } else {
-            Log.d("TenantRepository", "缓存的租户ID无效或不存在，使用默认租户: public")
             "public"
         }
 
