@@ -226,17 +226,17 @@ fun ChatPage(
                 onClick = { chatViewModel.toggleThinkMode() },
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = if (thinkMode) Color.Primary else Color.Gray,
+                    contentColor = if (thinkMode) Color.Primary else Color.disableTextColor,
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(
                     width = Dimens.borderSize,
-                    color = if (thinkMode) Color.Primary else Color.Gray
+                    color = if (thinkMode) Color.Primary else Color.secondary
                 )
             ) {
                 Text(
                     text = "思考模式",
-                    color = if (thinkMode) Color.Primary else Color.Gray
+                    color = if (thinkMode) Color.Primary else Color.secondary
                 )
             }
 
@@ -245,17 +245,17 @@ fun ChatPage(
                 onClick = { chatViewModel.toggleLanguage() },
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.Gray,
+                    contentColor = Color.secondary,
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(
                     width = Dimens.borderSize,
-                    color = Color.Gray
+                    color = Color.secondary
                 )
             ) {
                 Text(
                     text = if (language == "zh") "中文" else "English",
-                    color = Color.Gray
+                    color = Color.secondary
                 )
             }
         }
@@ -330,13 +330,13 @@ fun ChatPage(
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
                             strokeWidth = 2.dp,
-                            color = if (inputText.isNotBlank()) Color.Primary else Color.Gray
+                            color = if (inputText.isNotBlank()) Color.Primary else Color.secondary
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.Send,
                             contentDescription = "发送",
-                            tint = if (inputText.isNotBlank()) Color.Primary else Color.Gray,
+                            tint = if (inputText.isNotBlank()) Color.Primary else Color.secondary,
                             modifier = Modifier.rotate(-30f)
                         )
                     }

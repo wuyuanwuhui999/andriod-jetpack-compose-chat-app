@@ -314,7 +314,7 @@ fun TenantUserItem(
             shape = RoundedCornerShape(4.dp),
             color = when (tenantUser.roleType) {
                 1 -> Color.Primary.copy(alpha = 0.1f) // 管理员
-                2 -> Color.SecondaryColor.copy(alpha = 0.1f) // 普通成员
+                2 -> Color.secondary.copy(alpha = 0.1f) // 普通成员
                 else -> Color.Gray.copy(alpha = 0.1f)
             }
         ) {
@@ -326,7 +326,7 @@ fun TenantUserItem(
                 },
                 color = when (tenantUser.roleType) {
                     1 -> Color.Primary
-                    2 -> Color.SecondaryColor
+                    2 -> Color.secondary
                     else -> Color.Gray
                 },
                 fontSize = Dimens.normalFontSize,

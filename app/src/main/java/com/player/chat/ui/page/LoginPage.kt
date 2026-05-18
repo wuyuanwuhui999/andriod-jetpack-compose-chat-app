@@ -100,7 +100,7 @@ fun LoginPage(
                     text = {
                         Text(
                             text = "邮箱验证码登录",
-                            color = if (selectedTab == 1) Color.Primary else Color.subTitleColor
+                            color = if (selectedTab == 1) Color.Primary else Color.secondary
                         )
                     }
                 )
@@ -203,13 +203,13 @@ fun LoginPage(
                     .fillMaxWidth()
                     .height(Dimens.btnHeight),
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = Color.subTitleColor
+                    contentColor = Color.secondary
                 )
             ) {
                 Text(
                     text = "忘记密码？",
                     fontSize = Dimens.normalFontSize,
-                    color = Color.subTitleColor,
+                    color = Color.secondary,
                     textDecoration = TextDecoration.Underline                 )
             }
         }
