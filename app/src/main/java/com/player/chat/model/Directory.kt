@@ -16,24 +16,8 @@ data class Directory(
     val tenantId: String,
 
     @SerializedName("createTime")
-    val createTime: String? = null,
+    val createTime: String? = null,  // 已经是 String，保持
 
     @SerializedName("updateTime")
-    val updateTime: String? = null
-)
-
-data class DirectoryListResponse(
-    @SerializedName("data")
-    val data: List<Directory>? = null,
-
-    @SerializedName("status")
-    val status: String,
-
-    @SerializedName("msg")
-    val message: String?
-)
-
-data class CreateDirectoryRequest(
-    val directory: String,
-    val tenantId: String
+    val updateTime: String? = null  // 已经是 String，保持
 )

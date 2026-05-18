@@ -30,7 +30,7 @@ interface ApiService {
     suspend fun getUserTenantList(): Response<ApiResponse<List<Tenant>>>
 
     @GET("/service/chat/getDirectoryList")
-    suspend fun getDirectoryList(@Query("tenantId") tenantId: String): Response<DirectoryListResponse>
+    suspend fun getDirectoryList(@Query("tenantId") tenantId: String): Response<ApiResponse<List<Directory>>>
 
     @POST("/service/chat/createDir")
     @Multipart

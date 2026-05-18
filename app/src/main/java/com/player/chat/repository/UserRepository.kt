@@ -390,7 +390,7 @@ class UserRepository @Inject constructor(
      * @param tenantId 租户ID
      * @return Result<List<TenantUserInfo>>
      */
-    suspend fun getTenantUserInfo(tenantId: String): Result<List<TenantUserInfo>> {
+    suspend fun getTenantUserInfo(tenantId: String?): Result<List<TenantUserInfo>> {
         return try {
             Log.d("UserRepository", "========== 获取租户用户信息 ==========")
             Log.d("UserRepository", "请求参数 - tenantId: $tenantId")

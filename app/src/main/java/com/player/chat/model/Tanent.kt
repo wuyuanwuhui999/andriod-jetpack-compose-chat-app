@@ -1,34 +1,17 @@
+// Tanent.kt - 修改 Tenant 数据类
 package com.player.chat.model
 
 import com.google.gson.annotations.SerializedName
 import java.util.Date
 
-
-/**
- * 租户状态枚举
- */
 enum class TenantStatus(val value: Int) {
-    /** 禁用 */
     @SerializedName("0")
     DISABLED(0),
 
-    /** 启用 */
     @SerializedName("1")
     ENABLED(1)
 }
 
-/**
- * 租户数据类型
- * @property id 租户ID（主键）
- * @property name 租户名称
- * @property code 租户编码（唯一）
- * @property description 租户描述（可选）
- * @property status 租户状态
- * @property createDate 创建时间
- * @property updateDate 更新时间（可选）
- * @property createdBy 创建人ID
- * @property updatedBy 更新人ID（可选）
- */
 data class Tenant(
     @SerializedName("id")
     val id: String,
@@ -45,14 +28,13 @@ data class Tenant(
     @SerializedName("status")
     val status: TenantStatus,
 
-    // 如果 API 返回的是 create_date，这里需要保持 @SerializedName 一致
+    // 将 Date 类型改为 String 类型
     @SerializedName("createDate")
-    val createDate: Date? = null,
+    val createDate: String? = null,  // 改为 String
 
     @SerializedName("updateDate")
-    val updateDate: Date? = null,
+    val updateDate: String? = null,  // 改为 String
 
-    // 与 TenantUser 保持一致，但注意 API 实际返回的字段名
     @SerializedName("createdBy")
     val createdBy: String,
 
@@ -61,10 +43,6 @@ data class Tenant(
 )
 
 object DefaultTenant {
-    /**
-     * 默认租户 - 私人空间
-     * 用于当前用户没有加入任何租户时的默认展示
-     */
     val PERSONAL_SPACE = Tenant(
         id = "personal_space",
         name = "私人空间",

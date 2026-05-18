@@ -19,11 +19,12 @@ data class Prompt(
     val prompt: String,
 
     @SerializedName("createTime")
-    val createTime: String? = null,
+    val createTime: String? = null,  // 已经是 String，保持
 
     @SerializedName("updateTime")
-    val updateTime: String? = null
+    val updateTime: String? = null  // 已经是 String，保持
 )
+
 
 /**
  * 更新提示词请求
