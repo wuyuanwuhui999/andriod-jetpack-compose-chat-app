@@ -55,12 +55,12 @@ class UserViewModel @Inject constructor(
                         id = it.id,
                         name = it.name,
                         code = it.code,
-                        description = null,
-                        status = TenantStatus.ENABLED,
-                        createDate = null,
-                        updateDate = null,
-                        createdBy = it.createdBy,
-                        updatedBy = null
+                        description = it.description,  // 使用原对象的 description
+                        status = it.status,
+                        createDate = it.createDate,
+                        updateDate = it.updateDate,
+                        createdBy = it.createdBy ?: "",  // 处理空值，使用空字符串作为默认值
+                        updatedBy = it.updatedBy
                     )
                 }
             }

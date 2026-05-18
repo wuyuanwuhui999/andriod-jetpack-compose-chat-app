@@ -1,4 +1,3 @@
-// Tanent.kt - 修改 Tenant 数据类
 package com.player.chat.model
 
 import com.google.gson.annotations.SerializedName
@@ -28,15 +27,14 @@ data class Tenant(
     @SerializedName("status")
     val status: TenantStatus,
 
-    // 将 Date 类型改为 String 类型
     @SerializedName("createDate")
-    val createDate: String? = null,  // 改为 String
+    val createDate: String? = null,
 
     @SerializedName("updateDate")
-    val updateDate: String? = null,  // 改为 String
+    val updateDate: String? = null,
 
     @SerializedName("createdBy")
-    val createdBy: String,
+    val createdBy: String? = null,  // 修改为可空类型
 
     @SerializedName("updatedBy")
     val updatedBy: String? = null
@@ -51,7 +49,7 @@ object DefaultTenant {
         status = TenantStatus.ENABLED,
         createDate = null,
         updateDate = null,
-        createdBy = "",
+        createdBy = "",  // 使用空字符串而非 null，避免空指针
         updatedBy = null
     )
 }

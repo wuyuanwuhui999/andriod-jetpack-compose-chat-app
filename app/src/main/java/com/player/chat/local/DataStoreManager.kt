@@ -78,8 +78,18 @@ class DataStoreManager(private val context: Context) {
         }
 
     // 当前租户信息
+    /**
+     * 保存当前租户信息
+     * @param tenant 租户对象
+     */
     suspend fun saveCurrentTenant(tenant: Tenant) {
-        val tenantJson = gson.toJson(tenant)
+        // 确保 createdBy 字段不为 null，如果为 null 则使用空字符串
+        val safeTenant = if (tenant.createdBy == null) {
+            tenant.copy(createdBy = "")
+        } else {
+            tenant
+        }
+        val tenantJson = gson.toJson(safeTenant)
         context.dataStore.edit { preferences ->
             preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT)] = tenantJson
         }
