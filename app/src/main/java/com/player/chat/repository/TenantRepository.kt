@@ -50,53 +50,21 @@ class TenantRepository @Inject constructor(
      */
     suspend fun getUserTenantList(): Result<List<Tenant>> {
         return try {
-            Log.d("TenantRepository", "========== 获取租户列表 ==========")
-            Log.d("TenantRepository", "请求时间: ${System.currentTimeMillis()}")
-
             val response = apiService.getUserTenantList()
-
-            Log.d("TenantRepository", "响应状态码: ${response.code()}")
-            Log.d("TenantRepository", "响应是否成功: ${response.isSuccessful}")
-            Log.d("TenantRepository", "响应消息: ${response.message()}")
-
             if (response.isSuccessful) {
                 val body = response.body()
-                Log.d("TenantRepository", "响应body: $body")
-                Log.d("TenantRepository", "响应status: ${body?.status}")
-                Log.d("TenantRepository", "响应msg: ${body?.message}")
-                Log.d("TenantRepository", "响应data: ${body?.data}")
-                Log.d("TenantRepository", "响应data类型: ${body?.data?.javaClass?.simpleName}")
-
                 // 打印data的详细信息
-                val data = body?.data
-                if (data != null) {
-                    Log.d("TenantRepository", "data是否为空: ${data.isEmpty()}")
-                    Log.d("TenantRepository", "data数量: ${data.size}")
-                    data.forEachIndexed { index, tenant ->
-                        Log.d("TenantRepository", "租户[$index]: id=${tenant.id}, name=${tenant.name}, code=${tenant.code}")
-                    }
-                } else {
-                    Log.e("TenantRepository", "data为null")
-                }
-
                 if (body?.status == "SUCCESS") {
                     val tenantList = body.data ?: emptyList()
-                    Log.d("TenantRepository", "获取租户列表成功，数量: ${tenantList.size}")
                     Result.success(tenantList)
                 } else {
                     val errorMsg = body?.message ?: "获取租户列表失败"
-                    Log.e("TenantRepository", "获取租户列表失败: status=${body?.status}, msg=$errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
             } else {
-                val errorBody = response.errorBody()?.string()
-                Log.e("TenantRepository", "网络请求失败")
-                Log.e("TenantRepository", "状态码: ${response.code()}")
-                Log.e("TenantRepository", "错误信息: $errorBody")
                 Result.failure(Exception("网络请求失败: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.e("TenantRepository", "获取租户列表异常", e)
             Result.failure(e)
         }
     }
