@@ -1,12 +1,9 @@
-// MainViewModel.kt
 package com.player.chat.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.player.chat.chat.repository.UserRepository
 import com.player.chat.local.DataStoreManager
-import com.player.chat.model.Tenant
 import com.player.chat.model.TenantUserInfo
 import com.player.chat.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,12 +52,6 @@ class MainViewModel @Inject constructor(
 
                 // 2. 获取缓存的 token
                 var cachedToken = dataStoreManager.getToken().firstOrNull()
-
-                // 测试：如果 token 为空，使用写死的 token
-//                if (cachedToken.isNullOrBlank()) {
-//                    cachedToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3Njk4NDc2ODQsInN1YiI6IntcImF2YXRlclwiOlwiL3N0YXRpYy91c2VyL2F2YXRlci_lkLTml7blkLTliLsuanBnXCIsXCJiaXJ0aGRheVwiOlwiMTk5MC0xMC04XCIsXCJjcmVhdGVEYXRlXCI6XCIyMDE5LTA4LTEyIDAwOjAwOjAwXCIsXCJkaXNhYmxlZFwiOjAsXCJlbWFpbFwiOlwiMjc1MDE4NzIzQHFxLmNvbVwiLFwiaWRcIjpcImY3MWQ2YzAxNmZhOTRjZDI5ZjlkYjUzZjcxZWM3YjYyXCIsXCJwZXJtaXNzaW9uXCI6MCxcInJvbGVcIjpcInB1YmxpY1wiLFwic2V4XCI6MCxcInNpZ25cIjpcIuaXoOaXtuaXoOWIu-S4jeaDs-S9oFwiLFwidGVsZXBob25lXCI6XCIxNTMwMjY4Njk0N1wiLFwidXBkYXRlRGF0ZVwiOlwiMjAyNC0wMS0xOSAyMzoxNzoyOVwiLFwidXNlckFjY291bnRcIjpcIuWQtOaXtuWQtOWIu1wiLFwidXNlcm5hbWVcIjpcIuWQtOaXtuWQtOWIu1wifSIsImV4cCI6MTc3MjQzOTY4NH0.g0TEfj9KeNWymjQvos64yw1ucB8bB41VlBIHSk9rV30"
-//                    dataStoreManager.saveToken(cachedToken ?: "")
-//                }
 
                 _token.value = cachedToken
 
@@ -138,6 +129,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    // MainViewModel.kt - 修改 loadTenantUserInfo 方法
+
     /**
      * 加载租户用户信息
      * 流程：
@@ -150,7 +143,6 @@ class MainViewModel @Inject constructor(
     fun loadTenantUserInfo() {
         viewModelScope.launch {
             _tenantUserLoading.value = true
-
             try {
                 // 1. 获取缓存的租户ID
                 val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
@@ -165,81 +157,38 @@ class MainViewModel @Inject constructor(
                     val isValidTenant = cachedTenantId != null && tenantList.any { it.id == cachedTenantId }
                     val finalTenantId = if (isValidTenant) cachedTenantId else "public"
 
-                    // 4. 调用接口获取租户用户信息
+                    // 4. 调用接口获取租户用户信息（返回单个对象）
                     val result = userRepository.getTenantUserInfo(finalTenantId)
 
                     if (result.isSuccess) {
-                        val userInfoList = result.getOrNull() ?: emptyList()
-                        // 取第一条数据（当前租户下的当前用户信息）
-                        val currentUserInfo = userInfoList.firstOrNull()
-
+                        val currentUserInfo = result.getOrNull()
                         if (currentUserInfo != null) {
                             // 5. 保存到 DataStoreManager
                             dataStoreManager.saveCurrentTenantUser(currentUserInfo)
                             _currentTenantUser.value = currentUserInfo
 
-                            Log.d("MainViewModel", "租户用户信息加载成功: tenantId=${currentUserInfo.tenantId}, roleType=${currentUserInfo.roleType}")
                         } else {
-                            Log.w("MainViewModel", "租户用户信息为空，可能用户未加入该租户")
                             _currentTenantUser.value = null
                         }
                     } else {
                         val error = result.exceptionOrNull()
-                        Log.e("MainViewModel", "获取租户用户信息失败: ${error?.message}")
                         _currentTenantUser.value = null
                     }
                 } else {
-                    Log.e("MainViewModel", "获取租户列表失败: ${tenantListResult.exceptionOrNull()?.message}")
                     // 租户列表获取失败，使用默认 tenantId = "public"
                     val result = userRepository.getTenantUserInfo("public")
                     if (result.isSuccess) {
-                        val userInfoList = result.getOrNull() ?: emptyList()
-                        val currentUserInfo = userInfoList.firstOrNull()
+                        val currentUserInfo = result.getOrNull()
                         currentUserInfo?.let {
                             dataStoreManager.saveCurrentTenantUser(it)
                             _currentTenantUser.value = it
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Log.e("MainViewModel", "加载租户用户信息异常", e)
             } finally {
                 _tenantUserLoading.value = false
             }
         }
     }
 
-    /**
-     * 切换租户时重新加载租户用户信息
-     * @param tenantId 新选择的租户ID
-     * @param tenantList 租户列表（用于验证）
-     */
-    fun refreshTenantUserInfo(tenantId: String, tenantList: List<Tenant>) {
-        viewModelScope.launch {
-            _tenantUserLoading.value = true
-
-            try {
-                // 判断 tenantId 是否有效
-                val isValidTenant = tenantList.any { it.id == tenantId }
-                val finalTenantId = if (isValidTenant) tenantId else "public"
-
-                val result = userRepository.getTenantUserInfo(finalTenantId)
-
-                if (result.isSuccess) {
-                    val userInfoList = result.getOrNull() ?: emptyList()
-                    val currentUserInfo = userInfoList.firstOrNull()
-
-                    if (currentUserInfo != null) {
-                        dataStoreManager.saveCurrentTenantUser(currentUserInfo)
-                        _currentTenantUser.value = currentUserInfo
-                        Log.d("MainViewModel", "切换租户后重新加载租户用户信息成功: tenantId=${currentUserInfo.tenantId}")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("MainViewModel", "刷新租户用户信息异常", e)
-            } finally {
-                _tenantUserLoading.value = false
-            }
-        }
-    }
 }

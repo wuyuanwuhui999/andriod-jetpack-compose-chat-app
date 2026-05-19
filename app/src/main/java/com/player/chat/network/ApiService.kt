@@ -140,14 +140,14 @@ interface ApiService {
     ): Response<ApiResponse<Int>>
 
     /**
-     * 获取租户用户信息
+     * 获取租户用户信息（当前用户在该租户下的信息）
      * @param tenantId 租户ID
-     * @return 租户用户信息列表
+     * @return 单个租户用户信息对象
      */
     @GET("/service/tenant/getTenantUser")
     suspend fun getTenantUser(
         @Query("tenantId") tenantId: String?
-    ): Response<ApiResponse<List<TenantUserInfo>>>
+    ): Response<ApiResponse<TenantUserInfo>>  // 改为单个对象，不是列表
 
     /**
      * 删除租户用户

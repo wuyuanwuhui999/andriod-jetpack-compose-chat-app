@@ -1,4 +1,3 @@
-// UserPage.kt
 package com.player.chat.ui.page
 
 import android.net.Uri
@@ -116,13 +115,6 @@ fun UserPage(
     // 初始化加载租户用户信息
     LaunchedEffect(Unit) {
         mainViewModel.loadTenantUserInfo()
-    }
-
-    // 监听租户变化，当租户切换时重新加载租户用户信息
-    LaunchedEffect(currentTenant?.id) {
-        if (currentTenant != null && tenantList.isNotEmpty()) {
-            mainViewModel.refreshTenantUserInfo(currentTenant!!.id, tenantList)
-        }
     }
 
     // 性别选项

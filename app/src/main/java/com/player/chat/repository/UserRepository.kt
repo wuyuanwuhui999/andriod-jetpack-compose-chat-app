@@ -10,6 +10,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import javax.inject.Inject
+import kotlin.collections.emptyList
 
 class UserRepository @Inject constructor(
     private val apiService: ApiService,
@@ -383,38 +384,42 @@ class UserRepository @Inject constructor(
         }
     }
 
-    // chat/repository/UserRepository.kt - 添加以下方法
-
     /**
-     * 获取租户用户信息
+     * 获取租户用户信息（当前用户在该租户下的信息）
      * @param tenantId 租户ID
-     * @return Result<List<TenantUserInfo>>
+     * @return Result<TenantUserInfo>
      */
-    suspend fun getTenantUserInfo(tenantId: String?): Result<List<TenantUserInfo>> {
+    suspend fun getTenantUserInfo(tenantId: String?): Result<TenantUserInfo> {
         return try {
-            Log.d("UserRepository", "========== 获取租户用户信息 ==========")
-            Log.d("UserRepository", "请求参数 - tenantId: $tenantId")
+            Log.d("TenantRepository", "========== 获取租户用户信息 ==========")
+            Log.d("TenantRepository", "请求参数 - tenantId: $tenantId")
 
             val response = apiService.getTenantUser(tenantId)
+
+            Log.d("TenantRepository", "响应状态码: ${response.code()}")
 
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body?.status == "SUCCESS") {
-                    val userInfoList = body.data ?: emptyList()
-                    Log.d("UserRepository", "获取租户用户信息成功，数量: ${userInfoList.size}")
-                    Result.success(userInfoList)
+                    val userInfo = body.data
+                    if (userInfo != null) {
+                        Log.d("TenantRepository", "✅ 获取租户用户信息成功: roleType=${userInfo.roleType}")
+                        Result.success(userInfo)
+                    } else {
+                        Result.failure(Exception("租户用户信息为空"))
+                    }
                 } else {
                     val errorMsg = body?.message ?: "获取租户用户信息失败"
-                    Log.e("UserRepository", "获取租户用户信息失败: $errorMsg")
+                    Log.e("TenantRepository", "获取租户用户信息失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
             } else {
                 val errorBody = response.errorBody()?.string()
-                Log.e("UserRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
+                Log.e("TenantRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
                 Result.failure(Exception("网络请求失败: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.e("UserRepository", "获取租户用户信息异常", e)
+            Log.e("TenantRepository", "获取租户用户信息异常", e)
             Result.failure(e)
         }
     }
