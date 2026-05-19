@@ -122,19 +122,14 @@ fun UserPage(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = currentTenant?.name ?: "私人空间",
-                            color = Color.Black,
-                            fontSize = Dimens.normalFontSize,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = currentTenant?.name ?: "私人空间",
+                        color = Color.Black,
+                        fontSize = Dimens.normalFontSize,
+                        fontWeight = FontWeight.Medium
+                    )
                 },
                 navigationIcon = {
                     IconButton(
@@ -148,7 +143,7 @@ fun UserPage(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White,
                     titleContentColor = Color.Black,
                     navigationIconContentColor = Color.Black

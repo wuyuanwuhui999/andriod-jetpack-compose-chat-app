@@ -91,19 +91,14 @@ fun TenantManagePage(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "租户管理",
-                            color = Color.Black,
-                            fontSize = Dimens.normalFontSize,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = "租户管理",
+                        color = Color.Black,
+                        fontSize = Dimens.normalFontSize,
+                        fontWeight = FontWeight.Medium
+                    )
                 },
                 navigationIcon = {
                     IconButton(
@@ -116,7 +111,7 @@ fun TenantManagePage(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White,
                     titleContentColor = Color.Black,
                     navigationIconContentColor = Color.Black
