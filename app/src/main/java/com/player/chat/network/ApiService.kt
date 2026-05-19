@@ -148,4 +148,16 @@ interface ApiService {
     suspend fun getTenantUser(
         @Query("tenantId") tenantId: String?
     ): Response<ApiResponse<List<TenantUserInfo>>>
+
+    /**
+     * 删除租户用户
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     */
+    @DELETE("/service/tenant/deleteTenantUser/{tenantId}/{userId}")
+    suspend fun deleteTenantUser(
+        @Path("tenantId") tenantId: String,
+        @Path("userId") userId: String
+    ): Response<ApiResponse<Int>>
+
 }

@@ -493,6 +493,31 @@ fun UserPage(
                 }
             }
 
+            // 租户管理按钮（仅管理员可见）
+            if (currentTenantUser?.roleType == 1 || currentTenantUser?.roleType == 2) {
+                item {
+                    Button(
+                        onClick = {
+                            navController.navigate(Screens.TenantManage.route)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Dimens.btnHeight),
+                        shape = RoundedCornerShape(Dimens.btnHeight / 2),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
+                        border = BorderStroke(Dimens.borderSize, Color.Gray)
+                    ) {
+                        Text(
+                            text = "租户管理",
+                            fontSize = Dimens.normalFontSize,
+                        )
+                    }
+                }
+            }
+
             // 修改密码按钮
             item {
                 Button(

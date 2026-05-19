@@ -126,6 +126,44 @@ class TenantManageViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 删除租户用户
+     * @param tenantUser 要删除的租户用户对象
+     */
+    fun deleteTenantUser(tenantUser: TenantUser) {
+        viewModelScope.launch {
+            try {
+                val tenantId = _currentTenant.value?.id ?: return@launch
+
+                val result = tenantRepository.deleteTenantUser(tenantId, tenantUser.userId)
+
+                if (result.isSuccess) {
+                    val deletedCount = result.getOrNull() ?: 0
+                    if (deletedCount > 0) {
+                        // 删除成功，从列表中移除该用户
+                        val currentList = _tenantUserList.value.toMutableList()
+                        currentList.removeAll { it.id == tenantUser.id }
+                        _tenantUserList.value = currentList
+
+                        // 如果删除后列表少于10条且有更多数据，重新加载第一页
+                        if (currentList.size < 10 && _hasMoreData.value) {
+                            refreshTenantUserList()
+                        }
+
+                        Log.d("TenantManage", "删除用户成功: ${tenantUser.username}")
+                    } else {
+                        Log.e("TenantManage", "删除用户失败: 返回数据为0")
+                    }
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message ?: "删除用户失败"
+                    Log.e("TenantManage", "删除用户失败: $errorMsg")
+                }
+            } catch (e: Exception) {
+                Log.e("TenantManage", "删除用户异常", e)
+            }
+        }
+    }
+
     fun resetEndTip() {
         _showEndTip.value = false
     }

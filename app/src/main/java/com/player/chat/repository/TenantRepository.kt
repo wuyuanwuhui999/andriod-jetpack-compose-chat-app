@@ -189,4 +189,31 @@ class TenantRepository @Inject constructor(
 
         return getTenantUserInfo(finalTenantId)
     }
+
+    /**
+     * 删除租户用户
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     * @return Result<Int> 返回影响行数
+     */
+    suspend fun deleteTenantUser(tenantId: String, userId: String): Result<Int> {
+        return try {
+            val response = apiService.deleteTenantUser(tenantId, userId)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    val deletedCount = body.data ?: 0
+                    Result.success(deletedCount)
+                } else {
+                    Result.failure(Exception(body?.message ?: "删除租户用户失败"))
+                }
+            } else {
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TenantRepository", "删除租户用户异常", e)
+            Result.failure(e)
+        }
+    }
 }
