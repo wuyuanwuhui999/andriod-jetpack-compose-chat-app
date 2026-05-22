@@ -69,7 +69,7 @@ class UserViewModel @Inject constructor(
 
     private fun loadTenantList() {
         viewModelScope.launch {
-            val result = userRepository.getUserTenantList()
+            val result = userRepository.getTenantList()
             if (result.isSuccess) {
                 _tenantList.value = result.getOrNull() ?: emptyList()
             }

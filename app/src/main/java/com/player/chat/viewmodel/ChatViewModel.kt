@@ -163,7 +163,7 @@ class ChatViewModel @Inject constructor(
             val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 
             // 2. 使用 TenantRepository 获取租户列表
-            val result = tenantRepository.getUserTenantList()
+            val result = tenantRepository.getTenantList()
 
             if (result.isSuccess) {
                 val tenantList = result.getOrNull() ?: emptyList()

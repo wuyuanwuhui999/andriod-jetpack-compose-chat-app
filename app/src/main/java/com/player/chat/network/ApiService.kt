@@ -26,8 +26,8 @@ interface ApiService {
     @GET("/service/chat/getModelList")
     suspend fun getModelList(): Response<ApiResponse<List<ChatModel>>>
 
-    @GET("/service/tenant/getUserTenantList")
-    suspend fun getUserTenantList(): Response<ApiResponse<List<Tenant>>>
+    @GET("/service/tenant/getTenantList")
+    suspend fun getTenantList(): Response<ApiResponse<List<Tenant>>>
 
     @GET("/service/chat/getDirectoryList")
     suspend fun getDirectoryList(@Query("tenantId") tenantId: String): Response<ApiResponse<List<Directory>>>
@@ -160,4 +160,29 @@ interface ApiService {
         @Path("userId") userId: String
     ): Response<ApiResponse<Int>>
 
+    /**
+     * 搜索用户（按关键字）
+     * @param keyword 搜索关键字
+     * @param tenantId 租户ID（用于过滤已在租户内的用户）
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     */
+    @GET("/service/user/searchUsers")
+    suspend fun searchUsers(
+        @Query("keyword") keyword: String,
+        @Query("tenantId") tenantId: String,
+        @Query("pageNum") pageNum: Int = 1,
+        @Query("pageSize") pageSize: Int = 100
+    ): Response<ApiResponse<List<SearchUser>>>
+
+    /**
+     * 添加租户用户
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     */
+    @POST("/service/tenant/addTenantUser/{tenantId}/{userId}")
+    suspend fun addTenantUser(
+        @Path("tenantId") tenantId: String,
+        @Path("userId") userId: String
+    ): Response<ApiResponse<Int>>
 }

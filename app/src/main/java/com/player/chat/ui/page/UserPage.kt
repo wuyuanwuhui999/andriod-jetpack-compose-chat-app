@@ -117,6 +117,14 @@ fun UserPage(
         mainViewModel.loadTenantUserInfo()
     }
 
+    LaunchedEffect(currentTenantUser) {
+        if (currentTenantUser != null) {
+            android.widget.Toast.makeText(context, "roleType: ${currentTenantUser?.roleType}", android.widget.Toast.LENGTH_SHORT).show()
+        } else {
+            android.widget.Toast.makeText(context, "currentTenantUser is null", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // 性别选项
     val genderOptions = listOf("男", "女")
 
@@ -481,7 +489,7 @@ fun UserPage(
             }
 
             // 租户管理按钮（仅管理员可见）
-            if (currentTenantUser?.roleType == 1 || currentTenantUser?.roleType == 2) {
+            if (currentTenantUser != null && (currentTenantUser!!.roleType == 1 || currentTenantUser!!.roleType == 2)) {
                 item {
                     Button(
                         onClick = {
@@ -504,6 +512,7 @@ fun UserPage(
                     }
                 }
             }
+
 
             // 修改密码按钮
             item {

@@ -1,6 +1,7 @@
 package com.player.chat.repository
 
 import android.util.Log
+import com.player.chat.model.SearchUser
 import com.player.chat.model.Tenant
 import com.player.chat.model.TenantUser
 import com.player.chat.model.TenantUserInfo
@@ -48,9 +49,9 @@ class TenantRepository @Inject constructor(
      * 获取用户加入的租户列表
      * @return Result<List<Tenant>>
      */
-    suspend fun getUserTenantList(): Result<List<Tenant>> {
+    suspend fun getTenantList(): Result<List<Tenant>> {
         return try {
-            val response = apiService.getUserTenantList()
+            val response = apiService.getTenantList()
             if (response.isSuccessful) {
                 val body = response.body()
                 // 打印data的详细信息
@@ -71,13 +72,13 @@ class TenantRepository @Inject constructor(
 
     /**
      * 根据租户ID获取租户信息
-     * 注意：如果后端没有单独提供此接口，可以使用 getUserTenantList 再过滤
+     * 注意：如果后端没有单独提供此接口，可以使用 getTenantList 再过滤
      * @param tenantId 租户ID
      * @return Result<Tenant?>
      */
     suspend fun getTenantById(tenantId: String): Result<Tenant?> {
         return try {
-            val result = getUserTenantList()
+            val result = getTenantList()
             if (result.isSuccess) {
                 val tenant = result.getOrNull()?.find { it.id == tenantId }
                 Result.success(tenant)
@@ -152,6 +153,61 @@ class TenantRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("TenantRepository", "删除租户用户异常", e)
+            Result.failure(e)
+        }
+    }
+
+    // 在 TenantRepository 类中添加以下方法
+
+    /**
+     * 搜索用户
+     * @param keyword 搜索关键字
+     * @param tenantId 租户ID
+     * @return Result<List<SearchUser>>
+     */
+    suspend fun searchUsers(keyword: String, tenantId: String): Result<List<SearchUser>> {
+        return try {
+            val response = apiService.searchUsers(keyword, tenantId)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    Result.success(body.data ?: emptyList())
+                } else {
+                    Result.failure(Exception(body?.message ?: "搜索用户失败"))
+                }
+            } else {
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TenantRepository", "搜索用户异常", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 添加租户用户
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     * @return Result<Int> 返回影响行数
+     */
+    suspend fun addTenantUser(tenantId: String, userId: String): Result<Int> {
+        return try {
+            val response = apiService.addTenantUser(tenantId, userId)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    val addedCount = body.data ?: 0
+                    Result.success(addedCount)
+                } else {
+                    Result.failure(Exception(body?.message ?: "添加租户用户失败"))
+                }
+            } else {
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TenantRepository", "添加租户用户异常", e)
             Result.failure(e)
         }
     }

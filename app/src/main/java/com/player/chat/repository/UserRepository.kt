@@ -101,9 +101,9 @@ class UserRepository @Inject constructor(
         dataStoreManager.clearAll()
     }
 
-    suspend fun getUserTenantList(): Result<List<Tenant>> {
+    suspend fun getTenantList(): Result<List<Tenant>> {
         return try {
-            val response = apiService.getUserTenantList()
+            val response = apiService.getTenantList()
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
@@ -391,35 +391,24 @@ class UserRepository @Inject constructor(
      */
     suspend fun getTenantUserInfo(tenantId: String?): Result<TenantUserInfo> {
         return try {
-            Log.d("TenantRepository", "========== 获取租户用户信息 ==========")
-            Log.d("TenantRepository", "请求参数 - tenantId: $tenantId")
-
             val response = apiService.getTenantUser(tenantId)
-
-            Log.d("TenantRepository", "响应状态码: ${response.code()}")
-
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body?.status == "SUCCESS") {
                     val userInfo = body.data
                     if (userInfo != null) {
-                        Log.d("TenantRepository", "✅ 获取租户用户信息成功: roleType=${userInfo.roleType}")
                         Result.success(userInfo)
                     } else {
                         Result.failure(Exception("租户用户信息为空"))
                     }
                 } else {
                     val errorMsg = body?.message ?: "获取租户用户信息失败"
-                    Log.e("TenantRepository", "获取租户用户信息失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
             } else {
-                val errorBody = response.errorBody()?.string()
-                Log.e("TenantRepository", "网络请求失败 - 状态码: ${response.code()}, 错误信息: $errorBody")
                 Result.failure(Exception("网络请求失败: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.e("TenantRepository", "获取租户用户信息异常", e)
             Result.failure(e)
         }
     }

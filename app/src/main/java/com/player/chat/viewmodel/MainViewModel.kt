@@ -1,5 +1,6 @@
 package com.player.chat.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.player.chat.chat.repository.UserRepository
@@ -129,8 +130,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // MainViewModel.kt - 修改 loadTenantUserInfo 方法
-
     /**
      * 加载租户用户信息
      * 流程：
@@ -148,7 +147,7 @@ class MainViewModel @Inject constructor(
                 val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 
                 // 2. 获取用户加入的租户列表
-                val tenantListResult = userRepository.getUserTenantList()
+                val tenantListResult = userRepository.getTenantList()
 
                 if (tenantListResult.isSuccess) {
                     val tenantList = tenantListResult.getOrNull() ?: emptyList()
@@ -157,25 +156,25 @@ class MainViewModel @Inject constructor(
                     val isValidTenant = cachedTenantId != null && tenantList.any { it.id == cachedTenantId }
                     val finalTenantId = if (isValidTenant) cachedTenantId else "public"
 
-                    // 4. 调用接口获取租户用户信息（返回单个对象）
+                    // 4. 调用接口获取租户用户信息
                     val result = userRepository.getTenantUserInfo(finalTenantId)
 
                     if (result.isSuccess) {
                         val currentUserInfo = result.getOrNull()
+
                         if (currentUserInfo != null) {
-                            // 5. 保存到 DataStoreManager
                             dataStoreManager.saveCurrentTenantUser(currentUserInfo)
                             _currentTenantUser.value = currentUserInfo
-
                         } else {
                             _currentTenantUser.value = null
                         }
                     } else {
-                        val error = result.exceptionOrNull()
                         _currentTenantUser.value = null
                     }
                 } else {
-                    // 租户列表获取失败，使用默认 tenantId = "public"
+                    val error = tenantListResult.exceptionOrNull()
+
+                    // 降级：使用 public 租户
                     val result = userRepository.getTenantUserInfo("public")
                     if (result.isSuccess) {
                         val currentUserInfo = result.getOrNull()
@@ -185,6 +184,7 @@ class MainViewModel @Inject constructor(
                         }
                     }
                 }
+            } catch (e: Exception) {
             } finally {
                 _tenantUserLoading.value = false
             }

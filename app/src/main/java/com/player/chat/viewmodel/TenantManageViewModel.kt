@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.player.chat.local.DataStoreManager
+import com.player.chat.model.SearchUser
 import com.player.chat.model.Tenant
 import com.player.chat.model.TenantUser
 import com.player.chat.repository.TenantRepository
@@ -42,6 +43,21 @@ class TenantManageViewModel @Inject constructor(
     val showEndTip: StateFlow<Boolean> = _showEndTip.asStateFlow()
 
     private val pageSize = 20
+
+    private val _searchKeyword = MutableStateFlow("")
+    val searchKeyword: StateFlow<String> = _searchKeyword.asStateFlow()
+
+    private val _searchResults = MutableStateFlow<List<SearchUser>>(emptyList())
+    val searchResults: StateFlow<List<SearchUser>> = _searchResults.asStateFlow()
+
+    private val _isSearching = MutableStateFlow(false)
+    val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
+
+    // 添加成功提示
+    private val _addSuccessMessage = MutableStateFlow<String?>(null)
+    val addSuccessMessage: StateFlow<String?> = _addSuccessMessage.asStateFlow()
+
+
 
     init {
         loadCurrentTenant()
@@ -163,6 +179,96 @@ class TenantManageViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * 更新搜索关键字
+     * 当关键字变化时自动触发搜索
+     */
+    fun updateSearchKeyword(keyword: String) {
+        _searchKeyword.value = keyword
+        if (keyword.isNotBlank()) {
+            performSearch(keyword)
+        } else {
+            _searchResults.value = emptyList()
+        }
+    }
+
+    /**
+     * 执行搜索
+     * @param keyword 搜索关键字
+     */
+    private fun performSearch(keyword: String) {
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id ?: return@launch
+
+            _isSearching.value = true
+            try {
+                val result = tenantRepository.searchUsers(keyword, tenantId)
+                if (result.isSuccess) {
+                    val users = result.getOrNull() ?: emptyList()
+                    _searchResults.value = users
+                    Log.d("TenantManage", "搜索用户成功: 找到${users.size}个用户")
+                } else {
+                    _searchResults.value = emptyList()
+                    val errorMsg = result.exceptionOrNull()?.message ?: "搜索失败"
+                    Log.e("TenantManage", "搜索用户失败: $errorMsg")
+                }
+            } catch (e: Exception) {
+                Log.e("TenantManage", "搜索用户异常", e)
+                _searchResults.value = emptyList()
+            } finally {
+                _isSearching.value = false
+            }
+        }
+    }
+
+    /**
+     * 清除搜索结果
+     */
+    fun clearSearchResults() {
+        _searchKeyword.value = ""
+        _searchResults.value = emptyList()
+    }
+
+    /**
+     * 添加用户到当前租户
+     * @param user 要添加的用户
+     */
+    fun addUserToTenant(user: SearchUser) {
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id ?: return@launch
+
+            try {
+                val result = tenantRepository.addTenantUser(tenantId, user.id)
+                if (result.isSuccess && (result.getOrNull() ?: 0) > 0) {
+                    // 添加成功，显示成功提示
+                    _addSuccessMessage.value = "已添加用户: ${user.username}"
+                    // 2秒后自动清除提示
+                    kotlinx.coroutines.delay(2000)
+                    _addSuccessMessage.value = null
+
+                    // 清除搜索结果
+                    clearSearchResults()
+
+                    // 刷新租户用户列表
+                    refreshTenantUserList()
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message ?: "添加用户失败"
+                    Log.e("TenantManage", "添加用户失败: $errorMsg")
+                }
+            } catch (e: Exception) {
+                Log.e("TenantManage", "添加用户异常", e)
+            }
+        }
+    }
+
+    /**
+     * 重置添加成功提示
+     */
+    fun resetAddSuccessMessage() {
+        _addSuccessMessage.value = null
+    }
+
 
     fun resetEndTip() {
         _showEndTip.value = false
