@@ -240,24 +240,48 @@ class TenantManageViewModel @Inject constructor(
 
             try {
                 val result = tenantRepository.addTenantUser(tenantId, user.id)
-                if (result.isSuccess && (result.getOrNull() ?: 0) > 0) {
-                    // 添加成功，显示成功提示
-                    _addSuccessMessage.value = "已添加用户: ${user.username}"
-                    // 2秒后自动清除提示
+                if (result.isSuccess) {
+                    val addedCount = result.getOrNull() ?: 0
+                    if (addedCount > 0) {
+                        // 添加成功，显示成功提示
+                        _addSuccessMessage.value = "添加成功"
+                        // 2秒后自动清除提示
+                        kotlinx.coroutines.delay(2000)
+                        _addSuccessMessage.value = null
+
+                        // 清除搜索结果
+                        clearSearchResults()
+
+                        // 刷新租户用户列表
+                        refreshTenantUserList()
+                    } else {
+                        // 添加失败（data为null），显示服务器返回的msg字段信息
+                        val errorMsg = result.exceptionOrNull()?.message ?: "添加用户失败"
+                        _addSuccessMessage.value = errorMsg
+                        kotlinx.coroutines.delay(2000)
+                        _addSuccessMessage.value = null
+
+                        // 清除搜索结果
+                        clearSearchResults()
+                    }
+                } else {
+                    // 请求失败，显示错误信息
+                    val errorMsg = result.exceptionOrNull()?.message ?: "添加用户失败"
+                    _addSuccessMessage.value = errorMsg
                     kotlinx.coroutines.delay(2000)
                     _addSuccessMessage.value = null
 
                     // 清除搜索结果
                     clearSearchResults()
-
-                    // 刷新租户用户列表
-                    refreshTenantUserList()
-                } else {
-                    val errorMsg = result.exceptionOrNull()?.message ?: "添加用户失败"
-                    Log.e("TenantManage", "添加用户失败: $errorMsg")
                 }
             } catch (e: Exception) {
                 Log.e("TenantManage", "添加用户异常", e)
+                _addSuccessMessage.value = e.message ?: "添加用户失败"
+                kotlinx.coroutines.delay(2000)
+                _addSuccessMessage.value = null
+
+                // 清除搜索结果
+                clearSearchResults()
             }
         }
     }

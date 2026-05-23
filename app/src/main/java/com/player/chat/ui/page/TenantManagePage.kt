@@ -1,3 +1,4 @@
+// chat/ui/page/TenantManagePage.kt
 package com.player.chat.ui.page
 
 import android.util.Log
@@ -113,196 +114,210 @@ fun TenantManagePage(
             )
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.PageBackground)
                 .padding(paddingValues)
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
+            // 搜索框 - 胶囊型
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.middleGap)
+                    .padding(top = Dimens.middleGap),
+                shape = RoundedCornerShape(Dimens.inputHeight / 2),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                // 搜索框 - 胶囊型
-                Card(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap),
-                    shape = RoundedCornerShape(Dimens.inputHeight / 2),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        .height(Dimens.inputHeight)
+                        .padding(horizontal = Dimens.middleGap),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(Dimens.inputHeight)
-                            .padding(horizontal = Dimens.middleGap),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "搜索",
-                            tint = Color.Gray,
-                            modifier = Modifier.size(Dimens.smallIconSize)
-                        )
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "搜索",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(Dimens.smallIconSize)
+                    )
 
-                        Spacer(modifier = Modifier.width(Dimens.smallGap))
+                    Spacer(modifier = Modifier.width(Dimens.smallGap))
 
-                        BasicTextField(
-                            value = searchKeyword,
-                            onValueChange = { viewModel.updateSearchKeyword(it) },
-                            modifier = Modifier.weight(1f),
-                            textStyle = LocalTextStyle.current.copy(
-                                color = Color.Black,
-                                fontSize = Dimens.normalFontSize
-                            ),
-                            singleLine = true,
-                            decorationBox = { innerTextField ->
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.CenterStart
-                                ) {
-                                    if (searchKeyword.isEmpty()) {
-                                        Text(
-                                            text = "搜索用户...",
-                                            color = Color.Gray,
-                                            fontSize = Dimens.normalFontSize
-                                        )
-                                    }
-                                    innerTextField()
-                                }
-                            }
-                        )
-
-                        if (searchKeyword.isNotBlank()) {
-                            IconButton(
-                                onClick = { viewModel.clearSearchResults() },
-                                modifier = Modifier.size(Dimens.smallIconSize)
+                    BasicTextField(
+                        value = searchKeyword,
+                        onValueChange = { viewModel.updateSearchKeyword(it) },
+                        modifier = Modifier.weight(1f),
+                        textStyle = LocalTextStyle.current.copy(
+                            color = Color.Black,
+                            fontSize = Dimens.normalFontSize
+                        ),
+                        singleLine = true,
+                        decorationBox = { innerTextField ->
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.CenterStart
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "清除",
-                                    tint = Color.Gray,
-                                    modifier = Modifier.size(Dimens.smallIconSize)
-                                )
+                                if (searchKeyword.isEmpty()) {
+                                    Text(
+                                        text = "请输入用户工号或名称",
+                                        color = Color.Gray,
+                                        fontSize = Dimens.normalFontSize
+                                    )
+                                }
+                                innerTextField()
                             }
+                        }
+                    )
+
+                    if (searchKeyword.isNotBlank()) {
+                        IconButton(
+                            onClick = { viewModel.clearSearchResults() },
+                            modifier = Modifier.size(Dimens.smallIconSize)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "清除",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(Dimens.smallIconSize)
+                            )
                         }
                     }
                 }
+            }
 
-                // 内容区域
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = Dimens.middleGap)
-                ) {
-                    when {
-                        // 显示搜索结果
-                        searchKeyword.isNotBlank() -> {
-                            SearchResultsSection(
-                                isLoading = isSearching,
-                                searchResults = searchResults,
-                                onUserClick = { user ->
-                                    // 只有不在当前租户内的用户才能添加
-                                    if (user.checked == 0) {
-                                        viewModel.addUserToTenant(user)
+            // 内容区域 - 与搜索框保持 middleGap 间距
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(horizontal = Dimens.middleGap)
+                    .padding(top = Dimens.middleGap)
+                    .padding(bottom = Dimens.middleGap),
+                shape = RoundedCornerShape(Dimens.moduleBorderRadius),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                when {
+                    // 显示搜索结果
+                    searchKeyword.isNotBlank() -> {
+                        SearchResultsSection(
+                            isLoading = isSearching,
+                            searchResults = searchResults,
+                            onUserClick = { user ->
+                                // 只有不在当前租户内的用户才能添加
+                                if (user.checked == 0) {
+                                    viewModel.addUserToTenant(user)
+                                }
+                            }
+                        )
+                    }
+                    // 显示租户用户列表
+                    else -> {
+                        // 租户用户列表区域 - 使用 wrapContentHeight 让高度自适应
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                        ) {
+                            when {
+                                isLoading && tenantUserList.isEmpty() -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .padding(Dimens.middleGap),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(40.dp),
+                                                color = Color.Primary,
+                                                strokeWidth = 3.dp
+                                            )
+                                            Spacer(modifier = Modifier.height(Dimens.middleGap))
+                                            Text(
+                                                text = "加载中...",
+                                                color = Color.Gray
+                                            )
+                                        }
                                     }
                                 }
-                            )
-                        }
-                        // 显示租户用户列表
-                        else -> {
-                            // 租户用户列表区域
-                            Box(
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                when {
-                                    isLoading && tenantUserList.isEmpty() -> {
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
+                                tenantUserList.isEmpty() -> {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .padding(Dimens.middleGap),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center
-                                            ) {
-                                                CircularProgressIndicator(
-                                                    modifier = Modifier.size(40.dp),
-                                                    color = Color.Primary,
-                                                    strokeWidth = 3.dp
-                                                )
-                                                Spacer(modifier = Modifier.height(Dimens.middleGap))
-                                                Text(
-                                                    text = "加载中...",
-                                                    color = Color.Gray
-                                                )
-                                            }
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.icon_user),
+                                                contentDescription = "暂无用户",
+                                                modifier = Modifier.size(60.dp),
+                                                tint = Color.Gray.copy(alpha = 0.5f)
+                                            )
+                                            Spacer(modifier = Modifier.height(Dimens.middleGap))
+                                            Text(
+                                                text = "暂无租户用户",
+                                                color = Color.Gray
+                                            )
                                         }
                                     }
-                                    tenantUserList.isEmpty() -> {
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(id = R.drawable.icon_user),
-                                                    contentDescription = "暂无用户",
-                                                    modifier = Modifier.size(60.dp),
-                                                    tint = Color.Gray.copy(alpha = 0.5f)
-                                                )
-                                                Spacer(modifier = Modifier.height(Dimens.middleGap))
-                                                Text(
-                                                    text = "暂无租户用户",
-                                                    color = Color.Gray
-                                                )
-                                            }
-                                        }
-                                    }
-                                    else -> {
-                                        LazyColumn(
-                                            state = listState,
-                                            modifier = Modifier.fillMaxSize(),
-                                            verticalArrangement = Arrangement.spacedBy(0.dp)
-                                        ) {
-                                            items(
-                                                items = tenantUserList,
-                                                key = { it.id }
-                                            ) { tenantUser ->
-                                                SwipeToDeleteUserItem(
-                                                    tenantUser = tenantUser,
-                                                    onDelete = {
-                                                        selectedUser = tenantUser
-                                                        showDeleteDialog = true
-                                                    }
-                                                )
-
-                                                // 分隔线
-                                                if (tenantUserList.indexOf(tenantUser) < tenantUserList.size - 1) {
-                                                    Divider(
-                                                        color = Color.Gray.copy(alpha = 0.2f),
-                                                        thickness = 0.5.dp,
-                                                        modifier = Modifier.padding(horizontal = Dimens.middleGap)
-                                                    )
+                                }
+                                else -> {
+                                    // LazyColumn 使用 wrapContentHeight 让高度根据内容自适应
+                                    LazyColumn(
+                                        state = listState,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight(),
+                                        verticalArrangement = Arrangement.spacedBy(0.dp)
+                                    ) {
+                                        items(
+                                            items = tenantUserList,
+                                            key = { it.id }
+                                        ) { tenantUser ->
+                                            SwipeToDeleteUserItem(
+                                                tenantUser = tenantUser,
+                                                onDelete = {
+                                                    selectedUser = tenantUser
+                                                    showDeleteDialog = true
                                                 }
-                                            }
+                                            )
 
-                                            // 加载更多指示器
-                                            if (isLoadingMore) {
-                                                item {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(vertical = 16.dp),
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        CircularProgressIndicator(
-                                                            modifier = Modifier.size(24.dp),
-                                                            color = Color.Primary,
-                                                            strokeWidth = 2.dp
-                                                        )
-                                                    }
+                                            // 分隔线
+                                            if (tenantUserList.indexOf(tenantUser) < tenantUserList.size - 1) {
+                                                Divider(
+                                                    color = Color.Gray.copy(alpha = 0.2f),
+                                                    thickness = Dimens.borderSize,
+                                                    modifier = Modifier.padding(horizontal = Dimens.middleGap)
+                                                )
+                                            }
+                                        }
+
+                                        // 加载更多指示器
+                                        if (isLoadingMore) {
+                                            item {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 16.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    CircularProgressIndicator(
+                                                        modifier = Modifier.size(24.dp),
+                                                        color = Color.Primary,
+                                                        strokeWidth = 2.dp
+                                                    )
                                                 }
                                             }
                                         }
@@ -318,7 +333,7 @@ fun TenantManagePage(
             if (showEndTip) {
                 Snackbar(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.CenterHorizontally)
                         .padding(bottom = 20.dp)
                         .widthIn(max = 200.dp),
                     shape = RoundedCornerShape(20.dp),
@@ -338,7 +353,7 @@ fun TenantManagePage(
             if (addSuccessMessage != null) {
                 Snackbar(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.CenterHorizontally)
                         .padding(bottom = 20.dp)
                         .widthIn(max = 250.dp),
                     shape = RoundedCornerShape(20.dp),
@@ -383,7 +398,7 @@ fun TenantManagePage(
 }
 
 /**
- * 搜索结果区域组件
+ * 搜索结果区域组件 - 高度自适应
  */
 @Composable
 fun SearchResultsSection(
@@ -392,12 +407,17 @@ fun SearchResultsSection(
     onUserClick: (SearchUser) -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
     ) {
         when {
             isLoading -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(Dimens.middleGap),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
@@ -409,7 +429,10 @@ fun SearchResultsSection(
             }
             searchResults.isEmpty() -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(Dimens.middleGap),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -431,6 +454,9 @@ fun SearchResultsSection(
             }
             else -> {
                 LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
                     itemsIndexed(searchResults) { index, user ->
@@ -460,7 +486,8 @@ fun SearchResultsSection(
 }
 
 /**
- * 搜索结果用户条目组件
+ * 搜索结果用户条目组件 - 使用圆角
+ * 已添加的用户显示✅图标，未添加的直接点击添加
  */
 @Composable
 fun SearchUserItem(
@@ -537,7 +564,7 @@ fun SearchUserItem(
                 }
             }
 
-            // 右侧图标：已在租户内显示勾勾，否则显示添加按钮
+            // 右侧图标：已在租户内显示✅图标，否则不显示按钮（点击卡片添加）
             if (isInTenant) {
                 Icon(
                     imageVector = Icons.Default.Check,
@@ -545,25 +572,13 @@ fun SearchUserItem(
                     tint = Color.Primary,
                     modifier = Modifier.size(Dimens.middleIconSize)
                 )
-            } else {
-                IconButton(
-                    onClick = onClick,
-                    modifier = Modifier.size(Dimens.middleIconSize)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.icon_add),
-                        contentDescription = "添加",
-                        tint = Color.Primary,
-                        modifier = Modifier.size(Dimens.smallIconSize)
-                    )
-                }
             }
         }
     }
 }
 
 /**
- * 可滑动删除的用户条目组件
+ * 可滑动删除的用户条目组件 - 使用圆角
  * 这个组件在原始代码中已存在，这里保留完整实现
  */
 @Composable
@@ -587,7 +602,6 @@ fun SwipeToDeleteUserItem(
                 .align(Alignment.CenterEnd)
                 .fillMaxHeight()
                 .width(deleteButtonWidth)
-                .background(Color.Red)
                 .clickable { onDelete() },
             contentAlignment = Alignment.Center
         ) {
@@ -599,11 +613,12 @@ fun SwipeToDeleteUserItem(
             )
         }
 
-        // 用户信息内容（可滑动）
+        // 用户信息内容（可滑动）- 使用圆角
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .offset(x = offsetX.dp)
+                .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
                 .background(Color.White)
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(

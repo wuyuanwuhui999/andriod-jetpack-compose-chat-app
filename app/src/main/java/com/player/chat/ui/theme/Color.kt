@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 object Color {
     @ColorInt const val PRIMARY_COLOR = 0xFFFFAE00.toInt()
-    @ColorInt const val SUB_COLOR = 0xFF2196F3.toInt()
+    @ColorInt const val SUB_COLOR = 0xFF999999.toInt()
     @ColorInt const val BACKGROUND_COLOR = 0xFFEFEFEF.toInt()
     @ColorInt const val TEXT_COLOR = 0xFF000000.toInt()
     @ColorInt const val DARK_BACKGROUND_COLOR = 0xFF000000.toInt()

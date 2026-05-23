@@ -117,14 +117,6 @@ fun UserPage(
         mainViewModel.loadTenantUserInfo()
     }
 
-    LaunchedEffect(currentTenantUser) {
-        if (currentTenantUser != null) {
-            android.widget.Toast.makeText(context, "roleType: ${currentTenantUser?.roleType}", android.widget.Toast.LENGTH_SHORT).show()
-        } else {
-            android.widget.Toast.makeText(context, "currentTenantUser is null", android.widget.Toast.LENGTH_SHORT).show()
-        }
-    }
-
     // 性别选项
     val genderOptions = listOf("男", "女")
 
