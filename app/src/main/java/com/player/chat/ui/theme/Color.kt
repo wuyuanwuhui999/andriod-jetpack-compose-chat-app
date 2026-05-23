@@ -13,7 +13,6 @@ object Color {
 
     @ColorInt const val PAGE_BACKGROUND_COLOR = 0xFFEFEFEF.toInt()
     @ColorInt const val DISABLE_TEXT_COLOR = 0xFFDDDDDD.toInt() // 灰色禁用颜色
-    @ColorInt const val SUB_TITLE_COLOR = 0xFF999999.toInt()
     @ColorInt const val GRAY_COLOR = 0xdddddd.toInt()
     // 透明颜色
     @ColorInt const val TRANSPARENT = 0x00000000.toInt()
