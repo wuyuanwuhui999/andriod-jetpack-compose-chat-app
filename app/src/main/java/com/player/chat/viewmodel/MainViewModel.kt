@@ -139,7 +139,7 @@ class MainViewModel @Inject constructor(
      * 4. 调用接口获取租户用户信息
      * 5. 保存到 DataStoreManager
      */
-    fun loadTenantUserInfo() {
+    fun loadTenantUserInfo(companyId: String? = null) {
         viewModelScope.launch {
             _tenantUserLoading.value = true
             try {
@@ -147,7 +147,7 @@ class MainViewModel @Inject constructor(
                 val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 
                 // 2. 获取用户加入的租户列表
-                val tenantListResult = userRepository.getTenantList()
+                val tenantListResult = userRepository.getTenantList(companyId)
 
                 if (tenantListResult.isSuccess) {
                     val tenantList = tenantListResult.getOrNull() ?: emptyList()

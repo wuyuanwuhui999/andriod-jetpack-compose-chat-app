@@ -10,4 +10,5 @@ object PreferenceKeys {
     const val LANGUAGE = "language"
     const val THINK_MODE = "think_mode"
     const val CURRENT_TENANT_USER = "current_tenant_user"
+    const val CURRENT_COMPANY = "current_company"
 }

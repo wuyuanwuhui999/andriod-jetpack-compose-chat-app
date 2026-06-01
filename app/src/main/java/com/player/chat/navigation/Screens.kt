@@ -12,4 +12,6 @@ sealed class Screens(val route: String) {
     object ResetPassword : Screens("reset_password")
 
     object Register : Screens("register")
+
+    object Company : Screens("company")
 }

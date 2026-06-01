@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
+import com.player.chat.model.Company
 import com.player.chat.model.Tenant
 import com.player.chat.model.User
 import kotlinx.coroutines.flow.Flow
@@ -164,4 +165,40 @@ class DataStoreManager(private val context: Context) {
             preferences.remove(stringPreferencesKey(PreferenceKeys.CURRENT_TENANT_USER))
         }
     }
+
+    /**
+     * 保存当前公司信息
+     */
+    suspend fun saveCurrentCompany(company: Company) {
+        val companyJson = gson.toJson(company)
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey(PreferenceKeys.CURRENT_COMPANY)] = companyJson
+        }
+    }
+
+    /**
+     * 获取当前公司信息
+     */
+    fun getCurrentCompany(): Flow<Company?> = context.dataStore.data
+        .map { preferences ->
+            val companyJson = preferences[stringPreferencesKey(PreferenceKeys.CURRENT_COMPANY)]
+            companyJson?.let { gson.fromJson(it, Company::class.java) }
+    }
+
+    /**
+    * 保存字符串到 DataStore（通用方法）
+    */
+    suspend fun saveString(key: String, value: String) {
+        context.dataStore.edit { preferences ->
+            preferences[stringPreferencesKey(key)] = value
+        }
+    }
+
+    /**
+    * 获取字符串从 DataStore
+    */
+    fun getString(key: String): Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[stringPreferencesKey(key)]
+        }
 }

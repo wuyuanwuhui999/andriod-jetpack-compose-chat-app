@@ -36,13 +36,12 @@ fun LoginPage(
     var email by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
 
-    // 监听登录成功状态
     LaunchedEffect(key1 = true) {
         viewModel.loginState.collectLatest { state ->
             when (state) {
                 is LoginState.Success -> {
-                    // 登录成功，跳转到 ChatPage
-                    navController.navigate(Screens.Chat.route) {
+                    // 登录成功，跳转到公司选择页面
+                    navController.navigate(Screens.Company.route) {
                         // 清空返回栈，防止返回登录页
                         popUpTo(Screens.Login.route) { inclusive = true }
                     }

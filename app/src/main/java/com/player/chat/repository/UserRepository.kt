@@ -101,9 +101,15 @@ class UserRepository @Inject constructor(
         dataStoreManager.clearAll()
     }
 
-    suspend fun getTenantList(): Result<List<Tenant>> {
+    // 修改 getTenantList 方法，添加 companyId 参数
+
+    suspend fun getTenantList(companyId: String? = null): Result<List<Tenant>> {
         return try {
-            val response = apiService.getTenantList()
+            val response = if (companyId != null) {
+                apiService.getTenantList(companyId)
+            } else {
+                apiService.getTenantList()
+            }
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {

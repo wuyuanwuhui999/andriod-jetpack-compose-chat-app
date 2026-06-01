@@ -335,7 +335,8 @@ fun ResetPasswordPage(
                                 "密码重置成功",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            navController.navigate(Screens.Chat.route) {
+                            // 跳转到公司选择页面
+                            navController.navigate(Screens.Company.route) {
                                 popUpTo(0) { inclusive = true }
                             }
                         } else {

@@ -159,11 +159,16 @@ class ChatViewModel @Inject constructor(
             _isLoading.value = true
             _isTenantListLoaded.value = false
 
-            // 1. 尝试从缓存获取租户ID
+            // 1. 从缓存获取 companyId
+            val currentUser = dataStoreManager.getUser().firstOrNull()
+            val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
+            val cachedCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
+
+            // 2. 尝试从缓存获取租户ID
             val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 
-            // 2. 使用 TenantRepository 获取租户列表
-            val result = tenantRepository.getTenantList()
+            // 3. 使用 TenantRepository 获取租户列表（传入 companyId）
+            val result = tenantRepository.getTenantList(cachedCompanyId)
 
             if (result.isSuccess) {
                 val tenantList = result.getOrNull() ?: emptyList()

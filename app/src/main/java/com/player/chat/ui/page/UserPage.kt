@@ -528,6 +528,29 @@ fun UserPage(
                     )
                 }
             }
+
+            // 切换公司按钮
+            item {
+                Button(
+                    onClick = {
+                        navController.navigate(Screens.Company.route)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimens.btnHeight),
+                    shape = RoundedCornerShape(Dimens.btnHeight / 2),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(Dimens.borderSize, Color.Gray)
+                ) {
+                    Text(
+                        text = "切换公司/个人空间",
+                        fontSize = Dimens.normalFontSize,
+                    )
+                }
+            }
         }
     }
 

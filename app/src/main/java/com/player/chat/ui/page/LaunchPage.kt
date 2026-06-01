@@ -33,12 +33,40 @@ fun LaunchPage(
     // 监听 token 验证状态
     val tokenValidState by mainViewModel.isTokenValid.collectAsState()
 
-    LaunchedEffect(key1 = tokenValidState) {
-        tokenValidState?.let { isValid ->
+    // 修改 LaunchPage 中的 LaunchedEffect 逻辑
+
+    LaunchedEffect(Unit) {
+        // 添加延迟，确保界面先显示
+        kotlinx.coroutines.delay(1500)
+
+        // 1. 先检查本地是否有 token
+        val hasToken = mainViewModel.hasTokenLocally()
+
+        if (!hasToken) {
+            navController.navigate(Screens.Login.route) {
+                popUpTo(Screens.Launch.route) { inclusive = true }
+            }
+            return@LaunchedEffect
+        }
+
+        // 2. 调用接口验证 token 有效性
+        try {
+            val isValid = mainViewModel.validateToken()
+
             if (isValid) {
-                navController.navigate(Screens.Chat.route) {
+                // 验证成功，跳转到公司选择页面
+                navController.navigate(Screens.Company.route) {
                     popUpTo(Screens.Launch.route) { inclusive = true }
                 }
+            } else {
+                navController.navigate(Screens.Login.route) {
+                    popUpTo(Screens.Launch.route) { inclusive = true }
+                }
+            }
+        } catch (e: Exception) {
+            // 网络异常等，跳转到登录页
+            navController.navigate(Screens.Login.route) {
+                popUpTo(Screens.Launch.route) { inclusive = true }
             }
         }
     }

@@ -27,7 +27,9 @@ interface ApiService {
     suspend fun getModelList(): Response<ApiResponse<List<ChatModel>>>
 
     @GET("/service/tenant/getTenantList")
-    suspend fun getTenantList(): Response<ApiResponse<List<Tenant>>>
+    suspend fun getTenantList(
+        @Query("companyId") companyId: String? = null
+    ): Response<ApiResponse<List<Tenant>>>
 
     @GET("/service/chat/getDirectoryList")
     suspend fun getDirectoryList(@Query("tenantId") tenantId: String): Response<ApiResponse<List<Directory>>>
@@ -185,4 +187,10 @@ interface ApiService {
         @Path("tenantId") tenantId: String,
         @Path("userId") userId: String
     ): Response<ApiResponse<Int>>
+
+    /**
+    * 获取公司列表
+    */
+    @GET("/service/company/getCompanyList")
+    suspend fun getCompanyList(): Response<ApiResponse<List<Company>>>
 }

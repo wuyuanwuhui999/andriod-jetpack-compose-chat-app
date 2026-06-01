@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.player.chat.ui.page.ChatPage
+import com.player.chat.ui.page.CompanyPage
 import com.player.chat.ui.page.ForgetPasswordPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
@@ -49,6 +50,10 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Screens.Register.route) {
             RegisterPage(navController = navController)
+        }
+
+        composable(Screens.Company.route) {
+            CompanyPage(navController = navController)
         }
     }
 }

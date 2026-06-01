@@ -47,14 +47,18 @@ class TenantRepository @Inject constructor(
 
     /**
      * 获取用户加入的租户列表
+     * @param companyId 公司ID（可选）
      * @return Result<List<Tenant>>
      */
-    suspend fun getTenantList(): Result<List<Tenant>> {
+    suspend fun getTenantList(companyId: String? = null): Result<List<Tenant>> {
         return try {
-            val response = apiService.getTenantList()
+            val response = if (companyId != null) {
+                apiService.getTenantList(companyId)
+            } else {
+                apiService.getTenantList()
+            }
             if (response.isSuccessful) {
                 val body = response.body()
-                // 打印data的详细信息
                 if (body?.status == "SUCCESS") {
                     val tenantList = body.data ?: emptyList()
                     Result.success(tenantList)
