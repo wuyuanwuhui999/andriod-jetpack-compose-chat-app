@@ -98,13 +98,13 @@ class TenantRepository @Inject constructor(
      * 添加租户用户（预留接口）
      * @param tenantId 租户ID
      * @param userId 用户ID
-     * @param roleType 角色类型
+     * @param role 角色类型
      * @return Result<TenantUser>
      */
     suspend fun addTenantUser(
         tenantId: String,
         userId: String,
-        roleType: Int
+        role: Int
     ): Result<TenantUser> {
         // TODO: 当后端提供添加租户用户接口时实现
         return Result.failure(UnsupportedOperationException("接口暂未实现"))
@@ -123,12 +123,12 @@ class TenantRepository @Inject constructor(
     /**
      * 更新租户用户角色（预留接口）
      * @param tenantUserId 租户用户关联ID
-     * @param roleType 新角色类型
+     * @param role 新角色类型
      * @return Result<TenantUser>
      */
     suspend fun updateTenantUserRole(
         tenantUserId: String,
-        roleType: Int
+        role: Int
     ): Result<TenantUser> {
         // TODO: 当后端提供更新租户用户角色接口时实现
         return Result.failure(UnsupportedOperationException("接口暂未实现"))
