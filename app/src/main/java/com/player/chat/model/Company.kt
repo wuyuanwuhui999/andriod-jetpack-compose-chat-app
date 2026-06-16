@@ -1,3 +1,4 @@
+// chat/model/Company.kt
 package com.player.chat.model
 
 import com.google.gson.annotations.SerializedName
@@ -32,5 +33,14 @@ data class Company(
     val createdBy: String,
 
     @SerializedName("updatedBy")
-    val updatedBy: String
+    val updatedBy: String,
+
+    /**
+     * 用户在当前公司的角色
+     * 0: 普通用户
+     * 1: 普通管理员
+     * 2: 超级管理员
+     */
+    @SerializedName("role")
+    val role: Int = 0
 )
