@@ -214,7 +214,22 @@ class ChatViewModel @Inject constructor(
     private fun loadModelList() {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = chatRepository.getModelList()
+
+            // --- 修改开始：获取 companyId ---
+            var companyId: String? = null
+            try {
+                val currentUser = dataStoreManager.getUser().firstOrNull()
+                if (currentUser != null) {
+                    val companyKey = "company_id_${currentUser.id}"
+                    companyId = dataStoreManager.getString(companyKey).firstOrNull()
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "获取companyId失败", e)
+            }
+
+            // 修改：调用 repository 方法时传入 companyId
+            val result = chatRepository.getModelList(companyId)
+
             if (result.isSuccess) {
                 _modelList.value = result.getOrNull() ?: emptyList()
                 if (_modelList.value.isNotEmpty()) {

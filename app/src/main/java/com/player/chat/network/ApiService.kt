@@ -24,7 +24,7 @@ interface ApiService {
     suspend fun sendEmailVerifyCode(@Body request: SendEmailRequest): Response<ApiResponse<Int>>
 
     @GET("/service/chat/getModelList")
-    suspend fun getModelList(): Response<ApiResponse<List<ChatModel>>>
+    suspend fun getModelList(@Query("companyId") companyId: String? = null): Response<ApiResponse<List<ChatModel>>>
 
     @GET("/service/tenant/getTenantList")
     suspend fun getTenantList(

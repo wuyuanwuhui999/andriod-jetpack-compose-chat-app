@@ -116,7 +116,7 @@ fun ChatPage(
                         ) {
                             // 租户名称 - 可点击
                             Text(
-                                text = currentTenant?.name ?: "私人空间",
+                                text = currentTenant?.name ?: "暂无租户",
                                 modifier = Modifier
                                     .clickable {
                                         // 点击租户名称，弹出租户选择
@@ -129,7 +129,6 @@ fun ChatPage(
                             Text(
                                 text = " | ",
                                 modifier = Modifier.padding(horizontal = 4.dp),
-                                color = Color.Gray
                             )
 
                             // 模型名称 - 可点击

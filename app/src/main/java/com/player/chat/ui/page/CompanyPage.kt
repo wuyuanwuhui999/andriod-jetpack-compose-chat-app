@@ -227,7 +227,7 @@ fun CompanyItem(
         // 公司信息
         Text(
             text = company.name,
-            color = if (isSelected) Color.Primary else Color.Black,
+            color = Color.Black,
             fontSize = Dimens.normalFontSize,
             fontWeight = FontWeight.Medium
         )

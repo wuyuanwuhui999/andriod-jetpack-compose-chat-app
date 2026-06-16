@@ -17,9 +17,10 @@ import javax.inject.Inject
 class ChatRepository @Inject constructor(
     private val apiService: ApiService
 ) {
-    suspend fun getModelList(): Result<List<ChatModel>> {
+    // 修改：获取模型列表，添加 companyId 参数
+    suspend fun getModelList(companyId: String? = null): Result<List<ChatModel>> {
         return try {
-            val response = apiService.getModelList()
+            val response = apiService.getModelList(companyId)
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
