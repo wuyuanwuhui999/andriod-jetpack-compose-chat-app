@@ -193,4 +193,58 @@ interface ApiService {
     */
     @GET("/service/company/getCompanyList")
     suspend fun getCompanyList(): Response<ApiResponse<List<Company>>>
+
+    /**
+     * 获取公司下的用户列表
+     */
+    @GET("/service/company/getCompanyUsers")
+    suspend fun getCompanyUsers(
+        @Query("companyId") companyId: String,
+        @Query("pageSize") pageSize: Int,
+        @Query("pageNum") pageNum: Int,
+        @Query("keyword") keyword: String? = null
+    ): Response<ApiResponse<List<User>>>
+
+    /**
+     * 删除公司用户
+     */
+    @DELETE("/service/company/removeUser/{userId}/{companyId}")
+    suspend fun removeUser(
+        @Path("userId") userId: String,
+        @Path("companyId") companyId: String
+    ): Response<ApiResponse<Int>>
+
+    /**
+     * 搜索用户（带公司过滤）
+     */
+    @GET("/service/user/searchUsers")
+    suspend fun searchUsersWithCompany(
+        @Query("companyId") companyId: String,
+        @Query("pageNum") pageNum: Int,
+        @Query("pageSize") pageSize: Int
+    ): Response<ApiResponse<List<SearchUser>>>
+
+    /**
+     * 获取部门列表
+     */
+    @GET("/service/company/getDepartments")
+    suspend fun getDepartments(
+        @Query("companyId") companyId: String
+    ): Response<ApiResponse<List<Department>>>
+
+    /**
+     * 获取职位列表
+     */
+    @GET("/service/company/getPositions")
+    suspend fun getPositions(
+        @Query("departmentId") departmentId: String
+    ): Response<ApiResponse<List<Position>>>
+
+    /**
+     * 添加公司用户
+     */
+    @POST("/service/company/addUser")
+    suspend fun addCompanyUser(
+        @Body request: AddCompanyUserRequest
+    ): Response<ApiResponse<Int>>
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.player.chat.ui.page.AddUserPage
 import com.player.chat.ui.page.ChatPage
 import com.player.chat.ui.page.CompanyPage
 import com.player.chat.ui.page.ForgetPasswordPage
@@ -13,6 +14,7 @@ import com.player.chat.ui.page.RegisterPage
 import com.player.chat.ui.page.ResetPasswordPage
 import com.player.chat.ui.page.TenantManagePage
 import com.player.chat.ui.page.UpdatePasswordPage
+import com.player.chat.ui.page.UserManagePage
 import com.player.chat.ui.page.UserPage  // 确保这行存在且只导入一次
 
 @Composable
@@ -54,6 +56,19 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Screens.Company.route) {
             CompanyPage(navController = navController)
+        }
+
+        composable(Screens.Company.route) {
+            CompanyPage(navController = navController)
+        }
+
+        // 新增路由
+        composable(Screens.UserManage.route) {
+            UserManagePage(navController = navController)
+        }
+
+        composable(Screens.AddUser.route) {
+            AddUserPage(navController = navController)
         }
     }
 }

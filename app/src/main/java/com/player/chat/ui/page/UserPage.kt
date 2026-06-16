@@ -1,3 +1,4 @@
+// chat/ui/page/UserPage.kt
 package com.player.chat.ui.page
 
 import android.net.Uri
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.player.chat.local.DataStoreManager
 import com.player.chat.navigation.Screens
 import com.player.chat.ui.components.*
 import com.player.chat.ui.theme.Dimens
@@ -59,6 +61,11 @@ fun UserPage(
     val tenantUserLoading by mainViewModel.tenantUserLoading.collectAsState()
 
     val context = LocalContext.current
+
+    // 获取 DataStoreManager 实例
+    val dataStoreManager = remember { DataStoreManager(context) }
+    // 获取当前公司信息
+    val currentCompany by dataStoreManager.getCurrentCompany().collectAsState(initial = null)
 
     // 编辑对话框状态
     var showEditDialog by remember { mutableStateOf(false) }
@@ -460,7 +467,7 @@ fun UserPage(
                 }
             }
 
-            // 退出登录按钮
+            // 退出登录按钮 - 移到最下面
             item {
                 Button(
                     onClick = { userViewModel.showLogoutDialog() },
@@ -505,7 +512,6 @@ fun UserPage(
                 }
             }
 
-
             // 修改密码按钮
             item {
                 Button(
@@ -549,6 +555,31 @@ fun UserPage(
                         text = "切换公司/个人空间",
                         fontSize = Dimens.normalFontSize,
                     )
+                }
+            }
+
+            // 用户管理按钮（仅公司管理员可见 - role > 0）
+            if (currentCompany != null && currentCompany!!.role > 0) {
+                item {
+                    Button(
+                        onClick = {
+                            navController.navigate(Screens.UserManage.route)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Dimens.btnHeight),
+                        shape = RoundedCornerShape(Dimens.btnHeight / 2),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
+                        border = BorderStroke(Dimens.borderSize, Color.Gray)
+                    ) {
+                        Text(
+                            text = "用户管理",
+                            fontSize = Dimens.normalFontSize,
+                        )
+                    }
                 }
             }
         }

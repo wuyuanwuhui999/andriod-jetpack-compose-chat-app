@@ -1,3 +1,4 @@
+// chat/model/SearchUser.kt
 package com.player.chat.model
 
 import com.google.gson.annotations.SerializedName
@@ -23,6 +24,6 @@ data class SearchUser(
     @SerializedName("region") val region: String?,
     @SerializedName("disabled") val disabled: Int,
     @SerializedName("permission") val permission: Int,
-    // 新增字段：1表示已在当前租户内，0表示不在
+    // 新增字段：1表示已在当前公司内，0表示不在
     @SerializedName("checked") val checked: Int = 0
 )

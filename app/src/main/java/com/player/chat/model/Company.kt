@@ -42,5 +42,11 @@ data class Company(
      * 2: 超级管理员
      */
     @SerializedName("role")
-    val role: Int = 0
+    val role: Int = 0,
+
+    /**
+     * 职务ID
+     */
+    @SerializedName("positionId")
+    val positionId: String? = null
 )

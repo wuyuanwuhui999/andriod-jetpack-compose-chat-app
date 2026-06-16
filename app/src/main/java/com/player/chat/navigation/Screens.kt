@@ -1,3 +1,4 @@
+// chat/navigation/Screens.kt
 package com.player.chat.navigation
 
 sealed class Screens(val route: String) {
@@ -14,4 +15,8 @@ sealed class Screens(val route: String) {
     object Register : Screens("register")
 
     object Company : Screens("company")
+
+    // 新增路由
+    object UserManage : Screens("user_manage")
+    object AddUser : Screens("add_user")
 }
