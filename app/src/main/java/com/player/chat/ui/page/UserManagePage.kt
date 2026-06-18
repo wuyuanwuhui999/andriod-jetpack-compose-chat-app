@@ -216,7 +216,6 @@ fun UserManagePage(
             // 用户列表卡片
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(horizontal = Dimens.middleGap),
                 shape = RoundedCornerShape(Dimens.moduleBorderRadius),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -224,7 +223,7 @@ fun UserManagePage(
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .wrapContentHeight()
                 ) {
                     when {
                         isLoading && userList.isEmpty() -> {
@@ -282,7 +281,6 @@ fun UserManagePage(
                         else -> {
                             LazyColumn(
                                 state = listState,
-                                modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.spacedBy(0.dp)
                             ) {
                                 items(
