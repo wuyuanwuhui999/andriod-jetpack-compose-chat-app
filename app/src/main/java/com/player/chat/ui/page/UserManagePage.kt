@@ -330,27 +330,25 @@ fun UserManagePage(
                                         }
                                     }
                                 }
-
-                                // 已加载全部提示
-                                if (!hasMoreData && userList.isNotEmpty()) {
-                                    item {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 16.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = "已加载全部用户",
-                                                color = Color.Gray,
-                                                fontSize = Dimens.normalFontSize
-                                            )
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
+                }
+            }
+
+            // 已加载全部提示
+            if (!hasMoreData && userList.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "已加载全部用户",
+                        color = Color.secondary,
+                        fontSize = Dimens.normalFontSize
+                    )
                 }
             }
         }
@@ -546,7 +544,6 @@ fun SwipeToDeleteUserItem(
             modifier = Modifier
                 .fillMaxSize()
                 .offset(x = offsetX.dp)
-                .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
                 .background(Color.White)
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(
@@ -642,8 +639,8 @@ fun SwipeToDeleteUserItem(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "工号: ${user.id.takeLast(8)}",
-                    color = Color.Gray,
+                    text = " ${user.userAccount}",
+                    color = Color.secondary,
                     fontSize = Dimens.normalFontSize,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
