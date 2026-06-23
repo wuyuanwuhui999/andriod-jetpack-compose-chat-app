@@ -39,6 +39,7 @@ import com.player.chat.model.TenantUser
 import com.player.chat.ui.components.CustomAlertDialog
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
+import com.player.chat.viewmodel.MainViewModel
 import com.player.chat.viewmodel.TenantManageViewModel
 import kotlinx.coroutines.delay
 
@@ -46,7 +47,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun TenantManagePage(
     navController: NavHostController,
-    viewModel: TenantManageViewModel = hiltViewModel()
+    viewModel: TenantManageViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
 
@@ -63,9 +65,17 @@ fun TenantManagePage(
     val isSearching by viewModel.isSearching.collectAsState()
     val addSuccessMessage by viewModel.addSuccessMessage.collectAsState()
 
+    // 获取当前用户在当前租户下的角色
+    val currentTenantUserInfo by mainViewModel.currentTenantUser.collectAsState()
+    val currentUserRole = currentTenantUserInfo?.role ?: 0
+
     // 删除确认对话框状态
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedUser by remember { mutableStateOf<TenantUser?>(null) }
+
+    // 操作结果提示
+    var operationMessage by remember { mutableStateOf<String?>(null) }
+    var isOperationSuccess by remember { mutableStateOf(false) }
 
     val listState = rememberLazyListState()
 
@@ -77,10 +87,19 @@ fun TenantManagePage(
             val totalItemsCount = layoutInfo.totalItemsCount
 
             if (lastVisibleItemIndex >= totalItemsCount - 1 &&
-                !isLoading && !isLoadingMore && hasMoreData && tenantUserList.isNotEmpty()) {
+                !isLoading && !isLoadingMore && hasMoreData && tenantUserList.isNotEmpty()
+            ) {
                 Log.d("TenantManage", "滚动到底部，加载更多")
                 viewModel.loadMoreTenantUserList()
             }
+        }
+    }
+
+    // 显示操作结果提示
+    LaunchedEffect(operationMessage) {
+        if (operationMessage != null) {
+            delay(2000)
+            operationMessage = null
         }
     }
 
@@ -102,7 +121,8 @@ fun TenantManagePage(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "返回",
-                            tint = Color.Black
+                            tint = Color.Black,
+                            modifier = Modifier.size(Dimens.middleIconSize)
                         )
                     }
                 },
@@ -286,11 +306,44 @@ fun TenantManagePage(
                                             items = tenantUserList,
                                             key = { it.id }
                                         ) { tenantUser ->
+                                            // 判断是否为自己（当前登录用户）
+                                            val isSelf = tenantUser.userId == currentTenantUserInfo?.userId
+
                                             SwipeToDeleteUserItem(
                                                 tenantUser = tenantUser,
+                                                currentUserRole = currentUserRole,
+                                                isSelf = isSelf,
                                                 onDelete = {
                                                     selectedUser = tenantUser
                                                     showDeleteDialog = true
+                                                },
+                                                onAddAdmin = {
+                                                    // 设为管理员
+                                                    viewModel.addAdmin(
+                                                        tenantUser = tenantUser,
+                                                        onSuccess = { msg ->
+                                                            operationMessage = msg
+                                                            isOperationSuccess = true
+                                                        },
+                                                        onError = { errorMsg ->
+                                                            operationMessage = errorMsg
+                                                            isOperationSuccess = false
+                                                        }
+                                                    )
+                                                },
+                                                onCancelAdmin = {
+                                                    // 取消管理员
+                                                    viewModel.cancelAdmin(
+                                                        tenantUser = tenantUser,
+                                                        onSuccess = { msg ->
+                                                            operationMessage = msg
+                                                            isOperationSuccess = true
+                                                        },
+                                                        onError = { errorMsg ->
+                                                            operationMessage = errorMsg
+                                                            isOperationSuccess = false
+                                                        }
+                                                    )
                                                 }
                                             )
 
@@ -357,12 +410,32 @@ fun TenantManagePage(
                         .padding(bottom = 20.dp)
                         .widthIn(max = 250.dp),
                     shape = RoundedCornerShape(20.dp),
-                    containerColor = Color.Primary,
+                    containerColor = if (addSuccessMessage?.contains("成功") == true) Color.Primary else Color.Red,
                     contentColor = Color.White,
                     action = null
                 ) {
                     Text(
                         text = addSuccessMessage ?: "",
+                        color = Color.White,
+                        fontSize = Dimens.normalFontSize
+                    )
+                }
+            }
+
+            // 操作结果提示
+            if (operationMessage != null) {
+                Snackbar(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 20.dp)
+                        .widthIn(max = 250.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    containerColor = if (isOperationSuccess) Color.Primary else Color.Red,
+                    contentColor = Color.White,
+                    action = null
+                ) {
+                    Text(
+                        text = operationMessage ?: "",
                         color = Color.White,
                         fontSize = Dimens.normalFontSize
                     )
@@ -578,17 +651,54 @@ fun SearchUserItem(
 }
 
 /**
- * 可滑动删除的用户条目组件 - 使用圆角
- * 这个组件在原始代码中已存在，这里保留完整实现
+ * 可滑动删除的用户条目组件
+ * 显示用户姓名 + 用户账号，纵向排列
+ * 根据当前用户角色显示不同的操作按钮
  */
 @Composable
 fun SwipeToDeleteUserItem(
     tenantUser: TenantUser,
-    onDelete: () -> Unit
+    currentUserRole: Int, // 当前登录用户在当前租户下的角色：0-普通用户，1-管理员，2-超级管理员
+    isSelf: Boolean = false, // 是否为自己
+    onDelete: () -> Unit,
+    onAddAdmin: () -> Unit,
+    onCancelAdmin: () -> Unit
 ) {
     var offsetX by remember { mutableStateOf(0f) }
+    var showActions by remember { mutableStateOf(false) }
     val deleteButtonWidth = 80.dp
-    var showDeleteButton by remember { mutableStateOf(false) }
+
+    // 判断用户角色
+    val isUserAdmin = tenantUser.role == 1
+    val isUserSuperAdmin = tenantUser.role == 2
+
+    // 计算操作按钮数量
+    // 规则：
+    // 1. 不能对自己操作
+    // 2. 当前用户 role=2（超级管理员）：显示 设为管理员/取消管理员 + 删除
+    // 3. 当前用户 role=1（普通管理员）：只显示删除，且只能删除 role=0 的用户
+    // 4. 当前用户 role=0（普通用户）：不显示任何操作按钮
+
+    // 是否可以删除
+    val canDelete = when {
+        isSelf -> false // 不能删除自己
+        currentUserRole == 2 -> true // 超级管理员可以删除任何人
+        currentUserRole == 1 && !isUserAdmin && !isUserSuperAdmin -> true // 普通管理员只能删除普通用户
+        else -> false
+    }
+
+    // 是否可以设置/取消管理员（只有超级管理员可以）
+    val canManageAdmin = currentUserRole == 2 && !isSelf
+
+    // 计算按钮数量
+    val actionCount = when {
+        canManageAdmin && canDelete -> 2
+        canManageAdmin -> 1
+        canDelete -> 1
+        else -> 0
+    }
+
+    val totalWidth = actionCount * deleteButtonWidth.value
 
     Box(
         modifier = Modifier
@@ -596,48 +706,112 @@ fun SwipeToDeleteUserItem(
             .height(Dimens.middleAvatar + Dimens.middleGap * 2)
             .background(Color.White)
     ) {
-        // 删除按钮（右侧）
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .width(deleteButtonWidth)
-                .clickable { onDelete() },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "删除",
-                color = Color.White,
-                fontSize = Dimens.normalFontSize,
-                fontWeight = FontWeight.Medium
-            )
+        // 操作按钮（右侧）
+        if (actionCount > 0) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .width(deleteButtonWidth * actionCount),
+                horizontalArrangement = Arrangement.End
+            ) {
+                // 超级管理员：显示设为管理员/取消管理员按钮
+                if (canManageAdmin) {
+                    if (isUserAdmin || isUserSuperAdmin) {
+                        // 取消管理员按钮（管理员或超级管理员）
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(deleteButtonWidth)
+                                .background(Color.Primary) // 橙色
+                                .clickable {
+                                    onCancelAdmin()
+                                    offsetX = 0f
+                                    showActions = false
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "取消管理员",
+                                color = Color.White,
+                                fontSize = Dimens.normalFontSize,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    } else {
+                        // 设为管理员按钮（普通用户）
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(deleteButtonWidth)
+                                .background(Color.Primary) // 绿色
+                                .clickable {
+                                    onAddAdmin()
+                                    offsetX = 0f
+                                    showActions = false
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "设为管理员",
+                                color = Color.White,
+                                fontSize = Dimens.normalFontSize,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
+                // 删除按钮
+                if (canDelete) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(deleteButtonWidth)
+                            .background(Color.Red)
+                            .clickable {
+                                onDelete()
+                                offsetX = 0f
+                                showActions = false
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "删除",
+                            color = Color.White,
+                            fontSize = Dimens.normalFontSize,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
         }
 
-        // 用户信息内容（可滑动）- 使用圆角
+        // 用户信息内容（可滑动）
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .offset(x = offsetX.dp)
-                .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
                 .background(Color.White)
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
-                            // 滑动结束后判断显示/隐藏删除按钮
-                            showDeleteButton = offsetX <= -deleteButtonWidth.value / 2
-                            offsetX = if (showDeleteButton) -deleteButtonWidth.value else 0f
+                            // 滑动结束后判断显示/隐藏操作按钮
+                            val threshold = if (actionCount > 0) deleteButtonWidth.value * 0.3f else 0f
+                            showActions = offsetX <= -threshold
+                            offsetX = if (showActions) -totalWidth else 0f
                         },
                         onHorizontalDrag = { change, dragAmount ->
                             change.consume()
                             val newOffset = offsetX + dragAmount
-                            offsetX = newOffset.coerceIn(-deleteButtonWidth.value, 0f)
+                            offsetX = newOffset.coerceIn(-totalWidth, 0f)
                         }
                     )
                 }
                 .clickable {
-                    // 如果删除按钮显示中，点击隐藏
-                    if (showDeleteButton) {
-                        showDeleteButton = false
+                    // 如果操作按钮显示中，点击隐藏
+                    if (showActions) {
+                        showActions = false
                         offsetX = 0f
                     }
                 },
@@ -676,25 +850,60 @@ fun SwipeToDeleteUserItem(
 
             Spacer(modifier = Modifier.width(Dimens.middleGap))
 
-            // 用户名和邮箱信息
+            // 用户姓名和用户账号 - 纵向排列
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = tenantUser.username,
-                    color = Color.Black,
-                    fontSize = Dimens.normalFontSize,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.smallGap)
+                ) {
+                    Text(
+                        text = tenantUser.username,
+                        color = Color.Black,
+                        fontSize = Dimens.normalFontSize,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    // 角色标签
+                    when (tenantUser.role) {
+                        1 -> {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color.Primary.copy(alpha = 0.15f)
+                            ) {
+                                Text(
+                                    text = "管理员",
+                                    color = Color.Primary,
+                                    fontSize = Dimens.normalFontSize,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                        2 -> {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color.Primary.copy(alpha = 0.25f)
+                            ) {
+                                Text(
+                                    text = "超级管理员",
+                                    color = Color.Primary,
+                                    fontSize = Dimens.normalFontSize,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = tenantUser.email,
-                    color = Color.Gray,
+                    text = tenantUser.userAccount.ifEmpty { tenantUser.userId },
+                    color = Color.secondary,
                     fontSize = Dimens.normalFontSize,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

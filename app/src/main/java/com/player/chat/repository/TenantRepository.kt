@@ -209,4 +209,60 @@ class TenantRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * 取消管理员
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     * @return Result<Int> 返回影响行数，并包含服务器返回的msg信息
+     */
+    suspend fun cancelAdmin(tenantId: String, userId: String): Result<Pair<Int, String?>> {
+        return try {
+            val response = apiService.cancelAdmin(tenantId, userId)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    val data = body.data ?: 0
+                    val msg = body.message
+                    Result.success(Pair(data, msg))
+                } else {
+                    val errorMsg = body?.message ?: "取消管理员失败"
+                    Result.failure(Exception(errorMsg))
+                }
+            } else {
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TenantRepository", "取消管理员异常", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 设为管理员
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     * @return Result<Int> 返回影响行数，并包含服务器返回的msg信息
+     */
+    suspend fun addAdmin(tenantId: String, userId: String): Result<Pair<Int, String?>> {
+        return try {
+            val response = apiService.addAdmin(tenantId, userId)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    val data = body.data ?: 0
+                    val msg = body.message
+                    Result.success(Pair(data, msg))
+                } else {
+                    val errorMsg = body?.message ?: "设为管理员失败"
+                    Result.failure(Exception(errorMsg))
+                }
+            } else {
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TenantRepository", "设为管理员异常", e)
+            Result.failure(e)
+        }
+    }
 }

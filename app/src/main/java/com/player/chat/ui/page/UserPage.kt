@@ -1,4 +1,3 @@
-// chat/ui/page/UserPage.kt
 package com.player.chat.ui.page
 
 import android.net.Uri

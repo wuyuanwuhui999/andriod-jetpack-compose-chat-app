@@ -7,8 +7,9 @@ data class TenantUser(
     @SerializedName("tenantId") val tenantId: String,
     @SerializedName("tenantName") val tenantName: String,
     @SerializedName("userId") val userId: String,
+    @SerializedName("userAccount") val userAccount: String, // 新增字段
     @SerializedName("role") val role: Int,
-    @SerializedName("joinDate") val joinDate: String,  // 已经是 String，保持
+    @SerializedName("joinDate") val joinDate: String,
     @SerializedName("createBy") val createBy: String,
     @SerializedName("username") val username: String,
     @SerializedName("avater") val avatar: String?,

@@ -247,4 +247,26 @@ interface ApiService {
     suspend fun addCompanyUser(
         @Body request: AddCompanyUserRequest
     ): Response<ApiResponse<Int>>
+
+    /**
+     * 取消管理员
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     */
+    @PUT("/service/tenant/cancelAdmin/{tenantId}/{userId}")
+    suspend fun cancelAdmin(
+        @Path("tenantId") tenantId: String,
+        @Path("userId") userId: String
+    ): Response<ApiResponse<Int>>
+
+    /**
+     * 设为管理员
+     * @param tenantId 租户ID
+     * @param userId 用户ID
+     */
+    @PUT("/service/tenant/addAdmin/{tenantId}/{userId}")
+    suspend fun addAdmin(
+        @Path("tenantId") tenantId: String,
+        @Path("userId") userId: String
+    ): Response<ApiResponse<Int>>
 }

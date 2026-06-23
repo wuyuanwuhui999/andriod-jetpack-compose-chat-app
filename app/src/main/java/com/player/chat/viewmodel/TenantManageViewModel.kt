@@ -286,6 +286,90 @@ class TenantManageViewModel @Inject constructor(
         }
     }
 
+    // 在 TenantManageViewModel.kt 中添加以下方法
+
+    /**
+     * 取消管理员
+     * @param tenantUser 要取消管理员的租户用户对象
+     * @param onSuccess 成功回调，返回服务器消息
+     * @param onError 失败回调，返回错误消息
+     */
+    fun cancelAdmin(tenantUser: TenantUser, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val tenantId = _currentTenant.value?.id ?: return@launch
+
+                val result = tenantRepository.cancelAdmin(tenantId, tenantUser.userId)
+
+                if (result.isSuccess) {
+                    val (data, msg) = result.getOrNull() ?: Pair(0, null)
+                    if (data > 0) {
+                        // 更新本地列表中的用户角色
+                        val currentList = _tenantUserList.value.toMutableList()
+                        val index = currentList.indexOfFirst { it.id == tenantUser.id }
+                        if (index != -1) {
+                            val updatedUser = currentList[index].copy(role = 0) // 取消管理员，设为普通用户
+                            currentList[index] = updatedUser
+                            _tenantUserList.value = currentList
+                        }
+                        onSuccess(msg ?: "取消管理员成功")
+                        Log.d("TenantManage", "取消管理员成功: ${tenantUser.username}")
+                    } else {
+                        onError(msg ?: "取消管理员失败")
+                    }
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message ?: "取消管理员失败"
+                    onError(errorMsg)
+                    Log.e("TenantManage", "取消管理员失败: $errorMsg")
+                }
+            } catch (e: Exception) {
+                Log.e("TenantManage", "取消管理员异常", e)
+                onError(e.message ?: "取消管理员失败")
+            }
+        }
+    }
+
+    /**
+     * 设为管理员
+     * @param tenantUser 要设为管理员的租户用户对象
+     * @param onSuccess 成功回调，返回服务器消息
+     * @param onError 失败回调，返回错误消息
+     */
+    fun addAdmin(tenantUser: TenantUser, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val tenantId = _currentTenant.value?.id ?: return@launch
+
+                val result = tenantRepository.addAdmin(tenantId, tenantUser.userId)
+
+                if (result.isSuccess) {
+                    val (data, msg) = result.getOrNull() ?: Pair(0, null)
+                    if (data > 0) {
+                        // 更新本地列表中的用户角色
+                        val currentList = _tenantUserList.value.toMutableList()
+                        val index = currentList.indexOfFirst { it.id == tenantUser.id }
+                        if (index != -1) {
+                            val updatedUser = currentList[index].copy(role = 1) // 设为管理员
+                            currentList[index] = updatedUser
+                            _tenantUserList.value = currentList
+                        }
+                        onSuccess(msg ?: "设为管理员成功")
+                        Log.d("TenantManage", "设为管理员成功: ${tenantUser.username}")
+                    } else {
+                        onError(msg ?: "设为管理员失败")
+                    }
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message ?: "设为管理员失败"
+                    onError(errorMsg)
+                    Log.e("TenantManage", "设为管理员失败: $errorMsg")
+                }
+            } catch (e: Exception) {
+                Log.e("TenantManage", "设为管理员异常", e)
+                onError(e.message ?: "设为管理员失败")
+            }
+        }
+    }
+
     /**
      * 重置添加成功提示
      */
