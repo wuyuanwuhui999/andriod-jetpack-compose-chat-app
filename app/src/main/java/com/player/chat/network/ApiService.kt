@@ -28,7 +28,7 @@ interface ApiService {
 
     @GET("/service/tenant/getTenantList")
     suspend fun getTenantList(
-        @Query("companyId") companyId: String? = null
+        @Query("companyId") companyId: String  // 改为必传参数
     ): Response<ApiResponse<List<Tenant>>>
 
     @GET("/service/chat/getDirectoryList")

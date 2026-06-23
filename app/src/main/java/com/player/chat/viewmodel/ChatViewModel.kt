@@ -164,6 +164,17 @@ class ChatViewModel @Inject constructor(
             val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
             val cachedCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
 
+            if (cachedCompanyId.isNullOrBlank()) {
+                // 没有公司ID，使用默认租户
+                _currentTenant.value = DefaultTenant.PERSONAL_SPACE
+                dataStoreManager.saveCurrentTenant(DefaultTenant.PERSONAL_SPACE)
+                _tenantList.value = emptyList()
+                _isTenantListLoaded.value = true
+                _isLoading.value = false
+                loadPrompt()
+                return@launch
+            }
+
             // 2. 尝试从缓存获取租户ID
             val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 

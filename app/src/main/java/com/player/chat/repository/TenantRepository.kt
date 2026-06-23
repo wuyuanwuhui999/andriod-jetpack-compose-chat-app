@@ -47,16 +47,12 @@ class TenantRepository @Inject constructor(
 
     /**
      * 获取用户加入的租户列表
-     * @param companyId 公司ID（可选）
+     * @param companyId 公司ID（必须）
      * @return Result<List<Tenant>>
      */
-    suspend fun getTenantList(companyId: String? = null): Result<List<Tenant>> {
+    suspend fun getTenantList(companyId: String): Result<List<Tenant>> {
         return try {
-            val response = if (companyId != null) {
-                apiService.getTenantList(companyId)
-            } else {
-                apiService.getTenantList()
-            }
+            val response = apiService.getTenantList(companyId)
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body?.status == "SUCCESS") {
@@ -76,13 +72,13 @@ class TenantRepository @Inject constructor(
 
     /**
      * 根据租户ID获取租户信息
-     * 注意：如果后端没有单独提供此接口，可以使用 getTenantList 再过滤
      * @param tenantId 租户ID
+     * @param companyId 公司ID（必须）
      * @return Result<Tenant?>
      */
-    suspend fun getTenantById(tenantId: String): Result<Tenant?> {
+    suspend fun getTenantById(tenantId: String, companyId: String): Result<Tenant?> {
         return try {
-            val result = getTenantList()
+            val result = getTenantList(companyId)
             if (result.isSuccess) {
                 val tenant = result.getOrNull()?.find { it.id == tenantId }
                 Result.success(tenant)
@@ -160,8 +156,6 @@ class TenantRepository @Inject constructor(
             Result.failure(e)
         }
     }
-
-    // 在 TenantRepository 类中添加以下方法
 
     /**
      * 搜索用户

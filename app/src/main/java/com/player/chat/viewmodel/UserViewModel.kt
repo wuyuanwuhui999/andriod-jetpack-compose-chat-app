@@ -69,7 +69,17 @@ class UserViewModel @Inject constructor(
 
     private fun loadTenantList() {
         viewModelScope.launch {
-            val result = userRepository.getTenantList()
+            // 获取当前用户的 companyId
+            val currentUser = dataStoreManager.getUser().firstOrNull()
+            val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
+            val cachedCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
+            
+            if (cachedCompanyId.isNullOrBlank()) {
+                _tenantList.value = emptyList()
+                return@launch
+            }
+            
+            val result = userRepository.getTenantList(cachedCompanyId)
             if (result.isSuccess) {
                 _tenantList.value = result.getOrNull() ?: emptyList()
             }

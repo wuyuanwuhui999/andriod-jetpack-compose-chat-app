@@ -131,14 +131,14 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * 加载租户用户信息
-     * 流程：
-     * 1. 从缓存获取 tenantId
-     * 2. 获取用户加入的租户列表
-     * 3. 判断缓存的 tenantId 是否有效
-     * 4. 调用接口获取租户用户信息
-     * 5. 保存到 DataStoreManager
-     */
+    * 加载租户用户信息
+    * 流程：
+    * 1. 从缓存获取 tenantId
+    * 2. 获取用户加入的租户列表（传入 companyId）
+    * 3. 判断缓存的 tenantId 是否有效
+    * 4. 调用接口获取租户用户信息
+    * 5. 保存到 DataStoreManager
+    */
     fun loadTenantUserInfo(companyId: String? = null) {
         viewModelScope.launch {
             _tenantUserLoading.value = true
@@ -146,8 +146,20 @@ class MainViewModel @Inject constructor(
                 // 1. 获取缓存的租户ID
                 val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
 
-                // 2. 获取用户加入的租户列表
-                val tenantListResult = userRepository.getTenantList(companyId)
+                // 2. 获取用户加入的租户列表（需要传入 companyId）
+                // 获取当前用户信息获取 companyId
+                val currentUser = dataStoreManager.getUser().firstOrNull()
+                val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
+                val cachedCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
+                
+                if (cachedCompanyId.isNullOrBlank()) {
+                    // 没有公司ID，使用默认租户
+                    _currentTenantUser.value = null
+                    _tenantUserLoading.value = false
+                    return@launch
+                }
+                
+                val tenantListResult = userRepository.getTenantList(cachedCompanyId)
 
                 if (tenantListResult.isSuccess) {
                     val tenantList = tenantListResult.getOrNull() ?: emptyList()
@@ -173,7 +185,6 @@ class MainViewModel @Inject constructor(
                     }
                 } else {
                     val error = tenantListResult.exceptionOrNull()
-
                     // 降级：使用 public 租户
                     val result = userRepository.getTenantUserInfo("public")
                     if (result.isSuccess) {
@@ -185,6 +196,7 @@ class MainViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
+                // 异常处理
             } finally {
                 _tenantUserLoading.value = false
             }
