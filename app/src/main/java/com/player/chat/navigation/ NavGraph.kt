@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.player.chat.ui.page.AddCompanyUserPage
+import com.player.chat.ui.page.AddTenantUserPage
 import com.player.chat.ui.page.ChatPage
 import com.player.chat.ui.page.CompanyPage
 import com.player.chat.ui.page.ForgetPasswordPage
@@ -62,13 +63,16 @@ fun AppNavGraph(navController: NavHostController) {
             CompanyPage(navController = navController)
         }
 
-        // 新增路由
         composable(Screens.UserManage.route) {
             UserManagePage(navController = navController)
         }
 
         composable(Screens.AddUser.route) {
             AddCompanyUserPage(navController = navController)
+        }
+
+        composable(Screens.AddTenantUser.route) {
+            AddTenantUserPage(navController = navController)
         }
     }
 }

@@ -270,4 +270,21 @@ interface ApiService {
         @Path("tenantId") tenantId: String,
         @Path("userId") userId: String
     ): Response<ApiResponse<Int>>
+
+    // chat/network/ApiService.kt - 添加以下方法
+
+    /**
+     * 搜索用户（按关键字，用于租户添加）
+     * @param keyword 搜索关键字
+     * @param tenantId 租户ID（用于过滤已在租户内的用户）
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     */
+    @GET("/service/tenant/searchUsers")
+    suspend fun searchTenantUsers(
+        @Query("tenantId") tenantId: String,
+        @Query("keyword") keyword: String,
+        @Query("pageSize") pageSize: Int,
+        @Query("pageNum") pageNum: Int
+    ): Response<ApiResponse<List<SearchUser>>>
 }

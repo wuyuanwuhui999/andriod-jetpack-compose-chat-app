@@ -18,7 +18,6 @@ data class SearchUser(
     @SerializedName("avater") val avatar: String?,
     @SerializedName("birthday") val birthday: String?,
     @SerializedName("sex") val sex: Int,
-    @SerializedName("role") val role: String,
     @SerializedName("password") val password: String?,
     @SerializedName("sign") val sign: String?,
     @SerializedName("region") val region: String?,

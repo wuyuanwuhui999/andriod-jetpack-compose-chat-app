@@ -265,4 +265,48 @@ class TenantRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * 搜索用户（按关键字，用于租户添加）
+     * @param keyword 搜索关键字
+     * @param tenantId 租户ID（用于过滤已在租户内的用户）
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @return Result<List<SearchUser>>
+     */
+    suspend fun searchUsers(
+        keyword: String,
+        tenantId: String,
+        pageNum: Int = 1,
+        pageSize: Int = 20
+    ): Result<List<SearchUser>> {
+        return try {
+            val response = apiService.searchTenantUsers(
+                tenantId = tenantId,
+                keyword = keyword,
+                pageSize = pageSize,
+                pageNum = pageNum
+            )
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.status == "SUCCESS") {
+                    val users = body.data ?: emptyList()
+                    Log.d("TenantRepository", "搜索用户成功，共 ${users.size} 条")
+                    Result.success(users)
+                } else {
+                    val errorMsg = body?.message ?: "搜索用户失败"
+                    Log.e("TenantRepository", "搜索用户失败: $errorMsg")
+                    Result.failure(Exception(errorMsg))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("TenantRepository", "网络请求失败: ${response.code()}, $errorBody")
+                Result.failure(Exception("网络请求失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TenantRepository", "搜索用户异常", e)
+            Result.failure(e)
+        }
+    }
 }

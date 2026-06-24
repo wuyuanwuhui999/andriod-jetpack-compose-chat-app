@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -36,6 +37,7 @@ import com.player.chat.R
 import com.player.chat.config.Config
 import com.player.chat.model.SearchUser
 import com.player.chat.model.TenantUser
+import com.player.chat.navigation.Screens
 import com.player.chat.ui.components.CustomAlertDialog
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
@@ -121,6 +123,20 @@ fun TenantManagePage(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "返回",
+                            tint = Color.Black,
+                            modifier = Modifier.size(Dimens.middleIconSize)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            navController.navigate(Screens.AddTenantUser.route)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "添加租户用户",
                             tint = Color.Black,
                             modifier = Modifier.size(Dimens.middleIconSize)
                         )
