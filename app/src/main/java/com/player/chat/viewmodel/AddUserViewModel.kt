@@ -162,7 +162,8 @@ class AddUserViewModel @Inject constructor(
             val result = companyRepository.searchUsersWithCompany(
                 companyId = company.id,
                 pageNum = page,
-                pageSize = pageSize
+                pageSize = pageSize,
+                keyword = keyword  // 添加 keyword 参数
             )
 
             if (result.isSuccess) {

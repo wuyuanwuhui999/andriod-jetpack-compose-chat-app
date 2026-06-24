@@ -127,14 +127,23 @@ class CompanyRepository @Inject constructor(
      * @param pageSize 每页数量
      * @return Result<List<SearchUser>>
      */
+    /**
+     * 搜索用户（带公司过滤）
+     * @param companyId 公司ID
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @param keyword 搜索关键字（可选）
+     * @return Result<List<SearchUser>>
+     */
     suspend fun searchUsersWithCompany(
         companyId: String,
         pageNum: Int,
-        pageSize: Int
+        pageSize: Int,
+        keyword: String? = null
     ): Result<List<SearchUser>> {
         return try {
-            val response = apiService.searchUsersWithCompany(companyId, pageNum, pageSize)
-            
+            val response = apiService.searchUsersWithCompany(companyId, pageNum, pageSize, keyword)
+
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body?.status == "SUCCESS") {

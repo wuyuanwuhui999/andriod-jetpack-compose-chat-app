@@ -43,7 +43,7 @@ import com.player.chat.viewmodel.AddUserViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddUserPage(
+fun AddCompanyUserPage(
     navController: NavHostController,
     viewModel: AddUserViewModel = hiltViewModel()
 ) {

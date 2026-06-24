@@ -217,11 +217,12 @@ interface ApiService {
     /**
      * 搜索用户（带公司过滤）
      */
-    @GET("/service/user/searchUsers")
+    @GET("/service/company/searchUsers")
     suspend fun searchUsersWithCompany(
         @Query("companyId") companyId: String,
         @Query("pageNum") pageNum: Int,
-        @Query("pageSize") pageSize: Int
+        @Query("pageSize") pageSize: Int,
+        @Query("keyword") keyword: String? = null
     ): Response<ApiResponse<List<SearchUser>>>
 
     /**
