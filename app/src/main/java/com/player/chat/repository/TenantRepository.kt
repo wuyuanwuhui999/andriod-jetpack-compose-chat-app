@@ -158,32 +158,6 @@ class TenantRepository @Inject constructor(
     }
 
     /**
-     * 搜索用户
-     * @param keyword 搜索关键字
-     * @param tenantId 租户ID
-     * @return Result<List<SearchUser>>
-     */
-    suspend fun searchUsers(keyword: String, tenantId: String): Result<List<SearchUser>> {
-        return try {
-            val response = apiService.searchUsers(keyword, tenantId)
-
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.status == "SUCCESS") {
-                    Result.success(body.data ?: emptyList())
-                } else {
-                    Result.failure(Exception(body?.message ?: "搜索用户失败"))
-                }
-            } else {
-                Result.failure(Exception("网络请求失败: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Log.e("TenantRepository", "搜索用户异常", e)
-            Result.failure(e)
-        }
-    }
-
-    /**
      * 添加租户用户
      * @param tenantId 租户ID
      * @param userId 用户ID
@@ -267,16 +241,18 @@ class TenantRepository @Inject constructor(
     }
 
     /**
-     * 搜索用户（按关键字，用于租户添加）
-     * @param keyword 搜索关键字
-     * @param tenantId 租户ID（用于过滤已在租户内的用户）
-     * @param pageNum 页码
-     * @param pageSize 每页数量
-     * @return Result<List<SearchUser>>
-     */
+    * 搜索用户（按关键字，用于租户添加）
+    * @param keyword 搜索关键字
+    * @param tenantId 租户ID（用于过滤已在租户内的用户）
+    * @param companyId 公司ID（必填）
+    * @param pageNum 页码
+    * @param pageSize 每页数量
+    * @return Result<List<SearchUser>>
+    */
     suspend fun searchUsers(
         keyword: String,
         tenantId: String,
+        companyId: String,  // 新增：公司ID，必填
         pageNum: Int = 1,
         pageSize: Int = 20
     ): Result<List<SearchUser>> {
@@ -284,6 +260,7 @@ class TenantRepository @Inject constructor(
             val response = apiService.searchTenantUsers(
                 tenantId = tenantId,
                 keyword = keyword,
+                companyId = companyId,  // 传递 companyId
                 pageSize = pageSize,
                 pageNum = pageNum
             )

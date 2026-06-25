@@ -120,6 +120,9 @@ class AddTenantUserViewModel @Inject constructor(
         }
     }
 
+    // chat/viewmodel/AddTenantUserViewModel.kt
+// 在 AddTenantUserViewModel 类中修改 searchUsers 方法
+
     /**
      * 搜索用户
      * @param page 页码
@@ -129,6 +132,19 @@ class AddTenantUserViewModel @Inject constructor(
         val tenant = _currentTenant.value ?: return
         val keyword = _searchKeyword.value
         if (keyword.isBlank()) return
+
+        // 获取 companyId
+        val currentUser = dataStoreManager.getUser().firstOrNull()
+        val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
+        val companyId = dataStoreManager.getString(companyKey).firstOrNull()
+
+        if (companyId.isNullOrBlank()) {
+            Log.e("AddTenantUser", "companyId 为空，无法搜索")
+            _operationMessage.value = "获取公司信息失败"
+            kotlinx.coroutines.delay(2000)
+            _operationMessage.value = null
+            return
+        }
 
         if (isRefresh) {
             _isLoading.value = true
@@ -140,6 +156,7 @@ class AddTenantUserViewModel @Inject constructor(
             val result = tenantRepository.searchUsers(
                 keyword = keyword,
                 tenantId = tenant.id,
+                companyId = companyId,  // 传递 companyId
                 pageNum = page,
                 pageSize = pageSize
             )

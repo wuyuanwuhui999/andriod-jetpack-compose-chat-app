@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -201,9 +202,25 @@ class TenantManageViewModel @Inject constructor(
         viewModelScope.launch {
             val tenantId = _currentTenant.value?.id ?: return@launch
 
+            // 获取 companyId
+            val currentUser = dataStoreManager.getUser().firstOrNull()
+            val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
+            val companyId = dataStoreManager.getString(companyKey).firstOrNull()
+
+            if (companyId.isNullOrBlank()) {
+                Log.e("TenantManage", "companyId 为空，无法搜索")
+                _searchResults.value = emptyList()
+                _isSearching.value = false
+                return@launch
+            }
+
             _isSearching.value = true
             try {
-                val result = tenantRepository.searchUsers(keyword, tenantId)
+                val result = tenantRepository.searchUsers(
+                    keyword = keyword,
+                    tenantId = tenantId,
+                    companyId = companyId
+                )
                 if (result.isSuccess) {
                     val users = result.getOrNull() ?: emptyList()
                     _searchResults.value = users

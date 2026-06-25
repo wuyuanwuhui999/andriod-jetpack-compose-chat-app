@@ -273,17 +273,22 @@ interface ApiService {
 
     // chat/network/ApiService.kt - 添加以下方法
 
+    // chat/network/ApiService.kt
+// 在 ApiService 接口中修改 searchTenantUsers 方法
+
     /**
      * 搜索用户（按关键字，用于租户添加）
      * @param keyword 搜索关键字
      * @param tenantId 租户ID（用于过滤已在租户内的用户）
+     * @param companyId 公司ID（必填）
      * @param pageNum 页码
      * @param pageSize 每页数量
      */
-    @GET("/service/tenant/searchUsers")
+    @GET("/service/tenant/searchTenantUsers")
     suspend fun searchTenantUsers(
         @Query("tenantId") tenantId: String,
         @Query("keyword") keyword: String,
+        @Query("companyId") companyId: String,  // 新增：公司ID，必填
         @Query("pageSize") pageSize: Int,
         @Query("pageNum") pageNum: Int
     ): Response<ApiResponse<List<SearchUser>>>
