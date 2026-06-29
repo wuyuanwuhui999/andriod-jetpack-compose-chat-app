@@ -1,3 +1,7 @@
+// viewmodel/MainViewModel.kt
+// 修改说明：移除 _currentTenantUser、_tenantUserLoading 及相关方法
+// 只展示修改后的完整文件
+
 package com.player.chat.viewmodel
 
 import android.util.Log
@@ -32,11 +36,7 @@ class MainViewModel @Inject constructor(
     // 用于在 LaunchPage 中监听验证结果
     val isTokenValid: StateFlow<Boolean?> = _isTokenValid.asStateFlow()
 
-    private val _currentTenantUser = MutableStateFlow<TenantUserInfo?>(null)
-    val currentTenantUser: StateFlow<TenantUserInfo?> = _currentTenantUser.asStateFlow()
-
-    private val _tenantUserLoading = MutableStateFlow(false)
-    val tenantUserLoading: StateFlow<Boolean> = _tenantUserLoading.asStateFlow()
+    // 移除 _currentTenantUser 和 _tenantUserLoading
 
     init {
         loadUserData()
@@ -127,79 +127,6 @@ class MainViewModel @Inject constructor(
             dataStoreManager.clearAll()
             _currentUser.value = null
             _token.value = null
-        }
-    }
-
-    /**
-    * 加载租户用户信息
-    * 流程：
-    * 1. 从缓存获取 tenantId
-    * 2. 获取用户加入的租户列表（传入 companyId）
-    * 3. 判断缓存的 tenantId 是否有效
-    * 4. 调用接口获取租户用户信息
-    * 5. 保存到 DataStoreManager
-    */
-    fun loadTenantUserInfo(companyId: String? = null) {
-        viewModelScope.launch {
-            _tenantUserLoading.value = true
-            try {
-                // 1. 获取缓存的租户ID
-                val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
-
-                // 2. 获取用户加入的租户列表（需要传入 companyId）
-                // 获取当前用户信息获取 companyId
-                val currentUser = dataStoreManager.getUser().firstOrNull()
-                val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
-                val cachedCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
-                
-                if (cachedCompanyId.isNullOrBlank()) {
-                    // 没有公司ID，使用默认租户
-                    _currentTenantUser.value = null
-                    _tenantUserLoading.value = false
-                    return@launch
-                }
-                
-                val tenantListResult = userRepository.getTenantList(cachedCompanyId)
-
-                if (tenantListResult.isSuccess) {
-                    val tenantList = tenantListResult.getOrNull() ?: emptyList()
-
-                    // 3. 判断缓存的 tenantId 是否有效
-                    val isValidTenant = cachedTenantId != null && tenantList.any { it.id == cachedTenantId }
-                    val finalTenantId = if (isValidTenant) cachedTenantId else "public"
-
-                    // 4. 调用接口获取租户用户信息
-                    val result = userRepository.getTenantUserInfo(finalTenantId)
-
-                    if (result.isSuccess) {
-                        val currentUserInfo = result.getOrNull()
-
-                        if (currentUserInfo != null) {
-                            dataStoreManager.saveCurrentTenantUser(currentUserInfo)
-                            _currentTenantUser.value = currentUserInfo
-                        } else {
-                            _currentTenantUser.value = null
-                        }
-                    } else {
-                        _currentTenantUser.value = null
-                    }
-                } else {
-                    val error = tenantListResult.exceptionOrNull()
-                    // 降级：使用 public 租户
-                    val result = userRepository.getTenantUserInfo("public")
-                    if (result.isSuccess) {
-                        val currentUserInfo = result.getOrNull()
-                        currentUserInfo?.let {
-                            dataStoreManager.saveCurrentTenantUser(it)
-                            _currentTenantUser.value = it
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                // 异常处理
-            } finally {
-                _tenantUserLoading.value = false
-            }
         }
     }
 

@@ -387,33 +387,4 @@ class UserRepository @Inject constructor(
             Result.failure(e)
         }
     }
-
-    /**
-     * 获取租户用户信息（当前用户在该租户下的信息）
-     * @param tenantId 租户ID
-     * @return Result<TenantUserInfo>
-     */
-    suspend fun getTenantUserInfo(tenantId: String?): Result<TenantUserInfo> {
-        return try {
-            val response = apiService.getTenantUser(tenantId)
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.status == "SUCCESS") {
-                    val userInfo = body.data
-                    if (userInfo != null) {
-                        Result.success(userInfo)
-                    } else {
-                        Result.failure(Exception("租户用户信息为空"))
-                    }
-                } else {
-                    val errorMsg = body?.message ?: "获取租户用户信息失败"
-                    Result.failure(Exception(errorMsg))
-                }
-            } else {
-                Result.failure(Exception("网络请求失败: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 }

@@ -818,8 +818,6 @@ class ChatViewModel @Inject constructor(
         _hasMoreChatHistory.value = true
     }
 
-    // viewmodel/ChatViewModel.kt - 修改 selectTenant 方法
-
     fun selectTenant(tenant: Tenant) {
         viewModelScope.launch {
             _currentTenant.value = tenant
@@ -836,10 +834,8 @@ class ChatViewModel @Inject constructor(
             // 切换租户后重新加载提示词
             loadPrompt()
 
-            // 【新增】切换租户后刷新租户用户信息
-            // 注意：这里需要获取 mainViewModel 或者通过回调方式刷新
-            // 建议通过事件总线或共享ViewModel来通知刷新
-            // 简化方案：在 UserPage 中监听租户变化并刷新
+            // 移除 loadTenantUserInfo 调用
+            // 租户角色信息现在从 currentTenant.role 获取
         }
     }
 

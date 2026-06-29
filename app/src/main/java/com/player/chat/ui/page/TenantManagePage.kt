@@ -1,4 +1,4 @@
-// chat/ui/page/TenantManagePage.kt
+// ui/page/TenantManagePage.kt
 package com.player.chat.ui.page
 
 import android.util.Log
@@ -41,7 +41,6 @@ import com.player.chat.navigation.Screens
 import com.player.chat.ui.components.CustomAlertDialog
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
-import com.player.chat.viewmodel.MainViewModel
 import com.player.chat.viewmodel.TenantManageViewModel
 import kotlinx.coroutines.delay
 
@@ -49,8 +48,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun TenantManagePage(
     navController: NavHostController,
-    viewModel: TenantManageViewModel = hiltViewModel(),
-    mainViewModel: MainViewModel = hiltViewModel()
+    viewModel: TenantManageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
 
@@ -67,9 +65,8 @@ fun TenantManagePage(
     val isSearching by viewModel.isSearching.collectAsState()
     val addSuccessMessage by viewModel.addSuccessMessage.collectAsState()
 
-    // 获取当前用户在当前租户下的角色
-    val currentTenantUserInfo by mainViewModel.currentTenantUser.collectAsState()
-    val currentUserRole = currentTenantUserInfo?.role ?: 0
+    // 获取当前用户在当前租户下的角色 - 直接从 currentTenant.role 获取
+    val currentUserRole = currentTenant?.role ?: 0
 
     // 删除确认对话框状态
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -323,7 +320,9 @@ fun TenantManagePage(
                                             key = { it.id }
                                         ) { tenantUser ->
                                             // 判断是否为自己（当前登录用户）
-                                            val isSelf = tenantUser.userId == currentTenantUserInfo?.userId
+                                            // 使用 currentUser.id 与 tenantUser.userId 比较
+                                            val currentUser by viewModel.dataStoreManager.getUser().collectAsState(initial = null)
+                                            val isSelf = currentUser?.id == tenantUser.userId
 
                                             SwipeToDeleteUserItem(
                                                 tenantUser = tenantUser,

@@ -18,8 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TenantManageViewModel @Inject constructor(
-    private val tenantRepository: TenantRepository,  // 改为使用 TenantRepository
-    private val dataStoreManager: DataStoreManager
+    private val tenantRepository: TenantRepository,
+    val dataStoreManager: DataStoreManager
 ) : ViewModel() {
 
     private val _tenantUserList = MutableStateFlow<List<TenantUser>>(emptyList())
@@ -57,8 +57,6 @@ class TenantManageViewModel @Inject constructor(
     // 添加成功提示
     private val _addSuccessMessage = MutableStateFlow<String?>(null)
     val addSuccessMessage: StateFlow<String?> = _addSuccessMessage.asStateFlow()
-
-
 
     init {
         loadCurrentTenant()
@@ -303,8 +301,6 @@ class TenantManageViewModel @Inject constructor(
         }
     }
 
-    // 在 TenantManageViewModel.kt 中添加以下方法
-
     /**
      * 取消管理员
      * @param tenantUser 要取消管理员的租户用户对象
@@ -393,7 +389,6 @@ class TenantManageViewModel @Inject constructor(
     fun resetAddSuccessMessage() {
         _addSuccessMessage.value = null
     }
-
 
     fun resetEndTip() {
         _showEndTip.value = false

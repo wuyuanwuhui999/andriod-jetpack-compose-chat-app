@@ -1,7 +1,6 @@
 package com.player.chat.model
 
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 enum class TenantStatus(val value: Int) {
     @SerializedName("0")
@@ -34,10 +33,15 @@ data class Tenant(
     val updateDate: String? = null,
 
     @SerializedName("createdBy")
-    val createdBy: String? = null,  // 修改为可空类型
+    val createdBy: String? = null,
 
     @SerializedName("updatedBy")
-    val updatedBy: String? = null
+    val updatedBy: String? = null,
+
+    // 新增字段：当前用户在该租户下的角色
+    // 0: 普通用户, 1: 租户管理员, 2: 超级管理员
+    @SerializedName("role")
+    val role: Int = 0
 )
 
 object DefaultTenant {
@@ -49,7 +53,8 @@ object DefaultTenant {
         status = TenantStatus.ENABLED,
         createDate = null,
         updateDate = null,
-        createdBy = "",  // 使用空字符串而非 null，避免空指针
-        updatedBy = null
+        createdBy = "",
+        updatedBy = null,
+        role = 2 // 私人空间默认为超级管理员
     )
 }

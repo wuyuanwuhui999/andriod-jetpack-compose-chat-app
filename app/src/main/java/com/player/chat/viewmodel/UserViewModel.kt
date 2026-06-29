@@ -1,3 +1,6 @@
+// viewmodel/UserViewModel.kt
+// 修改 loadCurrentTenant 和 loadTenantList 方法
+
 package com.player.chat.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -47,42 +50,97 @@ class UserViewModel @Inject constructor(
         loadTenantList()
     }
 
+    /**
+     * 加载当前租户
+     * 先从缓存获取租户ID，然后从租户列表中找到对应的租户（包含role字段）
+     */
     private fun loadCurrentTenant() {
         viewModelScope.launch {
+            // 先获取缓存的租户ID
+            val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
+
+            if (cachedTenantId != null) {
+                // 从租户列表中查找对应的租户（包含role字段）
+                val matchedTenant = _tenantList.value.find { it.id == cachedTenantId }
+                if (matchedTenant != null) {
+                    _currentTenant.value = matchedTenant
+                    // 更新缓存，确保role字段被保存
+                    dataStoreManager.saveCurrentTenant(matchedTenant)
+                    return@launch
+                }
+            }
+
+            // 如果没有匹配的租户，尝试从缓存直接读取
             dataStoreManager.getCurrentTenant().collect { tenant ->
                 tenant?.let {
                     _currentTenant.value = Tenant(
                         id = it.id,
                         name = it.name,
                         code = it.code,
-                        description = it.description,  // 使用原对象的 description
+                        description = it.description,
                         status = it.status,
                         createDate = it.createDate,
                         updateDate = it.updateDate,
-                        createdBy = it.createdBy ?: "",  // 处理空值，使用空字符串作为默认值
-                        updatedBy = it.updatedBy
+                        createdBy = it.createdBy ?: "",
+                        updatedBy = it.updatedBy,
+                        role = it.role // 确保role字段被传递
                     )
                 }
             }
         }
     }
 
+    /**
+     * 加载租户列表
+     * 获取到租户列表后，更新当前租户（如果当前租户在列表中）
+     */
     private fun loadTenantList() {
         viewModelScope.launch {
             // 获取当前用户的 companyId
             val currentUser = dataStoreManager.getUser().firstOrNull()
             val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
             val cachedCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
-            
+
             if (cachedCompanyId.isNullOrBlank()) {
                 _tenantList.value = emptyList()
                 return@launch
             }
-            
+
             val result = userRepository.getTenantList(cachedCompanyId)
             if (result.isSuccess) {
-                _tenantList.value = result.getOrNull() ?: emptyList()
+                val tenantList = result.getOrNull() ?: emptyList()
+                _tenantList.value = tenantList
+
+                // 租户列表获取成功后，更新当前租户
+                updateCurrentTenantFromList(tenantList)
             }
+        }
+    }
+
+    /**
+     * 从租户列表中更新当前租户
+     * @param tenantList 租户列表
+     */
+    private suspend fun updateCurrentTenantFromList(tenantList: List<Tenant>) {
+        val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
+
+        if (cachedTenantId != null) {
+            // 从租户列表中查找匹配的租户
+            val matchedTenant = tenantList.find { it.id == cachedTenantId }
+            if (matchedTenant != null) {
+                _currentTenant.value = matchedTenant
+                // 更新缓存，确保role字段被保存
+                dataStoreManager.saveCurrentTenant(matchedTenant)
+                return
+            }
+        }
+
+        // 如果没有匹配的租户，使用第一个租户或默认租户
+        if (tenantList.isNotEmpty()) {
+            val firstTenant = tenantList.first()
+            _currentTenant.value = firstTenant
+            dataStoreManager.saveTenantId(firstTenant.id)
+            dataStoreManager.saveCurrentTenant(firstTenant)
         }
     }
 

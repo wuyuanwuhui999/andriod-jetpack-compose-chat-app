@@ -78,7 +78,6 @@ class DataStoreManager(private val context: Context) {
             preferences[stringPreferencesKey(PreferenceKeys.TENANT_ID)]
         }
 
-    // 当前租户信息
     /**
      * 保存当前租户信息
      * @param tenant 租户对象
@@ -137,34 +136,6 @@ class DataStoreManager(private val context: Context) {
         .map { preferences ->
             preferences[booleanPreferencesKey(PreferenceKeys.THINK_MODE)] ?: false
         }
-
-    /**
-     * 保存当前租户用户信息
-     */
-    suspend fun saveCurrentTenantUser(tenantUserInfo: TenantUserInfo) {
-        val tenantUserJson = gson.toJson(tenantUserInfo)
-        context.dataStore.edit { preferences ->
-            preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT_USER)] = tenantUserJson
-        }
-    }
-
-    /**
-     * 获取当前租户用户信息
-     */
-    fun getCurrentTenantUser(): Flow<TenantUserInfo?> = context.dataStore.data
-        .map { preferences ->
-            val tenantUserJson = preferences[stringPreferencesKey(PreferenceKeys.CURRENT_TENANT_USER)]
-            tenantUserJson?.let { gson.fromJson(it, TenantUserInfo::class.java) }
-        }
-
-    /**
-     * 清除租户用户信息
-     */
-    suspend fun clearCurrentTenantUser() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(stringPreferencesKey(PreferenceKeys.CURRENT_TENANT_USER))
-        }
-    }
 
     /**
      * 保存当前公司信息
