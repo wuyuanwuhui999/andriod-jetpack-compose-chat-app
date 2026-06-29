@@ -32,6 +32,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.player.chat.R
+import com.player.chat.model.ChatMessage
 import com.player.chat.model.PositionEnum
 import com.player.chat.ui.components.Avatar
 import com.player.chat.ui.components.AvatarSize
@@ -520,7 +521,7 @@ fun ChatPage(
 
 @Composable
 fun ChatBubble(
-    message: com.player.chat.model.ChatMessage,
+    message: ChatMessage,
     userAvatar: String?,
     thinkMode: Boolean
 ) {
@@ -551,7 +552,7 @@ fun ChatBubble(
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterEnd)  // 对齐到头像容器的中间右侧
-                            .offset(x = (Dimens.middleIconSize), y = 2.dp)  // 偏移到头像右侧
+                            .offset(x = (Dimens.smallIconSize + 3.dp), y = 2.dp)  // 偏移到头像右侧
                             .size(Dimens.smallIconSize)
                             .rotate(-45f)
                             .background(Color.White)
@@ -572,7 +573,7 @@ fun ChatBubble(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .wrapContentWidth()
                                     .background(
                                         color = Color.Gray.copy(alpha = 0.2f),
                                         shape = RoundedCornerShape(Dimens.btnBorderRadius)
@@ -597,7 +598,7 @@ fun ChatBubble(
                     ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()  // 内容自适应
+                                .wrapContentWidth()
                                 .background(
                                     color = Color.White,
                                     shape = RoundedCornerShape(Dimens.btnBorderRadius)
@@ -605,10 +606,28 @@ fun ChatBubble(
                                 .padding(Dimens.middleGap),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            Text(
-                                text = message.responseContent,
-                                color = Color.Black
-                            )
+                            if (message.responseContent.isEmpty() && message.thinkContent == null) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.smallGap)
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        color = Color.Primary,
+                                        strokeWidth = 2.dp
+                                    )
+                                    Text(
+                                        text = "正在加载中...",
+                                        color = Color.secondary,
+                                        fontSize = Dimens.normalFontSize
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = message.responseContent,
+                                    color = Color.Black
+                                )
+                            }
                         }
                     }
                 }
@@ -658,7 +677,7 @@ fun ChatBubble(
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterStart)  // 对齐到头像容器的中间左侧
-                            .offset(x = (-Dimens.middleIconSize), y = 2.dp)  // 偏移到头像左侧
+                            .offset(x = (-Dimens.smallIconSize - 3.dp), y = 2.dp)  // 偏移到头像左侧
                             .size(Dimens.smallIconSize)
                             .rotate(45f)
                             .background(Color.White)

@@ -356,7 +356,7 @@ class ChatViewModel @Inject constructor(
 
             webSocketManager = WebSocketManager()
             webSocketManager?.connectWebSocket(
-                token = token,
+                token = token,  // 这里传递原始 token，由 WebSocketManager 添加 Bearer 前缀
                 chatId = currentChatId,
                 onConnected = {
                     _isConnecting.value = false

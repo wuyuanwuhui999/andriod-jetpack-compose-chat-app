@@ -44,8 +44,10 @@ class WebSocketManager {
             .readTimeout(0, TimeUnit.SECONDS)
             .build()
 
+        val url = "ws://${Config.BASE_URL.removePrefix("http://")}/service/chat/ws/chat?token=Bearer $token"
+        
         val request = Request.Builder()
-            .url("ws://${Config.BASE_URL.removePrefix("http://")}/service/chat/ws/chat?token=$token")
+            .url(url)
             .build()
 
         webSocket = client?.newWebSocket(request, object : WebSocketListener() {
