@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -157,7 +156,7 @@ fun AddTenantUserPage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入用户姓名或工号",
-                                        color = Color.Gray,
+                                        color = Color.secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }

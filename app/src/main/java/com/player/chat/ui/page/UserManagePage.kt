@@ -186,7 +186,7 @@ fun UserManagePage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入用户姓名或工号",
-                                        color = Color.Gray,
+                                        color = Color.secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }

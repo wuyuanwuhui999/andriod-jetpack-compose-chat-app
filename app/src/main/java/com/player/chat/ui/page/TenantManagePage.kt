@@ -1,4 +1,3 @@
-// ui/page/TenantManagePage.kt
 package com.player.chat.ui.page
 
 import android.util.Log
@@ -196,7 +195,7 @@ fun TenantManagePage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入用户工号或名称",
-                                        color = Color.Gray,
+                                        color = Color.secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }
