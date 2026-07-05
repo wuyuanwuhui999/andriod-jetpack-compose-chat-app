@@ -1,4 +1,3 @@
-// UpdatePasswordRequest.kt
 package com.player.chat.model
 
 import com.google.gson.annotations.SerializedName

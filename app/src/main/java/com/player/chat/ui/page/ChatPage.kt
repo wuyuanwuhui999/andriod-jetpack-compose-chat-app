@@ -438,6 +438,7 @@ fun ChatPage(
                         "我的文档",
                         "会话记录",
                         "修改提示词",
+                        "提示词管理"
                     )
 
                     menuItems.forEachIndexed { index, item ->
@@ -460,6 +461,10 @@ fun ChatPage(
                                     3 -> {
                                         // 修改提示词
                                         chatViewModel.showPromptDialog()
+                                    }
+                                    4 -> {
+                                        // 跳转到提示词管理页面
+                                        navController.navigate(Screens.PromptManage.route)
                                     }
                                 }
                                 chatViewModel.toggleMenuDialog()

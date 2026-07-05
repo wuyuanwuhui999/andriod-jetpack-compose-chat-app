@@ -5,12 +5,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.player.chat.ui.page.AddCompanyUserPage
+import com.player.chat.ui.page.AddPromptPage
 import com.player.chat.ui.page.AddTenantUserPage
 import com.player.chat.ui.page.ChatPage
 import com.player.chat.ui.page.CompanyPage
 import com.player.chat.ui.page.ForgetPasswordPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
+import com.player.chat.ui.page.PromptManagePage
 import com.player.chat.ui.page.RegisterPage
 import com.player.chat.ui.page.ResetPasswordPage
 import com.player.chat.ui.page.TenantManagePage
@@ -73,6 +75,14 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Screens.AddTenantUser.route) {
             AddTenantUserPage(navController = navController)
+        }
+
+        composable(Screens.PromptManage.route) {
+            PromptManagePage(navController = navController)
+        }
+
+        composable(Screens.AddPrompt.route) {
+            AddPromptPage(navController = navController)
         }
     }
 }

@@ -75,16 +75,37 @@ interface ApiService {
     ): Response<ApiResponse<List<TenantUser>>>
 
     // 获取提示词
+    // 获取提示词 - 修改，添加 promptId 参数
     @GET("/service/prompt/getPrompt")
     suspend fun getPrompt(
-        @Query("tenantId") tenantId: String
+        @Query("tenantId") tenantId: String,
+        @Query("promptId") promptId: String? = null
     ): Response<ApiResponse<Prompt>>
 
+    // 获取提示词列表
+    @GET("/service/prompt/getPromptList")
+    suspend fun getPromptList(
+        @Query("tenantId") tenantId: String,
+        @Query("keyword") keyword: String? = null
+    ): Response<ApiResponse<List<Prompt>>>
+
+    // 新增提示词
+    @POST("/service/prompt/insertPrompt")
+    suspend fun insertPrompt(
+        @Body request: InsertPromptRequest
+    ): Response<ApiResponse<Int>>
+
     // 更新提示词
-    @POST("/service/prompt/updatePrompt")
+    @PUT("/service/prompt/updatePrompt")
     suspend fun updatePrompt(
         @Body request: UpdatePromptRequest
-    ): Response<ApiResponse<Any>>
+    ): Response<ApiResponse<Int>>
+
+    // 删除提示词
+    @DELETE("/service/prompt/deletePrompt/{promptId}")
+    suspend fun deletePrompt(
+        @Path("promptId") promptId: String
+    ): Response<ApiResponse<Int>>
 
     /**
      * 更新用户头像

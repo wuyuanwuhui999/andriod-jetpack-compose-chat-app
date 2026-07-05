@@ -24,21 +24,3 @@ data class Prompt(
     @SerializedName("updateTime")
     val updateTime: String? = null  // 已经是 String，保持
 )
-
-
-/**
- * 更新提示词请求
- */
-data class UpdatePromptRequest(
-    @SerializedName("id")
-    val id: String,
-
-    @SerializedName("tenantId")
-    val tenantId: String,
-
-    @SerializedName("userId")
-    val userId: String,
-
-    @SerializedName("prompt")
-    val prompt: String
-)

@@ -146,12 +146,14 @@ class ChatViewModel @Inject constructor(
     private val _isUpdatingPrompt = MutableStateFlow(false)
     val isUpdatingPrompt: StateFlow<Boolean> = _isUpdatingPrompt.asStateFlow()
 
+    private val _currentPromptId = MutableStateFlow<String?>(null)
+    val currentPromptId: StateFlow<String?> = _currentPromptId.asStateFlow()
+
     init {
         loadTenantInfo()
         loadModelList()
         loadSettings()
         addGreetingMessage()
-        loadPrompt()
     }
 
     private fun loadTenantInfo() {
@@ -205,6 +207,7 @@ class ChatViewModel @Inject constructor(
                     dataStoreManager.saveCurrentTenant(it)
                 }
 
+                loadPromptIdFromCache()
                 // 加载当前租户的提示词
                 loadPrompt()
             } else {
@@ -220,6 +223,18 @@ class ChatViewModel @Inject constructor(
 
             _isLoading.value = false
         }
+    }
+
+    /**
+     * 从缓存中加载提示词ID
+     */
+    private suspend fun loadPromptIdFromCache() {
+        val userId = dataStoreManager.getUser().firstOrNull()?.id ?: return
+        val tenantId = _currentTenant.value?.id ?: return
+        // 根据用户ID和租户ID拼接Key，例如：prompt_id_user123_tenant456
+        val key = "prompt_id_${userId}_${tenantId}"
+        val promptId = dataStoreManager.getString(key).firstOrNull()
+        _currentPromptId.value = promptId
     }
 
     private fun loadModelList() {
@@ -830,12 +845,10 @@ class ChatViewModel @Inject constructor(
 
             // 重置会话记录（因为租户变了，之前的会话记录不再适用）
             resetChatHistory()
-
+            // 切换租户后重新加载提示词ID和提示词
+            loadPromptIdFromCache()
             // 切换租户后重新加载提示词
             loadPrompt()
-
-            // 移除 loadTenantUserInfo 调用
-            // 租户角色信息现在从 currentTenant.role 获取
         }
     }
 
@@ -867,18 +880,29 @@ class ChatViewModel @Inject constructor(
      * 加载当前租户的提示词
      * 在初始化加载租户后自动调用，切换租户时也会重新加载
      */
-    private fun loadPrompt() {
+    /**
+     * 加载当前租户的提示词
+     * @param promptId 提示词ID，如果为空则传空字符串
+     */
+    private fun loadPrompt(promptId: String? = null) {
         viewModelScope.launch {
             val tenantId = _currentTenant.value?.id ?: return@launch
+            val finalPromptId = promptId ?: _currentPromptId.value ?: ""
+
             try {
-                val result = chatRepository.getPrompt(tenantId)
+                val result = chatRepository.getPrompt(tenantId, finalPromptId)
                 if (result.isSuccess) {
                     val prompt = result.getOrNull()
                     _currentPrompt.value = prompt
                     _promptText.value = prompt?.prompt ?: ""
+
+                    // 如果缓存中没有promptId，或者传入的promptId为空，保存返回的prompt.id
+                    if (finalPromptId.isEmpty() && prompt != null) {
+                        savePromptIdToCache(prompt.id)
+                    }
                     Log.d("ChatViewModel", "加载提示词成功: ${prompt?.prompt}")
                 } else {
-                    // 如果没有提示词，使用默认提示词
+                    // 如果接口失败，使用默认提示词
                     _promptText.value = "你是一个智能助手"
                     Log.d("ChatViewModel", "使用默认提示词")
                 }
@@ -887,6 +911,18 @@ class ChatViewModel @Inject constructor(
                 _promptText.value = "你是一个智能助手"
             }
         }
+    }
+
+    /**
+     * 保存提示词ID到缓存
+     */
+    private suspend fun savePromptIdToCache(promptId: String) {
+        val userId = dataStoreManager.getUser().firstOrNull()?.id ?: return
+        val tenantId = _currentTenant.value?.id ?: return
+        val key = "prompt_id_${userId}_${tenantId}"
+        dataStoreManager.saveString(key, promptId)
+        _currentPromptId.value = promptId
+        Log.d("ChatViewModel", "提示词ID已保存到缓存: $promptId")
     }
 
     /**

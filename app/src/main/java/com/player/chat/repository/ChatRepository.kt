@@ -135,10 +135,11 @@ class ChatRepository @Inject constructor(
     /**
      * 获取提示词
      * @param tenantId 租户ID
+     * @param promptId 提示词ID，可空，为空时后端返回默认或最新创建的提示词
      */
-    suspend fun getPrompt(tenantId: String): Result<Prompt> {
+    suspend fun getPrompt(tenantId: String, promptId: String? = null): Result<Prompt> {
         return try {
-            val response = apiService.getPrompt(tenantId)
+            val response = apiService.getPrompt(tenantId, promptId)
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 val prompt = response.body()?.data
                 if (prompt != null) {

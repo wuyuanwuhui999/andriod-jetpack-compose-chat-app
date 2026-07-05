@@ -13,5 +13,8 @@ sealed class Screens(val route: String) {
     object Company : Screens("company")
     object UserManage : Screens("user_manage")
     object AddUser : Screens("add_user")
-    object AddTenantUser : Screens("add_tenant_user") 
+    object AddTenantUser : Screens("add_tenant_user")
+
+    object PromptManage : Screens("prompt_manage")
+    object AddPrompt : Screens("add_prompt")
 }
