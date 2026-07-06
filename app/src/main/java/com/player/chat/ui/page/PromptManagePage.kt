@@ -171,7 +171,7 @@ fun PromptManagePage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入关键字搜索提示词",
-                                        color = Color.secondary,
+                                        color = Color.Secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }
@@ -450,7 +450,7 @@ fun SwipeToDeletePromptItem(
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(buttonWidth)
-                    .background(Color.secondary)
+                    .background(Color.Secondary)
                     .clickable {
                         onEdit()
                         offsetX = 0f

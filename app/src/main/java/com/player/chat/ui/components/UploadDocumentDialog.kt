@@ -113,7 +113,7 @@ fun UploadDocumentDialog(
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Color.Black
                     ),
-                    border = BorderStroke(Dimens.borderSize, Color.disableTextColor)
+                    border = BorderStroke(Dimens.borderSize, Color.DisableColor)
                 ) {
                     Text("取消")
                 }
@@ -134,7 +134,7 @@ fun UploadDocumentDialog(
                         containerColor = if (selectedDirectory != null)
                             Color.Primary
                         else
-                            Color.disableTextColor,
+                            Color.DisableColor,
                         contentColor = if (selectedDirectory != null)
                             Color.White
                         else

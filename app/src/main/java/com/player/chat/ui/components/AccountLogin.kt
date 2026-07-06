@@ -53,8 +53,8 @@ fun AccountLogin(
             },
             shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.disableTextColor,
-                unfocusedBorderColor = Color.disableTextColor
+                focusedBorderColor = Color.DisableColor,
+                unfocusedBorderColor = Color.DisableColor
             ),
             singleLine = true
         )
@@ -76,8 +76,8 @@ fun AccountLogin(
             },
             shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.disableTextColor,
-                unfocusedBorderColor = Color.disableTextColor
+                focusedBorderColor = Color.DisableColor,
+                unfocusedBorderColor = Color.DisableColor
             ),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

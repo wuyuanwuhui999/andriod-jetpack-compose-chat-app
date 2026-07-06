@@ -368,7 +368,7 @@ fun UserPage(
                                     shape = RoundedCornerShape(4.dp),
                                     color = when (currentTenant?.role) {
                                         2 -> Color.Primary.copy(alpha = 0.1f)  // 超级管理员
-                                        1 -> Color.secondary.copy(alpha = 0.1f)  // 租户管理员
+                                        1 -> Color.Secondary.copy(alpha = 0.1f)  // 租户管理员
                                         else -> Color.Gray.copy(alpha = 0.1f)  // 普通用户
                                     }
                                 ) {
@@ -380,7 +380,7 @@ fun UserPage(
                                         },
                                         color = when (currentTenant?.role) {
                                             2 -> Color.Primary
-                                            1 -> Color.secondary
+                                            1 -> Color.Secondary
                                             else -> Color.Gray
                                         },
                                         fontSize = Dimens.normalFontSize,

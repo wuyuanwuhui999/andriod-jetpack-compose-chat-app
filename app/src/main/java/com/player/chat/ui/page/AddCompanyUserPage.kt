@@ -161,7 +161,7 @@ fun AddCompanyUserPage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入用户姓名或工号",
-                                        color = Color.secondary,
+                                        color = Color.Secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }

@@ -226,17 +226,17 @@ fun ChatPage(
                 onClick = { chatViewModel.toggleThinkMode() },
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = if (thinkMode) Color.Primary else Color.disableTextColor,
+                    contentColor = if (thinkMode) Color.Primary else Color.DisableColor,
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(
                     width = Dimens.borderSize,
-                    color = if (thinkMode) Color.Primary else Color.secondary
+                    color = if (thinkMode) Color.Primary else Color.Secondary
                 )
             ) {
                 Text(
                     text = "思考模式",
-                    color = if (thinkMode) Color.Primary else Color.secondary
+                    color = if (thinkMode) Color.Primary else Color.Secondary
                 )
             }
 
@@ -245,17 +245,17 @@ fun ChatPage(
                 onClick = { chatViewModel.toggleLanguage() },
                 shape = RoundedCornerShape(Dimens.bigBorderRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.secondary,
+                    contentColor = Color.Secondary,
                     containerColor = Color.Transparent
                 ),
                 border = BorderStroke(
                     width = Dimens.borderSize,
-                    color = Color.secondary
+                    color = Color.Secondary
                 )
             ) {
                 Text(
                     text = if (language == "zh") "中文" else "English",
-                    color = Color.secondary
+                    color = Color.Secondary
                 )
             }
         }
@@ -330,13 +330,13 @@ fun ChatPage(
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
                             strokeWidth = 2.dp,
-                            color = if (inputText.isNotBlank()) Color.Primary else Color.secondary
+                            color = if (inputText.isNotBlank()) Color.Primary else Color.Secondary
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.Send,
                             contentDescription = "发送",
-                            tint = if (inputText.isNotBlank()) Color.Primary else Color.secondary,
+                            tint = if (inputText.isNotBlank()) Color.Primary else Color.Secondary,
                             modifier = Modifier.rotate(-30f)
                         )
                     }
@@ -623,7 +623,7 @@ fun ChatBubble(
                                     )
                                     Text(
                                         text = "正在加载中...",
-                                        color = Color.secondary,
+                                        color = Color.Secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }

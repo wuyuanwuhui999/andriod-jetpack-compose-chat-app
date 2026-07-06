@@ -156,7 +156,7 @@ fun AddTenantUserPage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入用户姓名或工号",
-                                        color = Color.secondary,
+                                        color = Color.Secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }
@@ -346,7 +346,7 @@ fun AddTenantUserPage(
                 ) {
                     Text(
                         text = "已加载全部用户",
-                        color = Color.secondary,
+                        color = Color.Secondary,
                         fontSize = Dimens.normalFontSize
                     )
                 }
@@ -478,7 +478,7 @@ fun TenantSearchUserItem(
                 )
                 Text(
                     text = user.userAccount,
-                    color = Color.secondary,
+                    color = Color.Secondary,
                     fontSize = Dimens.normalFontSize,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

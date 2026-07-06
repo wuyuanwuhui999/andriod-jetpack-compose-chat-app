@@ -67,8 +67,8 @@ fun EmailLogin(
             },
             shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.disableTextColor,
-                unfocusedBorderColor = Color.disableTextColor
+                focusedBorderColor = Color.DisableColor,
+                unfocusedBorderColor = Color.DisableColor
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
@@ -84,8 +84,8 @@ fun EmailLogin(
             },
             shape = RoundedCornerShape(Dimens.bigBorderRadius),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.disableTextColor,
-                unfocusedBorderColor = Color.disableTextColor
+                focusedBorderColor = Color.DisableColor,
+                unfocusedBorderColor = Color.DisableColor
             ),
             leadingIcon = {
                 Icon(

@@ -195,7 +195,7 @@ fun TenantManagePage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入用户工号或名称",
-                                        color = Color.secondary,
+                                        color = Color.Secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }
@@ -917,7 +917,7 @@ fun SwipeToDeleteUserItem(
 
                 Text(
                     text = tenantUser.userAccount.ifEmpty { tenantUser.userId },
-                    color = Color.secondary,
+                    color = Color.Secondary,
                     fontSize = Dimens.normalFontSize,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

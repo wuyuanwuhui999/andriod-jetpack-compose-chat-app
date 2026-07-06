@@ -130,7 +130,7 @@ fun AddPromptPage(
                                 if (promptText.isEmpty()) {
                                     Text(
                                         text = "请输入提示词内容...",
-                                        color = Color.Gray,
+                                        color = Color.Secondary,
                                         fontSize = Dimens.normalFontSize,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -176,7 +176,7 @@ fun AddPromptPage(
                         .height(Dimens.btnHeight),
                     shape = RoundedCornerShape(Dimens.btnHeight / 2)
                 ) {
-                    Text("取消")
+                    Text("取消", color = Color.Secondary)
                 }
 
                 // 确定按钮
@@ -209,14 +209,21 @@ fun AddPromptPage(
                             }
                         }
                     },
+                    // 只要不在加载中就可以点击，点击时在内部校验内容
                     enabled = !isLoading,
                     modifier = Modifier
                         .weight(1f)
                         .height(Dimens.btnHeight),
                     shape = RoundedCornerShape(Dimens.btnHeight / 2),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (promptText.isNotBlank() && !isLoading) Color.Primary else Color.Gray,
-                        contentColor = Color.White
+                        // 容器颜色：有内容时使用 Primary，空时使用 DisableColor
+                        containerColor = if (promptText.isNotBlank()) Color.Primary else Color.DisableColor,
+                        // 文字颜色：始终为白色
+                        contentColor = Color.White,
+                        // 禁用状态的容器颜色
+                        disabledContainerColor = Color.DisableColor,
+                        // 禁用状态的文字颜色
+                        disabledContentColor = Color.White
                     )
                 ) {
                     if (isLoading) {
@@ -226,7 +233,10 @@ fun AddPromptPage(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("确定")
+                        Text(
+                            text = "确定",
+                            fontSize = Dimens.normalFontSize
+                        )
                     }
                 }
             }

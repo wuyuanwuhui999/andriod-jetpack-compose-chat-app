@@ -186,7 +186,7 @@ fun UserManagePage(
                                 if (searchKeyword.isEmpty()) {
                                     Text(
                                         text = "请输入用户姓名或工号",
-                                        color = Color.secondary,
+                                        color = Color.Secondary,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }
@@ -346,7 +346,7 @@ fun UserManagePage(
                 ) {
                     Text(
                         text = "已加载全部用户",
-                        color = Color.secondary,
+                        color = Color.Secondary,
                         fontSize = Dimens.normalFontSize
                     )
                 }
@@ -640,7 +640,7 @@ fun SwipeToDeleteUserItem(
 
                 Text(
                     text = " ${user.userAccount}",
-                    color = Color.secondary,
+                    color = Color.Secondary,
                     fontSize = Dimens.normalFontSize,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
