@@ -5,7 +5,7 @@ package com.player.chat.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.player.chat.chat.repository.UserRepository
+import com.player.chat.repository.UserRepository
 import com.player.chat.local.DataStoreManager
 import com.player.chat.model.Tenant
 import com.player.chat.model.TenantStatus

@@ -3,7 +3,7 @@ package com.player.chat.di
 
 import android.content.Context
 import android.util.Log
-import com.player.chat.chat.repository.UserRepository
+import com.player.chat.repository.UserRepository
 import com.player.chat.local.DataStoreManager
 import com.player.chat.network.ApiService
 import com.player.chat.network.NetworkInterceptor

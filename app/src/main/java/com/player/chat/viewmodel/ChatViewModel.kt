@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.player.chat.model.*
 import com.player.chat.network.WebSocketManager
 import com.player.chat.network.WebSocketMessageHandler
-import com.player.chat.chat.repository.UserRepository
+import com.player.chat.repository.UserRepository
 import com.player.chat.repository.ChatRepository
 import com.player.chat.local.DataStoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -2,7 +2,7 @@ package com.player.chat.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.player.chat.chat.repository.UserRepository
+import com.player.chat.repository.UserRepository
 import com.player.chat.model.User
 import com.player.chat.utils.CommonUtils
 import dagger.hilt.android.lifecycle.HiltViewModel

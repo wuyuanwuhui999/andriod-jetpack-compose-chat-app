@@ -1,4 +1,4 @@
-package com.player.chat.chat.repository
+package com.player.chat.repository
 
 import android.util.Log
 import com.player.chat.local.DataStoreManager

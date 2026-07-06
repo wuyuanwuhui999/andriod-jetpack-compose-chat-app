@@ -2,7 +2,7 @@ package com.player.chat.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.player.chat.chat.repository.UserRepository
+import com.player.chat.repository.UserRepository
 import com.player.chat.local.DataStoreManager
 import com.player.chat.utils.CommonUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
