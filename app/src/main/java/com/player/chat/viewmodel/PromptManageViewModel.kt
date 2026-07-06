@@ -49,25 +49,55 @@ class PromptManageViewModel @Inject constructor(
     init {
         // 在 init 中使用 viewModelScope.launch 调用挂起函数
         viewModelScope.launch {
-            loadCurrentTenantId()
-            loadCurrentPromptId()
-            loadPromptList()
+            // 修改：先获取当前的租户ID，再加载提示词
+            loadCurrentTenantIdInitial()
+            // 然后再监听租户变化
+            observeTenantChanges()
         }
     }
 
     /**
-     * 加载当前租户ID
+     * 加载当前租户ID（初始值）
+     * 使用 firstOrNull() 立即获取缓存的租户ID
      */
-    private suspend fun loadCurrentTenantId() {
-        dataStoreManager.getCurrentTenant().collect { tenant ->
-            currentTenantId = tenant?.id
-            // 租户变化时重新加载提示词列表
-            loadPromptList()
+    private suspend fun loadCurrentTenantIdInitial() {
+        // 直接从缓存获取租户ID
+        val cachedTenantId = dataStoreManager.getTenantId().firstOrNull()
+        if (cachedTenantId != null) {
+            // 从缓存获取完整的租户信息
+            val cachedTenant = dataStoreManager.getCurrentTenant().firstOrNull()
+            cachedTenant?.let {
+                currentTenantId = it.id
+                // 加载提示词ID
+                loadCurrentPromptId()
+                // 加载提示词列表
+                loadPromptList()
+            }
         }
     }
 
     /**
-     * 加载当前使用的提示词ID
+     * 监听租户变化
+     * 租户变化时重新加载数据
+     */
+    private suspend fun observeTenantChanges() {
+        dataStoreManager.getCurrentTenant().collect { tenant ->
+            tenant?.let {
+                val newTenantId = it.id
+                // 只有租户ID发生变化时才重新加载
+                if (currentTenantId != newTenantId) {
+                    currentTenantId = newTenantId
+                    // 租户变化时重新加载提示词列表
+                    loadPromptList()
+                    // 重新加载提示词ID
+                    loadCurrentPromptId()
+                }
+            }
+        }
+    }
+
+    /**
+     * 加载当前使用的提示词ID（修改为 suspend 函数，直接调用）
      */
     private suspend fun loadCurrentPromptId() {
         val userId = dataStoreManager.getUser().firstOrNull()?.id ?: return
@@ -75,7 +105,7 @@ class PromptManageViewModel @Inject constructor(
         val key = "prompt_id_${userId}_${tenantId}"
         val promptId = dataStoreManager.getString(key).firstOrNull()
         _currentPromptId.value = promptId
-        Log.d("PromptManageVM", "加载当前提示词ID: $promptId")
+        Log.d("PromptManageVM", "加载当前提示词ID: $promptId, tenantId: $tenantId, userId: $userId")
     }
 
     /**
@@ -123,6 +153,7 @@ class PromptManageViewModel @Inject constructor(
 
     /**
      * 使用提示词（设置为当前使用的提示词）
+     * 修改：保存成功后，更新 currentPromptId
      */
     fun usePrompt(prompt: Prompt) {
         viewModelScope.launch {
@@ -139,11 +170,11 @@ class PromptManageViewModel @Inject constructor(
                 val key = "prompt_id_${userId}_${tenantId}"
                 dataStoreManager.saveString(key, prompt.id)
 
-                // 更新当前提示词ID
+                // 更新当前提示词ID - 直接赋值
                 _currentPromptId.value = prompt.id
+                Log.d("PromptManageVM", "使用提示词成功: ${prompt.id}, 已更新 currentPromptId")
 
                 _operationMessage.value = "使用提示词成功"
-                Log.d("PromptManageVM", "使用提示词成功: ${prompt.id}")
 
                 // 延迟2秒后清除消息
                 kotlinx.coroutines.delay(2000)

@@ -44,8 +44,6 @@ fun PromptManagePage(
     navController: NavHostController,
     viewModel: PromptManageViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-
     val promptList by viewModel.promptList.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val searchKeyword by viewModel.searchKeyword.collectAsStateWithLifecycle()
@@ -204,7 +202,7 @@ fun PromptManagePage(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .wrapContentHeight()
                     .padding(horizontal = Dimens.middleGap)
                     .padding(bottom = Dimens.middleGap),
                 shape = RoundedCornerShape(Dimens.moduleBorderRadius),
@@ -213,7 +211,7 @@ fun PromptManagePage(
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .wrapContentHeight()
                 ) {
                     when {
                         isLoading && promptList.isEmpty() -> {
@@ -270,7 +268,7 @@ fun PromptManagePage(
                         }
                         else -> {
                             LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.wrapContentHeight(),
                                 verticalArrangement = Arrangement.spacedBy(0.dp)
                             ) {
                                 items(

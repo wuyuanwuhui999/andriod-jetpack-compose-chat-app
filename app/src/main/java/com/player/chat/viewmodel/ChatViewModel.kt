@@ -878,10 +878,6 @@ class ChatViewModel @Inject constructor(
 
     /**
      * 加载当前租户的提示词
-     * 在初始化加载租户后自动调用，切换租户时也会重新加载
-     */
-    /**
-     * 加载当前租户的提示词
      * @param promptId 提示词ID，如果为空则传空字符串
      */
     private fun loadPrompt(promptId: String? = null) {
@@ -896,10 +892,12 @@ class ChatViewModel @Inject constructor(
                     _currentPrompt.value = prompt
                     _promptText.value = prompt?.prompt ?: ""
 
-                    // 如果缓存中没有promptId，或者传入的promptId为空，保存返回的prompt.id
-                    if (finalPromptId.isEmpty() && prompt != null) {
-                        savePromptIdToCache(prompt.id)
-                    }
+                    // 修复：如果缓存中没有promptId，或者传入的promptId为空，
+                    // 并且接口返回了prompt，则保存prompt.id到缓存
+//                    if (prompt != null && (finalPromptId.isEmpty() || _currentPromptId.value == null)) {
+//                        savePromptIdToCache(prompt.id)
+//                    }
+                    savePromptIdToCache(prompt?.id ?: "")
                     Log.d("ChatViewModel", "加载提示词成功: ${prompt?.prompt}")
                 } else {
                     // 如果接口失败，使用默认提示词
