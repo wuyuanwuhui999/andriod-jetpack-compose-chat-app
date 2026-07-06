@@ -17,4 +17,8 @@ sealed class Screens(val route: String) {
 
     object PromptManage : Screens("prompt_manage")
     object AddPrompt : Screens("add_prompt")
+
+    object ModelManage : Screens("model_manage")
+    object AddModel : Screens("add_model")
+    object UpdateModel : Screens("update_model")
 }

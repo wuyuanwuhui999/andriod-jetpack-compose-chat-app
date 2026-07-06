@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.player.chat.model.*
 import com.player.chat.network.WebSocketManager
 import com.player.chat.network.WebSocketMessageHandler
-import com.player.chat.repository.UserRepository
 import com.player.chat.repository.ChatRepository
 import com.player.chat.local.DataStoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,14 +23,15 @@ import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 import com.player.chat.repository.TenantRepository
+import com.player.chat.repository.UserRepository
 import com.player.chat.utils.CommonUtils.formatRelativeTime
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
-    private val userRepository: UserRepository,
+    userRepository: UserRepository,
     private val dataStoreManager: DataStoreManager,
-    private val tenantRepository: TenantRepository  // 添加 TenantRepository
+    private val tenantRepository: TenantRepository  // 添加 TenantRepository){}
 ) : ViewModel() {
     private val _tenantList = MutableStateFlow<List<Tenant>>(emptyList())
     val tenantList: StateFlow<List<Tenant>> = _tenantList.asStateFlow()
@@ -241,13 +241,12 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
 
-            // --- 修改开始：获取 companyId ---
-            var companyId: String? = null
+            var companyId: String = "";
             try {
                 val currentUser = dataStoreManager.getUser().firstOrNull()
                 if (currentUser != null) {
                     val companyKey = "company_id_${currentUser.id}"
-                    companyId = dataStoreManager.getString(companyKey).firstOrNull()
+                    companyId = dataStoreManager.getString(companyKey).firstOrNull().toString()
                 }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "获取companyId失败", e)

@@ -4,7 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.player.chat.ui.page.AddCompanyUserPage
+import com.player.chat.ui.page.AddModelPage
 import com.player.chat.ui.page.AddPromptPage
 import com.player.chat.ui.page.AddTenantUserPage
 import com.player.chat.ui.page.ChatPage
@@ -12,10 +14,12 @@ import com.player.chat.ui.page.CompanyPage
 import com.player.chat.ui.page.ForgetPasswordPage
 import com.player.chat.ui.page.LaunchPage
 import com.player.chat.ui.page.LoginPage
+import com.player.chat.ui.page.ModelManagePage
 import com.player.chat.ui.page.PromptManagePage
 import com.player.chat.ui.page.RegisterPage
 import com.player.chat.ui.page.ResetPasswordPage
 import com.player.chat.ui.page.TenantManagePage
+import com.player.chat.ui.page.UpdateModelPage
 import com.player.chat.ui.page.UpdatePasswordPage
 import com.player.chat.ui.page.UserManagePage
 import com.player.chat.ui.page.UserPage  // 确保这行存在且只导入一次
@@ -83,6 +87,27 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Screens.AddPrompt.route) {
             AddPromptPage(navController = navController)
+        }
+
+        composable(Screens.ModelManage.route) {
+            ModelManagePage(navController = navController)
+        }
+
+        composable(Screens.AddModel.route) {
+            AddModelPage(navController = navController)
+        }
+
+        composable(
+            route = "${Screens.UpdateModel.route}?modelId={modelId}",
+            arguments = listOf(
+                navArgument("modelId") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            UpdateModelPage(
+                navController = navController,
+                modelId = modelId
+            )
         }
     }
 }

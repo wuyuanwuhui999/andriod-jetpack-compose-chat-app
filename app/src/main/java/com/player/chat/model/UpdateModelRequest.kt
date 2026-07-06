@@ -1,15 +1,15 @@
-// ChatModel.kt
 package com.player.chat.model
 
 import com.google.gson.annotations.SerializedName
 
-data class ChatModel(
+/**
+ * 更新模型请求
+ */
+data class UpdateModelRequest(
     @SerializedName("id") val id: String,
     @SerializedName("modelName") val modelName: String,
-    @SerializedName("type") val type: String, // ollama 或 online
+    @SerializedName("type") val type: String,
     @SerializedName("companyId") val companyId: String,
     @SerializedName("apiKey") val apiKey: String? = null,
-    @SerializedName("baseUrl") val baseUrl: String,
-    @SerializedName("createTime") val createTime: String? = null,
-    @SerializedName("updateTime") val updateTime: String? = null
+    @SerializedName("baseUrl") val baseUrl: String
 )

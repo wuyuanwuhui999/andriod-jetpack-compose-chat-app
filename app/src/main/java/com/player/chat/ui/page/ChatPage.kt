@@ -32,6 +32,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.player.chat.R
+import com.player.chat.local.DataStoreManager
 import com.player.chat.model.ChatMessage
 import com.player.chat.model.PositionEnum
 import com.player.chat.ui.components.Avatar
@@ -80,6 +81,12 @@ fun ChatPage(
     val showPromptDialog by chatViewModel.showPromptDialog.collectAsState()
 
     val context = LocalContext.current // ✅ 在 Composable 里是合法的
+
+    val dataStoreManager = remember { DataStoreManager(context) }
+    val currentCompany by dataStoreManager.getCurrentCompany().collectAsState(initial = null)
+
+    // 判断是否为管理员 (company.role > 0)
+    val isAdmin = currentCompany?.role ?: 0 > 0
 
     // 添加文件选择器
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -423,17 +430,17 @@ fun ChatPage(
         )
     }
 
-
     // 菜单对话框
     if (showMenuDialog) {
-        val scope = rememberCoroutineScope()  // 添加这行
+        val scope = rememberCoroutineScope()
         Dialog(onDismissRequest = { chatViewModel.toggleMenuDialog() }) {
             Card(
                 modifier = Modifier.fillMaxWidth(0.8f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Column {
-                    val menuItems = listOf(
+                    // 定义菜单项列表，模型管理根据 isAdmin 决定是否显示
+                    val baseMenuItems = listOf(
                         "上传文档",
                         "我的文档",
                         "会话记录",
@@ -441,30 +448,35 @@ fun ChatPage(
                         "提示词管理"
                     )
 
+                    // 如果用户是管理员，添加模型管理菜单项
+                    val menuItems = if (isAdmin) {
+                        baseMenuItems + "模型管理"
+                    } else {
+                        baseMenuItems
+                    }
+
                     menuItems.forEachIndexed { index, item ->
                         ListItem(
                             headlineContent = { Text(item) },
                             modifier = Modifier.clickable {
-                                when (index) {
-                                    0 -> {
-                                        // TODO: 上传文档
+                                when (item) {
+                                    "上传文档" -> {
                                         chatViewModel.showUploadDialog()
                                     }
-                                    1 -> {
-                                        // TODO: 我的文档
-                                        chatViewModel.toggleMyDocumentsDialog() // 打开我的文档对话框
+                                    "我的文档" -> {
+                                        chatViewModel.toggleMyDocumentsDialog()
                                     }
-                                    2 -> {
-                                        // TODO: 会话记录
+                                    "会话记录" -> {
                                         chatViewModel.toggleChatHistoryDialog()
                                     }
-                                    3 -> {
-                                        // 修改提示词
+                                    "修改提示词" -> {
                                         chatViewModel.showPromptDialog()
                                     }
-                                    4 -> {
-                                        // 跳转到提示词管理页面
+                                    "提示词管理" -> {
                                         navController.navigate(Screens.PromptManage.route)
+                                    }
+                                    "模型管理" -> {
+                                        navController.navigate(Screens.ModelManage.route)
                                     }
                                 }
                                 chatViewModel.toggleMenuDialog()
@@ -474,7 +486,6 @@ fun ChatPage(
                             Divider()
                         }
                     }
-
                 }
             }
         }

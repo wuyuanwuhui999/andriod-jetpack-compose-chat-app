@@ -19,6 +19,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 import com.player.chat.config.Config
+import com.player.chat.repository.ModelRepository
 import com.player.chat.viewmodel.ChatViewModel
 
 @Module
@@ -93,7 +94,6 @@ object AppModule {
         return TenantRepository(apiService)
     }
 
-    // 将 provideChatViewModel 方法移到这里，而不是放在 DetailedLoggingInterceptor 内部
     @Provides
     @Singleton
     fun provideChatViewModel(
@@ -108,6 +108,14 @@ object AppModule {
             dataStoreManager,
             tenantRepository
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideModelRepository(
+        apiService: ApiService
+    ): ModelRepository {
+        return ModelRepository(apiService)
     }
 }
 

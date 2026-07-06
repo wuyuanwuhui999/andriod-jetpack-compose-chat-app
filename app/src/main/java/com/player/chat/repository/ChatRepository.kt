@@ -18,7 +18,7 @@ class ChatRepository @Inject constructor(
     private val apiService: ApiService
 ) {
     // 修改：获取模型列表，添加 companyId 参数
-    suspend fun getModelList(companyId: String? = null): Result<List<ChatModel>> {
+    suspend fun getModelList(companyId: String): Result<List<ChatModel>> {
         return try {
             val response = apiService.getModelList(companyId)
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {

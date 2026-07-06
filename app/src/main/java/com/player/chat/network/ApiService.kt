@@ -23,8 +23,38 @@ interface ApiService {
     @POST("/service/user/sendEmailVertifyCode")
     suspend fun sendEmailVerifyCode(@Body request: SendEmailRequest): Response<ApiResponse<Int>>
 
-    @GET("/service/chat/getModelList")
-    suspend fun getModelList(@Query("companyId") companyId: String? = null): Response<ApiResponse<List<ChatModel>>>
+    /**
+     * 获取模型列表
+     */
+    @GET("/service/model/getModelList")
+    suspend fun getModelList(
+        @Query("companyId") companyId: String,
+        @Query("keyword") keyword: String? = null
+    ): Response<ApiResponse<List<ChatModel>>>
+
+    /**
+     * 添加模型
+     */
+    @POST("/service/chat/addModel")
+    suspend fun addModel(
+        @Body request: AddModelRequest
+    ): Response<ApiResponse<Int>>
+
+    /**
+     * 更新模型
+     */
+    @PUT("/service/chat/updateModel")
+    suspend fun updateModel(
+        @Body request: UpdateModelRequest
+    ): Response<ApiResponse<Int>>
+
+    /**
+     * 删除模型
+     */
+    @DELETE("/service/chat/deleteModel/{modelId}")
+    suspend fun deleteModel(
+        @Path("modelId") modelId: String
+    ): Response<ApiResponse<Int>>
 
     @GET("/service/tenant/getTenantList")
     suspend fun getTenantList(
