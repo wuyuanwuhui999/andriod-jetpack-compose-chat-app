@@ -56,14 +56,31 @@ class ModelManageViewModel @Inject constructor(
     /**
      * 加载当前公司ID
      */
+    /**
+     * 加载当前公司ID
+     * 修改：确保在 companyId 正确获取后，再加载模型ID和模型列表
+     */
     private suspend fun loadCurrentCompanyId() {
+        // 1. 获取当前用户
         val currentUser = dataStoreManager.getUser().firstOrNull()
-        val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
+        if (currentUser == null) {
+            Log.e("ModelManageVM", "用户未登录，无法加载公司ID")
+            return
+        }
+
+        // 2. 获取公司ID
+        val companyKey = "company_id_${currentUser.id}"
         currentCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
 
-        // 加载当前使用的模型ID
+        if (currentCompanyId.isNullOrBlank()) {
+            Log.e("ModelManageVM", "公司ID为空，无法加载模型数据")
+            return
+        }
+
+        Log.d("ModelManageVM", "加载公司ID成功: $currentCompanyId")
+
+        // 3. 在 companyId 确认后，按顺序加载数据
         loadCurrentModelId()
-        // 加载模型列表
         loadModelList()
     }
 
@@ -91,10 +108,17 @@ class ModelManageViewModel @Inject constructor(
 
     /**
      * 加载模型列表
+     * 修改：加载完成后，如果 currentModelId 为空，尝试从缓存重新加载
      */
     fun loadModelList() {
         viewModelScope.launch {
-            val companyId = currentCompanyId ?: return@launch
+            val companyId = currentCompanyId
+            if (companyId.isNullOrBlank()) {
+                Log.e("ModelManageVM", "公司ID为空，无法加载模型列表")
+                _operationMessage.value = "未找到公司信息"
+                return@launch
+            }
+
             val keyword = _searchKeyword.value
 
             _isLoading.value = true
@@ -104,6 +128,16 @@ class ModelManageViewModel @Inject constructor(
                 if (result.isSuccess) {
                     _modelList.value = result.getOrNull() ?: emptyList()
                     Log.d("ModelManageVM", "加载模型列表成功: ${_modelList.value.size} 条")
+
+                    // 如果 currentModelId 为空，尝试从缓存重新加载
+                    if (_currentModelId.value.isNullOrBlank() && _modelList.value.isNotEmpty()) {
+                        loadCurrentModelId()
+                        // 如果加载后仍然为空，默认选中第一个
+                        if (_currentModelId.value.isNullOrBlank()) {
+                            _currentModelId.value = _modelList.value.firstOrNull()?.id
+                            Log.d("ModelManageVM", "默认选中第一个模型: ${_currentModelId.value}")
+                        }
+                    }
                 } else {
                     val errorMsg = result.exceptionOrNull()?.message ?: "加载模型列表失败"
                     Log.e("ModelManageVM", "加载模型列表失败: $errorMsg")

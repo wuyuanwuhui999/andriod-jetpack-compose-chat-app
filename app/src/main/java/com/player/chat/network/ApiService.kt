@@ -26,7 +26,7 @@ interface ApiService {
     /**
      * 获取模型列表
      */
-    @GET("/service/model/getModelList")
+    @GET("/service/chat/getModelList")
     suspend fun getModelList(
         @Query("companyId") companyId: String,
         @Query("keyword") keyword: String? = null
