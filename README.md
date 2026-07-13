@@ -174,8 +174,4 @@ github地址：https://github.com/wuyuanwuhui99/vue3-ts-toutiao-app-ui
 git clone https://github.com/wuyuanwuhui999/andriod-jetpack-compose-chat-app.git
 
 
-音乐播放器正在开发中，音乐数据来自于python爬虫程序，爬取酷狗音乐数据，敬请关注
-
-本站所有音乐和图片均来自互联网收集而来，版权归原创者所有，本网站只提供web页面服务，并不提供资源存储，也不参与录制、上传 若本站收录的节目无意侵犯了贵司版权，请联系
-
-联系方式：275018723@qq.com
+如有问题，请联系交流，邮箱：275018723@qq.com
