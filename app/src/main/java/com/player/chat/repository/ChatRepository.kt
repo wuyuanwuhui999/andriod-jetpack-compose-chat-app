@@ -46,6 +46,12 @@ class ChatRepository @Inject constructor(
     }
 
     // 创建目录
+    /**
+     * 创建目录
+     * @param directory 目录名称
+     * @param tenantId 租户ID
+     * @return Result<Directory> 创建成功的目录对象
+     */
     suspend fun createDirectory(directory: String, tenantId: String): Result<Directory> {
         return try {
             val response = apiService.createDirectory(
@@ -53,11 +59,13 @@ class ChatRepository @Inject constructor(
                 tenantId = tenantId.toRequestBody("text/plain".toMediaTypeOrNull())
             )
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
-                Result.success(response.body()?.data ?: Directory(
-                    directory = directory,
-                    tenantId = tenantId
-                )
-                )
+                val data = response.body()?.data
+                if (data != null) {
+                    Result.success(data)
+                } else {
+                    // 后端返回data为null时，构造一个本地Directory对象
+                    Result.success(Directory(directory = directory, tenantId = tenantId))
+                }
             } else {
                 Result.failure(Exception(response.body()?.message ?: "创建目录失败"))
             }
@@ -66,26 +74,36 @@ class ChatRepository @Inject constructor(
         }
     }
 
-    // 上传文档
+    /**
+     * 上传文档
+     * @param tenantId 租户ID
+     * @param directoryId 目录ID
+     * @param file 文件
+     * @return Result<Int> 上传成功的数量
+     */
     suspend fun uploadDocument(
         tenantId: String,
         directoryId: String,
         file: File
-    ): Result<String> {
+    ): Result<Int> {
         return try {
-            // 创建Multipart请求
             val requestFile = file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
             val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
             val response = apiService.uploadDocument(tenantId, directoryId, filePart)
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
-                Result.success(response.body()?.data ?: "上传成功")
+                val data = response.body()?.data ?: 0
+                if (data > 0) {
+                    Result.success(data)
+                } else {
+                    Result.failure(Exception("上传失败"))
+                }
             } else {
                 Result.failure(Exception(response.body()?.message ?: "上传失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
-        } as Result<String>
+        }
     }
 
     suspend fun getDocListByDirId(tenantId: String, directoryId: String): Result<List<Document>> {

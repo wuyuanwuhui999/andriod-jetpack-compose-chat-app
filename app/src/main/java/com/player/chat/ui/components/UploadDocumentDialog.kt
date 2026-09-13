@@ -1,251 +1,239 @@
 package com.player.chat.ui.components
 
-import androidx.compose.foundation.BorderStroke
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.player.chat.R
 import com.player.chat.model.Directory
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.ChatViewModel
-import com.player.chat.R
 
+/**
+ * 上传文档对话框
+ * 功能：选择目录后选择文件上传
+ */
 @Composable
 fun UploadDocumentDialog(
     viewModel: ChatViewModel,
     onDismiss: () -> Unit,
     onUploadSuccess: () -> Unit
 ) {
+    val context = LocalContext.current
     val directories by viewModel.directoryList.collectAsState()
-    val selectedDirectory by viewModel.selectedDirectory.collectAsState()
-    val showCreateDirectoryDialog by viewModel.showCreateDirectoryDialog.collectAsState()
+    val selectedDirId by viewModel.selectedDirIdForUpload.collectAsState()
     val isLoading by viewModel.isDirectoryLoading.collectAsState()
 
-    CustomBottomDialog(
-        title = "选择文件夹",
-        onDismiss = onDismiss,
-        leftIconRes = R.drawable.icon_add,
-        onLeftIconClick = { viewModel.showCreateDirectoryDialog() },
+    var uploadSuccess by remember { mutableStateOf(false) }
+
+    // 文件选择器
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.uploadDocumentWithCallback(context, it) {
+                uploadSuccess = true
+                onUploadSuccess()
+            }
+        }
+    }
+
+    // 上传成功提示
+    LaunchedEffect(uploadSuccess) {
+        if (uploadSuccess) {
+            kotlinx.coroutines.delay(500)
+            onDismiss()
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable { onDismiss() }
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .clickable(enabled = false) {}
+                .fillMaxHeight(fraction = 0.8f)
+                .align(Alignment.BottomCenter)
+                .clip(RoundedCornerShape(topStart = Dimens.moduleBorderRadius, topEnd = Dimens.moduleBorderRadius))
         ) {
-            Column(
-                modifier = Modifier.padding(Dimens.middleGap).weight(1f)
+            // 标题栏
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Dimens.barHeight)
+                    .background(Color.White),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // 内容区 - 白色背景+圆角，高度自适应，溢出滚动
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
-                        .background(Color.White)
-                        .padding(Dimens.middleGap) // 内边距
-                        .verticalScroll(rememberScrollState())
+                Spacer(modifier = Modifier.width(Dimens.middleGap))
+
+                Text(
+                    text = "上传文档",
+                    color = Color.Black,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    fontSize = Dimens.normalFontSize,
+                    fontWeight = FontWeight.Medium
+                )
+
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.size(Dimens.middleIconSize)
                 ) {
-                    if (isLoading) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.icon_close),
+                        contentDescription = "关闭",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(Dimens.middleIconSize)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(Dimens.middleGap))
+            }
+
+            // 分隔线
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Dimens.borderSize)
+                    .background(Color.Gray.copy(alpha = 0.3f))
+            )
+
+            // 内容区
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Color.PageBackground)
+                    .padding(Dimens.middleGap)
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Dimens.moduleBorderRadius),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    if (isLoading && directories.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(100.dp),
+                                .padding(Dimens.middleGap),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(30.dp),
-                                strokeWidth = 2.dp
+                                modifier = Modifier.size(Dimens.bigIconSize),
+                                color = Color.Primary,
+                                strokeWidth = Dimens.strokeWidth
                             )
                         }
                     } else if (directories.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(100.dp),
+                                .padding(Dimens.middleGap),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "暂无目录，点击左上角+号创建",
-                                color = Color.Gray
+                                text = "暂无目录",
+                                color = Color.Gray,
+                                fontSize = Dimens.normalFontSize
                             )
                         }
                     } else {
-                        directories.forEach { directory ->
-                            DirectoryItem(
-                                directory = directory,
-                                isSelected = selectedDirectory?.id == directory.id,
-                                onSelect = { viewModel.selectDirectory(directory) }
-                            )
+                        LazyColumn {
+                            items(directories) { directory ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.selectDirForUpload(directory.id ?: "") }
+                                        .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = directory.directory,
+                                        color = Color.Black,
+                                        fontSize = Dimens.normalFontSize,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    // 单选按钮
+                                    RadioButton(
+                                        selected = selectedDirId == directory.id,
+                                        onClick = { viewModel.selectDirForUpload(directory.id ?: "") },
+                                        colors = RadioButtonDefaults.colors(
+                                            selectedColor = Color.Primary
+                                        )
+                                    )
+                                }
+
+                                if (directories.indexOf(directory) < directories.size - 1) {
+                                    Divider(color = Color.Gray.copy(alpha = 0.2f))
+                                }
+                            }
                         }
                     }
                 }
             }
 
-
-            // 底部按钮区 - 白色背景，只有内边距
+            // 底部按钮
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(Dimens.middleGap), // 只设置内边距
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(Dimens.middleGap),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.middleGap)
             ) {
-                // 取消按钮
                 OutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier
                         .weight(1f)
                         .height(Dimens.btnHeight),
-                    shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                    shape = RoundedCornerShape(Dimens.btnHeight / 2),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.Black
-                    ),
-                    border = BorderStroke(Dimens.borderSize, Color.DisableColor)
+                        contentColor = Color.Secondary
+                    )
                 ) {
-                    Text("取消")
+                    Text("取消", fontSize = Dimens.normalFontSize)
                 }
 
-                // 确定按钮
                 Button(
                     onClick = {
-                        selectedDirectory?.let { directory ->
-                            // 这里触发文件选择，实际实现需要从外部传入文件选择器
-                        }
+                        // 触发文件选择器，支持txt/pdf/word
+                        filePickerLauncher.launch("*/*")
                     },
+                    enabled = selectedDirId != null,
                     modifier = Modifier
                         .weight(1f)
                         .height(Dimens.btnHeight),
-                    enabled = selectedDirectory != null,
-                    shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                    shape = RoundedCornerShape(Dimens.btnHeight / 2),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedDirectory != null)
-                            Color.Primary
-                        else
-                            Color.DisableColor,
-                        contentColor = if (selectedDirectory != null)
-                            Color.White
-                        else
-                            Color.Gray
+                        containerColor = if (selectedDirId != null) Color.Primary else Color.Gray,
+                        contentColor = Color.White
                     )
                 ) {
-                    Text("确定")
+                    Text("确定", fontSize = Dimens.normalFontSize)
                 }
             }
         }
     }
-
-    // 创建文件夹对话框
-    if (showCreateDirectoryDialog) {
-        CreateDirectoryDialog(
-            viewModel = viewModel,
-            onDismiss = { viewModel.hideCreateDirectoryDialog() }
-        )
-    }
-}
-
-@Composable
-fun DirectoryItem(
-    directory: Directory,
-    isSelected: Boolean,
-    onSelect: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onSelect() }
-                .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // 目录名称
-            Text(
-                text = directory.directory,
-                color = Color.Black,
-                modifier = Modifier.weight(1f)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // 单选按钮
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isSelected) Color.Primary else Color.Gray.copy(alpha = 0.5f)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (isSelected) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                    )
-                }
-            }
-        }
-
-        Divider(color = Color.Gray.copy(alpha = 0.2f))
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateDirectoryDialog(
-    viewModel: ChatViewModel,
-    onDismiss: () -> Unit
-) {
-    var directoryName by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(text = "创建文件夹", style = MaterialTheme.typography.titleMedium)
-        },
-        text = {
-            OutlinedTextField(
-                value = directoryName,
-                onValueChange = { directoryName = it },
-                label = { Text("文件夹名称") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (directoryName.isNotBlank()) {
-                        viewModel.createDirectory(directoryName)
-                        onDismiss()
-                    }
-                },
-                enabled = directoryName.isNotBlank()
-            ) {
-                Text("确定")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        }
-    )
 }

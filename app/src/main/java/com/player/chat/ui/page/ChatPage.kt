@@ -49,6 +49,7 @@ import com.player.chat.ui.components.CustomBottomOption
 import com.player.chat.ui.components.OptionItem
 import com.player.chat.ui.components.PromptEditDialog
 import com.player.chat.ui.components.PromptSelectDialog
+import com.player.chat.ui.components.QueryDocumentDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,6 +100,10 @@ fun ChatPage(
     val showDeletePromptDialog by chatViewModel.showDeletePromptDialog.collectAsState()
     val deletingPrompt by chatViewModel.deletingPrompt.collectAsState()
     val currentPromptId by chatViewModel.currentPromptId.collectAsState()
+
+    // 查询文档对话框状态
+    val showQueryDocumentDialog by chatViewModel.showQueryDocumentDialog.collectAsState()
+    val showUploadDocumentDialog by chatViewModel.showUploadDocumentDialog.collectAsState()
 
     // 添加文件选择器
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -256,6 +261,25 @@ fun ChatPage(
                 Text(
                     text = "思考模式",
                     color = if (thinkMode) Color.Primary else Color.Secondary
+                )
+            }
+
+            // 查询文档按钮
+            OutlinedButton(
+                onClick = { chatViewModel.showQueryDocumentDialog() },
+                shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.Secondary,
+                    containerColor = Color.Transparent
+                ),
+                border = BorderStroke(
+                    width = Dimens.borderSize,
+                    color = Color.Secondary
+                )
+            ) {
+                Text(
+                    text = "查询文档",
+                    color = Color.Secondary
                 )
             }
 
@@ -598,6 +622,23 @@ fun ChatPage(
                     Text("取消")
                 }
             }
+        )
+    }
+
+    // 查询文档对话框
+    if (showQueryDocumentDialog) {
+        QueryDocumentDialog(
+            viewModel = chatViewModel,
+            onDismiss = { chatViewModel.hideQueryDocumentDialog() }
+        )
+    }
+
+    // 上传文档对话框
+    if (showUploadDocumentDialog) {
+        UploadDocumentDialog(
+            viewModel = chatViewModel,
+            onDismiss = { chatViewModel.hideUploadDocumentDialog() },
+            onUploadSuccess = { chatViewModel.hideUploadDocumentDialog() }
         )
     }
 

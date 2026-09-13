@@ -192,6 +192,25 @@ class ChatViewModel @Inject constructor(
     /** 提示词列表分页大小 */
     private val promptPageSize = 20
 
+    private val _showQueryDocumentDialog = MutableStateFlow(false)
+    val showQueryDocumentDialog: StateFlow<Boolean> = _showQueryDocumentDialog.asStateFlow()
+
+    /** 上传文档对话框显示状态 */
+    private val _showUploadDocumentDialog = MutableStateFlow(false)
+    val showUploadDocumentDialog: StateFlow<Boolean> = _showUploadDocumentDialog.asStateFlow()
+
+    /** 创建目录对话框显示状态 */
+    private val _showCreateDirDialog = MutableStateFlow(false)
+    val showCreateDirDialog: StateFlow<Boolean> = _showCreateDirDialog.asStateFlow()
+
+    /** 选中的文档ID集合（用于查询文档对话框） */
+    private val _selectedDocIds = MutableStateFlow<Set<String>>(emptySet())
+    val selectedDocIds: StateFlow<Set<String>> = _selectedDocIds.asStateFlow()
+
+    /** 选中的目录ID（用于上传文档对话框） */
+    private val _selectedDirIdForUpload = MutableStateFlow<String?>(null)
+    val selectedDirIdForUpload: StateFlow<String?> = _selectedDirIdForUpload.asStateFlow()
+
     init {
         loadTenantInfo()
         loadModelList()
@@ -1243,5 +1262,136 @@ class ChatViewModel @Inject constructor(
      */
     fun refreshPromptList() {
         loadPromptSelectList(isRefresh = true)
+    }
+
+    /**
+     * 显示查询文档对话框
+     */
+    fun showQueryDocumentDialog() {
+        _showQueryDocumentDialog.value = true
+        _selectedDocIds.value = emptySet()
+        loadDirectories()
+    }
+
+    /**
+     * 隐藏查询文档对话框
+     */
+    fun hideQueryDocumentDialog() {
+        _showQueryDocumentDialog.value = false
+        _selectedDocIds.value = emptySet()
+        _expandedDirectories.value = emptySet()
+        _directoryDocuments.value = emptyMap()
+    }
+
+    /**
+     * 切换文档选中状态
+     */
+    fun toggleDocSelection(docId: String) {
+        val current = _selectedDocIds.value.toMutableSet()
+        if (current.contains(docId)) {
+            current.remove(docId)
+        } else {
+            current.add(docId)
+        }
+        _selectedDocIds.value = current
+    }
+
+    /**
+     * 显示上传文档对话框
+     */
+    fun showUploadDocumentDialog() {
+        _showUploadDocumentDialog.value = true
+        _selectedDirIdForUpload.value = null
+        loadDirectories()
+    }
+
+    /**
+     * 隐藏上传文档对话框
+     */
+    fun hideUploadDocumentDialog() {
+        _showUploadDocumentDialog.value = false
+        _selectedDirIdForUpload.value = null
+    }
+
+    /**
+     * 选择上传目录
+     */
+    fun selectDirForUpload(dirId: String) {
+        _selectedDirIdForUpload.value = dirId
+    }
+
+    /**
+     * 显示创建目录对话框
+     */
+    fun showCreateDirDialog() {
+        _showCreateDirDialog.value = true
+    }
+
+    /**
+     * 隐藏创建目录对话框
+     */
+    fun hideCreateDirDialog() {
+        _showCreateDirDialog.value = false
+    }
+
+    /**
+     * 创建目录（带成功回调）
+     */
+    fun createDirectoryWithCallback(name: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id ?: return@launch
+            if (tenantId.isNotBlank() && name.isNotBlank()) {
+                val result = chatRepository.createDirectory(name, tenantId)
+                if (result.isSuccess) {
+                    loadDirectories()
+                    onSuccess()
+                }
+            }
+        }
+    }
+
+    /**
+     * 上传文档（带回调）
+     */
+    fun uploadDocumentWithCallback(context: Context, uri: Uri, onSuccess: () -> Unit) {
+        val dirId = _selectedDirIdForUpload.value ?: return
+        viewModelScope.launch {
+            try {
+                val tempFile = createTempFileFromUri(context, uri)
+                if (tempFile != null) {
+                    val tenantId = _currentTenant.value?.id ?: return@launch
+                    val result = chatRepository.uploadDocument(tenantId, dirId, tempFile)
+                    if (result.isSuccess && (result.getOrNull() ?: 0) > 0) {
+                        onSuccess()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "上传文档异常", e)
+            }
+        }
+    }
+
+    /**
+     * 加载目录列表（用于查询文档对话框）
+     */
+    fun loadDirectoriesForQuery() {
+        viewModelScope.launch {
+            _isDirectoryLoading.value = true
+            try {
+                val tenantId = _currentTenant.value?.id ?: ""
+                if (tenantId.isNotBlank()) {
+                    val result = chatRepository.getDirectoryList(tenantId)
+                    if (result.isSuccess) {
+                        _directoryList.value = result.getOrNull() ?: emptyList()
+                    } else {
+                        Log.e("ChatViewModel", "加载目录失败: ${result.exceptionOrNull()?.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "加载目录异常", e)
+            } finally {
+                _isDirectoryLoading.value = false
+            }
+        }
     }
 }
