@@ -82,7 +82,7 @@ fun CreateDirectoryDialog(
                                 if (directoryName.isEmpty()) {
                                     Text(
                                         text = "请输入目录名称",
-                                        color = Color.Gray,
+                                        color = Color.DisableColor,
                                         fontSize = Dimens.normalFontSize
                                     )
                                 }

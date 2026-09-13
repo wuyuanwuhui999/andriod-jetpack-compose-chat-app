@@ -160,7 +160,7 @@ fun PromptSelectDialog(
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "搜索",
-                            tint = Color.Gray,
+                            tint = Color.DisableColor,
                             modifier = Modifier.size(Dimens.smallIconSize)
                         )
 
@@ -183,7 +183,7 @@ fun PromptSelectDialog(
                                     if (searchKeyword.isEmpty()) {
                                         Text(
                                             text = "请输入关键字搜索提示词",
-                                            color = Color.Gray,
+                                            color = Color.DisableColor,
                                             fontSize = Dimens.normalFontSize
                                         )
                                     }
