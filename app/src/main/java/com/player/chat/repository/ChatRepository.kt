@@ -172,4 +172,46 @@ class ChatRepository @Inject constructor(
         }
     }
 
+    /**
+     * 获取提示词列表（支持分页和关键字搜索）
+     * @param tenantId 租户ID
+     * @param keyword 搜索关键字
+     * @param pageSize 每页数量
+     * @param pageNum 页码
+     */
+    suspend fun getPromptList(
+        tenantId: String,
+        keyword: String? = null,
+        pageSize: Int = 20,
+        pageNum: Int = 1
+    ): Result<List<Prompt>> {
+        return try {
+            val response = apiService.getPromptList(tenantId, keyword, pageSize, pageNum)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "获取提示词列表失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 删除提示词（带tenantId）
+     * @param promptId 提示词ID
+     * @param tenantId 租户ID
+     */
+    suspend fun deletePromptWithTenant(promptId: String, tenantId: String): Result<Int> {
+        return try {
+            val response = apiService.deletePromptWithTenant(promptId, tenantId)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(response.body()?.data ?: 0)
+            } else {
+                Result.failure(Exception(response.body()?.message ?: "删除提示词失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

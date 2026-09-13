@@ -149,6 +149,49 @@ class ChatViewModel @Inject constructor(
     private val _currentPromptId = MutableStateFlow<String?>(null)
     val currentPromptId: StateFlow<String?> = _currentPromptId.asStateFlow()
 
+    /** 是否显示提示词选择对话框 */
+    private val _showPromptSelectDialog = MutableStateFlow(false)
+    val showPromptSelectDialog: StateFlow<Boolean> = _showPromptSelectDialog.asStateFlow()
+
+    /** 提示词列表（对话框内使用） */
+    private val _promptSelectList = MutableStateFlow<List<Prompt>>(emptyList())
+    val promptSelectList: StateFlow<List<Prompt>> = _promptSelectList.asStateFlow()
+
+    /** 提示词搜索关键字 */
+    private val _promptSearchKeyword = MutableStateFlow("")
+    val promptSearchKeyword: StateFlow<String> = _promptSearchKeyword.asStateFlow()
+
+    /** 提示词列表加载状态 */
+    private val _isPromptListLoading = MutableStateFlow(false)
+    val isPromptListLoading: StateFlow<Boolean> = _isPromptListLoading.asStateFlow()
+
+    /** 提示词列表加载更多状态 */
+    private val _isPromptListLoadingMore = MutableStateFlow(false)
+    val isPromptListLoadingMore: StateFlow<Boolean> = _isPromptListLoadingMore.asStateFlow()
+
+    /** 提示词列表是否还有更多数据 */
+    private val _hasMorePrompts = MutableStateFlow(true)
+    val hasMorePrompts: StateFlow<Boolean> = _hasMorePrompts.asStateFlow()
+
+    /** 提示词列表当前页码 */
+    private val _promptCurrentPage = MutableStateFlow(1)
+    val promptCurrentPage: StateFlow<Int> = _promptCurrentPage.asStateFlow()
+
+    /** 删除确认对话框状态 */
+    private val _showDeletePromptDialog = MutableStateFlow(false)
+    val showDeletePromptDialog: StateFlow<Boolean> = _showDeletePromptDialog.asStateFlow()
+
+    /** 待删除的提示词 */
+    private val _deletingPrompt = MutableStateFlow<Prompt?>(null)
+    val deletingPrompt: StateFlow<Prompt?> = _deletingPrompt.asStateFlow()
+
+    /** 对话框内临时选中的提示词ID（用于点击使用按钮） */
+    private val _tempSelectedPromptId = MutableStateFlow<String?>(null)
+    val tempSelectedPromptId: StateFlow<String?> = _tempSelectedPromptId.asStateFlow()
+
+    /** 提示词列表分页大小 */
+    private val promptPageSize = 20
+
     init {
         loadTenantInfo()
         loadModelList()
@@ -340,7 +383,8 @@ class ChatViewModel @Inject constructor(
                 chatId = currentChatId,
                 tenantId = tenantId,
                 prompt = message,
-                systemPrompt = systemPrompt,  // 添加提示词
+                systemPrompt = systemPrompt,
+                promptId = _currentPromptId.value,  // 新增：传递 promptId
                 showThink = _thinkMode.value,
                 language = _language.value
             )
@@ -992,5 +1036,212 @@ class ChatViewModel @Inject constructor(
         } finally {
             _isUpdatingPrompt.value = false
         }
+    }
+
+    /**
+     * 显示提示词选择对话框
+     */
+    fun showPromptSelectDialog() {
+        _showPromptSelectDialog.value = true
+        _promptSearchKeyword.value = ""
+        _tempSelectedPromptId.value = _currentPromptId.value
+        loadPromptSelectList()
+    }
+
+    /**
+     * 隐藏提示词选择对话框
+     * 取消时清除临时选中的提示词
+     */
+    /**
+     * 隐藏提示词选择对话框（取消操作）
+     * 清除临时选中的提示词，并清除当前已保存的提示词ID
+     * 使提示词按钮恢复灰色禁用状态
+     */
+    fun hidePromptSelectDialog() {
+        _showPromptSelectDialog.value = false
+        _promptSearchKeyword.value = ""
+        _tempSelectedPromptId.value = null
+        _promptSelectList.value = emptyList()
+
+        // 清除当前已保存的提示词ID，使按钮恢复灰色禁用状态
+        _currentPromptId.value = null
+        _currentPrompt.value = null
+        _promptText.value = ""
+
+        // 同时清除缓存中保存的提示词ID
+        viewModelScope.launch {
+            val userId = dataStoreManager.getUser().firstOrNull()?.id ?: return@launch
+            val tenantId = _currentTenant.value?.id ?: return@launch
+            val key = "prompt_id_${userId}_${tenantId}"
+            dataStoreManager.saveString(key, "")
+        }
+    }
+
+    /**
+     * 加载提示词列表（对话框内）
+     */
+    fun loadPromptSelectList(isRefresh: Boolean = true) {
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id ?: return@launch
+            val keyword = _promptSearchKeyword.value
+
+            if (isRefresh) {
+                _promptCurrentPage.value = 1
+                _hasMorePrompts.value = true
+                _isPromptListLoading.value = true
+            } else {
+                _isPromptListLoadingMore.value = true
+            }
+
+            try {
+                val page = if (isRefresh) 1 else _promptCurrentPage.value + 1
+                val result = chatRepository.getPromptList(
+                    tenantId = tenantId,
+                    keyword = keyword.takeIf { it.isNotBlank() },
+                    pageSize = promptPageSize,
+                    pageNum = page
+                )
+
+                if (result.isSuccess) {
+                    val newList = result.getOrNull() ?: emptyList()
+                    if (isRefresh) {
+                        _promptSelectList.value = newList
+                    } else {
+                        _promptSelectList.value = _promptSelectList.value + newList
+                    }
+                    _promptCurrentPage.value = page
+                    _hasMorePrompts.value = newList.size >= promptPageSize
+                } else {
+                    Log.e("ChatViewModel", "加载提示词列表失败: ${result.exceptionOrNull()?.message}")
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "加载提示词列表异常", e)
+            } finally {
+                _isPromptListLoading.value = false
+                _isPromptListLoadingMore.value = false
+            }
+        }
+    }
+
+    /**
+     * 加载更多提示词
+     */
+    fun loadMorePrompts() {
+        if (!_isPromptListLoadingMore.value && _hasMorePrompts.value) {
+            loadPromptSelectList(isRefresh = false)
+        }
+    }
+
+    /**
+     * 更新提示词搜索关键字
+     */
+    fun updatePromptSearchKeyword(keyword: String) {
+        _promptSearchKeyword.value = keyword
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
+            if (_promptSearchKeyword.value == keyword) {
+                loadPromptSelectList(isRefresh = true)
+            }
+        }
+    }
+
+    /**
+     * 选择提示词（点击使用按钮）
+     */
+    fun selectPrompt(prompt: Prompt) {
+        _tempSelectedPromptId.value = prompt.id
+    }
+
+    /**
+     * 取消选择提示词（点击取消使用按钮）
+     */
+    fun deselectPrompt() {
+        _tempSelectedPromptId.value = null
+    }
+
+    /**
+     * 确认选择提示词
+     * 保存到 ViewModel，关闭对话框，提示词按钮变为激活状态
+     */
+    fun confirmPromptSelection() {
+        val promptId = _tempSelectedPromptId.value
+        if (promptId.isNullOrBlank()) return
+
+        // 保存到当前提示词ID
+        _currentPromptId.value = promptId
+
+        // 保存到缓存
+        viewModelScope.launch {
+            val userId = dataStoreManager.getUser().firstOrNull()?.id ?: return@launch
+            val tenantId = _currentTenant.value?.id ?: return@launch
+            val key = "prompt_id_${userId}_${tenantId}"
+            dataStoreManager.saveString(key, promptId)
+        }
+
+        // 加载选中的提示词内容
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id ?: return@launch
+            val result = chatRepository.getPrompt(tenantId, promptId)
+            if (result.isSuccess) {
+                _currentPrompt.value = result.getOrNull()
+                _promptText.value = result.getOrNull()?.prompt ?: ""
+            }
+        }
+
+        _showPromptSelectDialog.value = false
+        _tempSelectedPromptId.value = null
+    }
+
+    /**
+     * 显示删除提示词确认对话框
+     */
+    fun showDeletePromptDialog(prompt: Prompt) {
+        _deletingPrompt.value = prompt
+        _showDeletePromptDialog.value = true
+    }
+
+    /**
+     * 隐藏删除提示词确认对话框
+     */
+    fun hideDeletePromptDialog() {
+        _showDeletePromptDialog.value = false
+        _deletingPrompt.value = null
+    }
+
+    /**
+     * 确认删除提示词
+     */
+    fun confirmDeletePrompt() {
+        viewModelScope.launch {
+            val prompt = _deletingPrompt.value ?: return@launch
+            val tenantId = _currentTenant.value?.id ?: return@launch
+
+            try {
+                val result = chatRepository.deletePromptWithTenant(prompt.id, tenantId)
+                if (result.isSuccess && (result.getOrNull() ?: 0) > 0) {
+                    // 删除成功，从列表中移除
+                    _promptSelectList.value = _promptSelectList.value.filter { it.id != prompt.id }
+
+                    // 如果删除的是当前使用的提示词，清除当前提示词
+                    if (_currentPromptId.value == prompt.id) {
+                        _currentPromptId.value = null
+                        _tempSelectedPromptId.value = null
+                        _currentPrompt.value = null
+                        _promptText.value = ""
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "删除提示词异常", e)
+            } finally {
+                hideDeletePromptDialog()
+            }
+        }
+    }
+
+    /**
+     * 刷新提示词列表
+     */
+    fun refreshPromptList() {
+        loadPromptSelectList(isRefresh = true)
     }
 }

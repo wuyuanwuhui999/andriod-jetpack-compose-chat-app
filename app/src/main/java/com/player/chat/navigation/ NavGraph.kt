@@ -21,6 +21,7 @@ import com.player.chat.ui.page.ResetPasswordPage
 import com.player.chat.ui.page.TenantManagePage
 import com.player.chat.ui.page.UpdateModelPage
 import com.player.chat.ui.page.UpdatePasswordPage
+import com.player.chat.ui.page.UpdatePromptPage
 import com.player.chat.ui.page.UserManagePage
 import com.player.chat.ui.page.UserPage  // 确保这行存在且只导入一次
 
@@ -107,6 +108,19 @@ fun AppNavGraph(navController: NavHostController) {
             UpdateModelPage(
                 navController = navController,
                 modelId = modelId
+            )
+        }
+
+        composable(
+            route = "${Screens.UpdatePrompt.route}?promptId={promptId}",
+            arguments = listOf(
+                navArgument("promptId") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val promptId = backStackEntry.arguments?.getString("promptId") ?: ""
+            UpdatePromptPage(
+                navController = navController,
+                promptId = promptId
             )
         }
     }

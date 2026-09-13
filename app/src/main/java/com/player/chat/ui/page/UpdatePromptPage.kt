@@ -20,30 +20,41 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
-import com.player.chat.viewmodel.AddPromptViewModel
+import com.player.chat.viewmodel.UpdatePromptViewModel
 import kotlinx.coroutines.launch
 
 /**
- * 添加提示词页面
+ * 更新提示词页面
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddPromptPage(
+fun UpdatePromptPage(
     navController: NavHostController,
-    viewModel: AddPromptViewModel = hiltViewModel()
+    promptId: String,
+    viewModel: UpdatePromptViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
 
-    var promptText by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    val promptText by viewModel.promptText.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+
+    var isSaving by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val focusRequester = remember { FocusRequester() }
+
+    // 加载提示词数据
+    LaunchedEffect(promptId) {
+        if (promptId.isNotBlank()) {
+            viewModel.loadPrompt(promptId)
+        }
+    }
 
     // 自动获取焦点
     LaunchedEffect(Unit) {
@@ -55,7 +66,7 @@ fun AddPromptPage(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "添加提示词",
+                        text = "更新提示词",
                         color = Color.Black,
                         fontSize = Dimens.normalFontSize,
                         fontWeight = FontWeight.Medium
@@ -90,7 +101,7 @@ fun AddPromptPage(
                 .clickable { focusManager.clearFocus() },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 表单卡片 - 占满剩余高度
+            // 提示词编辑卡片 - 占满剩余高度
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -106,7 +117,7 @@ fun AddPromptPage(
                     BasicTextField(
                         value = promptText,
                         onValueChange = {
-                            promptText = it
+                            viewModel.updatePromptText(it)
                             errorMessage = null
                         },
                         modifier = Modifier
@@ -172,7 +183,7 @@ fun AddPromptPage(
                     Text("取消", fontSize = Dimens.normalFontSize)
                 }
 
-                // 确定按钮 - 输入框为空时禁用
+                // 确定按钮 - 文本框为空时禁用
                 Button(
                     onClick = {
                         focusManager.clearFocus()
@@ -183,26 +194,26 @@ fun AddPromptPage(
                         }
 
                         scope.launch {
-                            isLoading = true
+                            isSaving = true
                             errorMessage = null
 
-                            val result = viewModel.addPrompt(promptText)
+                            val result = viewModel.updatePrompt(promptId, promptText)
 
-                            isLoading = false
+                            isSaving = false
 
-                            if (result.isSuccess) {
+                            if (result.isSuccess && (result.getOrNull() ?: 0) > 0) {
                                 android.widget.Toast.makeText(
                                     context,
-                                    "添加提示词成功",
+                                    "更新提示词成功",
                                     android.widget.Toast.LENGTH_SHORT
                                 ).show()
                                 navController.navigateUp()
                             } else {
-                                errorMessage = result.exceptionOrNull()?.message ?: "添加失败，请重试"
+                                errorMessage = result.exceptionOrNull()?.message ?: "更新失败，请重试"
                             }
                         }
                     },
-                    enabled = promptText.isNotBlank() && !isLoading,
+                    enabled = promptText.isNotBlank() && !isSaving,
                     modifier = Modifier
                         .weight(1f)
                         .height(Dimens.btnHeight),
@@ -212,7 +223,7 @@ fun AddPromptPage(
                         contentColor = Color.White
                     )
                 ) {
-                    if (isLoading) {
+                    if (isSaving) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(Dimens.middleIconSize),
                             color = Color.White,

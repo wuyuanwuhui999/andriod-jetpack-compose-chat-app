@@ -26,6 +26,7 @@ class WebSocketManager {
         val docIds: List<String>? = null,
         val prompt: String,
         val systemPrompt: String = "你是一个智能助手",
+        val promptId: String? = null,  // 新增：提示词ID
         val showThink: Boolean = false,
         val language: String = "zh"
     )

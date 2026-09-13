@@ -328,4 +328,28 @@ interface ApiService {
         @Query("pageSize") pageSize: Int,
         @Query("pageNum") pageNum: Int
     ): Response<ApiResponse<List<SearchUser>>>
+
+    /**
+     * 获取提示词列表（支持分页和关键字搜索）
+     * @param tenantId 租户ID
+     * @param keyword 搜索关键字（可选）
+     * @param pageSize 每页数量
+     * @param pageNum 页码
+     */
+    @GET("/service/prompt/getPromptList")
+    suspend fun getPromptList(
+        @Query("tenantId") tenantId: String,
+        @Query("keyword") keyword: String? = null,
+        @Query("pageSize") pageSize: Int = 20,
+        @Query("pageNum") pageNum: Int = 1
+    ): Response<ApiResponse<List<Prompt>>>
+
+    /**
+     * 删除提示词（新接口，带tenantId）
+     */
+    @DELETE("/service/prompt/deletePrompt/{promptId}/{tenantId}")
+    suspend fun deletePromptWithTenant(
+        @Path("promptId") promptId: String,
+        @Path("tenantId") tenantId: String
+    ): Response<ApiResponse<Int>>
 }

@@ -48,6 +48,7 @@ import com.player.chat.navigation.Screens
 import com.player.chat.ui.components.CustomBottomOption
 import com.player.chat.ui.components.OptionItem
 import com.player.chat.ui.components.PromptEditDialog
+import com.player.chat.ui.components.PromptSelectDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +88,17 @@ fun ChatPage(
 
     // 判断是否为管理员 (company.role > 0)
     val isAdmin = currentCompany?.role ?: 0 > 0
+
+    val showPromptSelectDialog by chatViewModel.showPromptSelectDialog.collectAsState()
+    val promptSelectList by chatViewModel.promptSelectList.collectAsState()
+    val promptSearchKeyword by chatViewModel.promptSearchKeyword.collectAsState()
+    val isPromptListLoading by chatViewModel.isPromptListLoading.collectAsState()
+    val isPromptListLoadingMore by chatViewModel.isPromptListLoadingMore.collectAsState()
+    val hasMorePrompts by chatViewModel.hasMorePrompts.collectAsState()
+    val tempSelectedPromptId by chatViewModel.tempSelectedPromptId.collectAsState()
+    val showDeletePromptDialog by chatViewModel.showDeletePromptDialog.collectAsState()
+    val deletingPrompt by chatViewModel.deletingPrompt.collectAsState()
+    val currentPromptId by chatViewModel.currentPromptId.collectAsState()
 
     // 添加文件选择器
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -244,6 +256,31 @@ fun ChatPage(
                 Text(
                     text = "思考模式",
                     color = if (thinkMode) Color.Primary else Color.Secondary
+                )
+            }
+
+            // 提示词按钮（新增）- 默认灰色禁用状态
+            OutlinedButton(
+                onClick = { chatViewModel.showPromptSelectDialog() },
+                // 只有加载到提示词（currentPromptId 不为空）时才可点击
+                shape = RoundedCornerShape(Dimens.bigBorderRadius),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    // 可点击且已选中时为主色，禁用时为灰色
+                    contentColor = if (currentPromptId != null) Color.Primary else Color.Secondary,
+                    // 禁用状态的文字颜色
+                    disabledContentColor = Color.Secondary,
+                    containerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent
+                ),
+                border = BorderStroke(
+                    width = Dimens.borderSize,
+                    // 可点击且已选中时为主色，禁用时为灰色
+                    color = if (currentPromptId != null) Color.Primary else Color.Secondary
+                )
+            ) {
+                Text(
+                    text = "提示词",
+                    color = if (currentPromptId != null) Color.Primary else Color.Secondary
                 )
             }
 
@@ -528,6 +565,41 @@ fun ChatPage(
         )
     }
 
+    // 在页面底部添加提示词选择对话框
+    if (showPromptSelectDialog) {
+        PromptSelectDialog(
+            viewModel = chatViewModel,
+            onDismiss = { chatViewModel.hidePromptSelectDialog() },
+            onConfirm = { chatViewModel.confirmPromptSelection() },
+            onAddPrompt = {
+                navController.navigate(Screens.AddPrompt.route)
+            },
+            onEditPrompt = { prompt ->
+                navController.navigate("${Screens.UpdatePrompt.route}?promptId=${prompt.id}")
+            }
+        )
+    }
+
+    // 删除确认对话框
+    if (showDeletePromptDialog && deletingPrompt != null) {
+        AlertDialog(
+            onDismissRequest = { chatViewModel.hideDeletePromptDialog() },
+            title = { Text("删除提示词") },
+            text = { Text("确定要删除提示词「${deletingPrompt?.prompt?.take(20)}」吗？") },
+            confirmButton = {
+                TextButton(
+                    onClick = { chatViewModel.confirmDeletePrompt() }
+                ) {
+                    Text("确定", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { chatViewModel.hideDeletePromptDialog() }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
     // 自动获取焦点
     LaunchedEffect(Unit) {

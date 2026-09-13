@@ -1,14 +1,11 @@
-// viewmodel/AddPromptViewModel.kt
 package com.player.chat.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.player.chat.local.DataStoreManager
 import com.player.chat.repository.PromptRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
