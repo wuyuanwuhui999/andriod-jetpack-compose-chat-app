@@ -1,5 +1,6 @@
 package com.player.chat.ui.components
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,324 +8,420 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.player.chat.R
 import com.player.chat.model.Directory
 import com.player.chat.model.Document
+import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
 import com.player.chat.viewmodel.ChatViewModel
-import com.player.chat.R
-import com.player.chat.ui.theme.Color
-import com.player.chat.utils.CommonUtils.formatRelativeTime
 
+/**
+ * 我的文档对话框
+ * 样式与"选择文档"（QueryDocumentDialog）一致，区别：
+ * 1. 文档条目没有复选框，也没有底部"确定/取消"按钮
+ * 2. 文档条目右侧为"三个点"操作图标，点击可修改权限或删除文档
+ * 交互：打开时先加载目录列表，点击目录右侧箭头才加载该目录下的文档，箭头旋转 90 度指向下方
+ */
 @Composable
 fun MyDocumentsDialog(
     viewModel: ChatViewModel,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val directories by viewModel.directoryList.collectAsState()
     val expandedDirectories by viewModel.expandedDirectories.collectAsState()
     val directoryDocuments by viewModel.directoryDocuments.collectAsState()
-    val isLoading by viewModel.isDocumentsLoading.collectAsState()
+    val isLoading by viewModel.isDirectoryLoading.collectAsState()
+    val showCreateDirDialog by viewModel.showCreateDirDialog.collectAsState()
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var selectedDocument by remember { mutableStateOf<Document?>(null) }
+    // 需要修改权限的文档
+    var permissionDoc by remember { mutableStateOf<Document?>(null) }
+    // 需要删除的文档（非空时展示删除确认对话框）
+    var deleteDoc by remember { mutableStateOf<Document?>(null) }
+    // 是否正在提交（修改权限）
+    var isSubmitting by remember { mutableStateOf(false) }
+
+    // 修改权限对话框
+    permissionDoc?.let { doc ->
+        UpdateDocPermissionDialog(
+            documentName = doc.name,
+            defaultPermission = doc.permission.orEmpty(),
+            isSubmitting = isSubmitting,
+            onDismiss = { if (!isSubmitting) permissionDoc = null },
+            onConfirm = { permission ->
+                isSubmitting = true
+                viewModel.updateDocPermissionWithCallback(
+                    docId = doc.id,
+                    permission = permission,
+                    directoryId = doc.directoryId
+                ) { _, msg ->
+                    isSubmitting = false
+                    permissionDoc = null
+                    // 成功与失败都提示后端返回的 msg
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
 
     // 删除确认对话框
-    if (showDeleteDialog && selectedDocument != null) {
+    deleteDoc?.let { doc ->
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+            onDismissRequest = { deleteDoc = null },
             title = { Text("删除文档") },
-            text = { Text("确定要删除文档 ${selectedDocument?.name} 吗？") },
+            text = { Text("确定要删除文档「${doc.name}」吗？") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        selectedDocument?.let { doc ->
-                            viewModel.deleteDocument(doc.id, doc.directoryId)
+                        deleteDoc = null
+                        viewModel.deleteDocumentWithCallback(
+                            docId = doc.id,
+                            directoryId = doc.directoryId
+                        ) { _, msg ->
+                            // 成功与失败都提示后端返回的 msg
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         }
-                        showDeleteDialog = false
-                        selectedDocument = null
                     }
                 ) {
                     Text("确定", color = Color.Red)
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showDeleteDialog = false
-                    selectedDocument = null
-                }) {
+                TextButton(onClick = { deleteDoc = null }) {
                     Text("取消")
                 }
             }
         )
     }
 
-    CustomBottomDialog(
-        title = "我的文档",
-        onDismiss = onDismiss,
-        leftIconRes = null // 左侧不需要图标
-    ) {
-        Column(
+    // 使用 Box 作为根容器，确保创建目录对话框显示在最上层
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Dimens.middleGap)
+                .background(Color.Black.copy(alpha = 0.5f))
+                .clickable { onDismiss() }
         ) {
-            // 内容区 - 白色背景+圆角，高度自适应
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .clip(RoundedCornerShape(Dimens.moduleBorderRadius))
-                    .background(Color.White)
-                    .padding(Dimens.middleGap)
+                    .clickable(enabled = false) {}
+                    .fillMaxHeight(fraction = 0.85f)
+                    .align(Alignment.BottomCenter)
+                    .clip(RoundedCornerShape(topStart = Dimens.moduleBorderRadius, topEnd = Dimens.moduleBorderRadius))
             ) {
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth(),
-                        contentAlignment = Alignment.Center
+                // 标题栏（与"选择文档"一致：左侧刷新、中间标题、右侧创建目录与上传）
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimens.barHeight)
+                        .background(Color.White),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(modifier = Modifier.width(Dimens.middleGap))
+
+                    IconButton(
+                        onClick = { viewModel.loadDirectoriesForQuery() },
+                        modifier = Modifier.size(Dimens.middleIconSize)
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(Dimens.middleAvatar),
-                            strokeWidth = Dimens.borderSize
+                        Icon(
+                            painter = painterResource(id = R.drawable.icon_refresh),
+                            contentDescription = "刷新",
+                            modifier = Modifier.size(Dimens.middleIconSize)
                         )
                     }
-                } else if (directories.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        contentAlignment = Alignment.Center
+
+                    Text(
+                        text = "我的文档",
+                        color = Color.Black,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    IconButton(
+                        onClick = { viewModel.showCreateDirDialog() },
+                        modifier = Modifier.size(Dimens.middleIconSize)
                     ) {
-                        Text(
-                            text = "暂无目录",
-                            color = Color.Gray
+                        Icon(
+                            painter = painterResource(id = R.drawable.icon_create_directory),
+                            contentDescription = "创建目录",
+                            modifier = Modifier.size(Dimens.middleIconSize)
                         )
                     }
-                } else {
-                    LazyColumn {
-                        items(directories) { directory ->
-                            DocumentsItem(
-                                directory = directory,
-                                isExpanded = expandedDirectories.contains(directory.id),
-                                documents = directoryDocuments[directory.id] ?: emptyList(),
-                                onDirectoryClick = { viewModel.toggleDirectoryExpanded(directory) },
-                                onDeleteDocument = { doc ->
-                                    selectedDocument = doc
+
+                    Spacer(modifier = Modifier.width(Dimens.middleGap))
+
+                    IconButton(
+                        onClick = {
+                            viewModel.toggleMyDocumentsDialog()
+                            viewModel.showUploadDocumentDialog()
+                        },
+                        modifier = Modifier.size(Dimens.middleIconSize)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.icon_upload),
+                            contentDescription = "上传文档",
+                            modifier = Modifier.size(Dimens.middleIconSize)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(Dimens.middleGap))
+                }
+
+                // 分隔线
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Dimens.borderSize)
+                        .background(Color.Gray.copy(alpha = 0.3f))
+                )
+
+                // 内容区：目录 + 文档列表
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(Color.PageBackground)
+                        .padding(Dimens.middleGap)
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(Dimens.moduleBorderRadius),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        if (isLoading && directories.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Dimens.middleGap),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(Dimens.bigIconSize),
+                                    color = Color.Primary,
+                                    strokeWidth = Dimens.strokeWidth
+                                )
+                            }
+                        } else if (directories.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Dimens.middleGap),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "暂无目录",
+                                    color = Color.Gray,
+                                    fontSize = Dimens.normalFontSize
+                                )
+                            }
+                        } else {
+                            LazyColumn {
+                                items(directories) { directory ->
+                                    MyDocumentDirectoryItem(
+                                        directory = directory,
+                                        isExpanded = expandedDirectories.contains(directory.id),
+                                        documents = directoryDocuments[directory.id] ?: emptyList(),
+                                        onDirectoryClick = { viewModel.toggleDirectoryExpanded(directory) },
+                                        onEditPermission = { doc -> permissionDoc = doc },
+                                        onDelete = { doc -> deleteDoc = doc }
+                                    )
                                 }
-                            )
+                            }
                         }
                     }
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(Dimens.middleGap))
-
-            // 底部关闭按钮
-            Button(
-                onClick = onDismiss,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(Dimens.btnHeight),
-                shape = RoundedCornerShape(Dimens.bigBorderRadius),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Primary
-                )
-            ) {
-                Text("关闭")
-            }
+        // 创建目录对话框放在最外层 Box 内部，确保显示在"我的文档"之上
+        if (showCreateDirDialog) {
+            CreateDirectoryDialog(
+                viewModel = viewModel,
+                onDismiss = { viewModel.hideCreateDirDialog() }
+            )
         }
     }
 }
 
+/**
+ * 目录及其文档列表项（我的文档）
+ * 目录行可点击展开，箭头图标展开时顺时针旋转 90 度指向下方；
+ * 每个文档条目右侧是"三个点"操作图标，点击弹出"修改权限/删除"菜单
+ *
+ * @param directory 目录
+ * @param isExpanded 是否已展开
+ * @param documents 该目录下的文档列表
+ * @param onDirectoryClick 点击目录（或箭头）回调，用于展开/收起并加载文档
+ * @param onEditPermission 点击"修改权限"回调
+ * @param onDelete 点击"删除"回调
+ */
 @Composable
-fun DocumentsItem(
+fun MyDocumentDirectoryItem(
     directory: Directory,
     isExpanded: Boolean,
     documents: List<Document>,
     onDirectoryClick: () -> Unit,
-    onDeleteDocument: (Document) -> Unit
+    onEditPermission: (Document) -> Unit,
+    onDelete: (Document) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         // 目录项
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onDirectoryClick() }
-                .padding(vertical = Dimens.middleGap),
+                .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // 目录名称
             Text(
                 text = directory.directory,
-                color = com.player.chat.ui.theme.Color.Black,
+                color = Color.Black,
                 fontSize = Dimens.normalFontSize,
                 fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
 
-            Spacer(modifier = Modifier.width(Dimens.middleGap))
-
-            // 箭头图标
+            // 展开箭头：点击后才加载该目录下的文档，展开时顺时针旋转 90 度朝下
             Icon(
-                painter = painterResource(if(isExpanded)R.drawable.icon_down else R.drawable.icon_arrow),
+                painter = painterResource(id = R.drawable.icon_arrow),
                 contentDescription = if (isExpanded) "收起" else "展开",
-                tint = Color.Gray,
-                modifier = Modifier.size(Dimens.smallIconSize)
+                tint = Color.Gray.copy(alpha = 0.5f),
+                modifier = Modifier
+                    .size(Dimens.smallIconSize)
+                    .rotate(if (isExpanded) 90f else 0f)
+                    .clickable { onDirectoryClick() }
             )
         }
 
         // 分隔线
         Divider(color = Color.Gray.copy(alpha = 0.2f))
 
-        // 文档列表（如果展开）
+        // 文档列表（展开时显示）
         if (isExpanded) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = Dimens.middleGap)
-            ) {
-                documents.forEach { document ->
-                    SwipeToDeleteDocumentItem(
-                        document = document,
-                        onDelete = { onDeleteDocument(document) }
-                    )
-                }
-
-                if (documents.isEmpty()) {
+            if (documents.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Dimens.middleGap),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
                         text = "该目录下暂无文档",
-                        color = com.player.chat.ui.theme.Color.Gray,
-                        modifier = Modifier
-                            .padding(vertical = Dimens.middleGap)
-                            .fillMaxWidth()
+                        color = Color.DisableColor,
+                        fontSize = Dimens.normalFontSize
                     )
+                }
+            } else {
+                documents.forEach { document ->
+                    MyDocumentItem(
+                        document = document,
+                        onEditPermission = { onEditPermission(document) },
+                        onDelete = { onDelete(document) }
+                    )
+
+                    if (documents.indexOf(document) < documents.size - 1) {
+                        Divider(
+                            color = Color.Gray.copy(alpha = 0.1f),
+                            modifier = Modifier.padding(start = Dimens.middleGap)
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * 单个文档条目（我的文档）
+ * 左侧文档名称，右侧"三个点"操作图标（不含时间，不含复选框）
+ *
+ * @param document 文档
+ * @param onEditPermission 点击"修改权限"回调
+ * @param onDelete 点击"删除"回调
+ */
 @Composable
-fun SwipeToDeleteDocumentItem(
+fun MyDocumentItem(
     document: Document,
+    onEditPermission: () -> Unit,
     onDelete: () -> Unit
 ) {
-    var swipeState by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
 
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(Dimens.btnHeight)
+            .padding(horizontal = Dimens.middleGap, vertical = Dimens.middleGap),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // 删除按钮（在右侧）
-        if (swipeState) {
-            Box(
+        Text(
+            text = document.name,
+            color = Color.Black,
+            fontSize = Dimens.normalFontSize,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+
+        // 三个点操作图标 + 操作菜单
+        Box {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "操作",
+                tint = Color.Gray.copy(alpha = 0.5f),
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(androidx.compose.ui.graphics.Color.Red)
-                    .clickable {
-                        onDelete()
-                        swipeState = false
+                    .size(Dimens.middleIconSize)
+                    .clickable { expanded = true }
+            )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "修改权限",
+                            color = Color.Black,
+                            fontSize = Dimens.normalFontSize
+                        )
                     },
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "删除",
-                        tint = androidx.compose.ui.graphics.Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "删除",
-                        color = androidx.compose.ui.graphics.Color.White,
-                        fontSize = 16.sp
-                    )
-                }
-            }
-        }
-
-        // 文档项
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(androidx.compose.ui.graphics.Color.White)
-                .clickable(enabled = !swipeState) {
-                    // 点击文档的逻辑（可选）
-                }
-                .swipeToReveal(
-                    revealDirection = RevealDirection.EndToStart,
-                    onReveal = { swipeState = true },
-                    onConceal = { swipeState = false },
-                    threshold = 0.3f
-                ),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.middleGap),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // 文档名称和格式
-                Text(
-                    text = document.name,
-                    color = Color.Black,
-                    fontSize = Dimens.normalFontSize,
-                    modifier = Modifier.weight(1f)
+                    onClick = {
+                        expanded = false
+                        onEditPermission()
+                    }
                 )
-                // 文档信息
-                Text(
-                    text = formatRelativeTime(document.createTime),
-                    color = Color.Gray,
-                    fontSize = Dimens.normalFontSize
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "删除",
+                            color = Color.Red,
+                            fontSize = Dimens.normalFontSize
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onDelete()
+                    }
                 )
             }
         }
     }
-
-    // 分隔线
-    Divider(color = com.player.chat.ui.theme.Color.Gray.copy(alpha = 0.1f))
-}
-
-// 简单的滑动显示隐藏组件（简化实现）
-@Composable
-fun Modifier.swipeToReveal(
-    revealDirection: RevealDirection = RevealDirection.EndToStart,
-    onReveal: () -> Unit,
-    onConceal: () -> Unit,
-    threshold: Float = 0.3f
-): Modifier {
-    // 这是一个简化的实现，实际项目中可能需要使用更复杂的滑动处理
-    // 这里使用 clickable 来模拟点击切换状态
-    return this.clickable {
-        // 在实际应用中，这里应该处理滑动事件
-        // 为了简化，我们使用点击来切换状态
-        onReveal()
-    }
-}
-
-enum class RevealDirection {
-    StartToEnd,
-    EndToStart
 }

@@ -52,6 +52,12 @@ object DocumentUploadConfig {
         DropdownOption(value = PERMISSION_COMPANY, label = "公司内公开")
     )
 
+    /**
+     * 已上传文档的权限选项（"修改权限"对话框使用）
+     * 与上传时的权限取值保持一致，便于统一维护
+     */
+    val DOC_PERMISSION_OPTIONS: List<DropdownOption> = PERMISSION_OPTIONS
+
     /** 分割模式下拉选项 */
     val SPLIT_METHOD_OPTIONS: List<DropdownOption> = listOf(
         DropdownOption(value = SPLIT_METHOD_RECURSIVE, label = "递归字符分割（推荐）"),

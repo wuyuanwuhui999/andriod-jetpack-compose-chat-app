@@ -40,6 +40,20 @@ class DocumentUploadConfigTest {
         )
     }
 
+    /** 已上传文档的权限选项（修改权限对话框）与上传权限保持一致 */
+    @Test
+    fun docPermissionOptions_matchSpec() {
+        val actual = DocumentUploadConfig.DOC_PERMISSION_OPTIONS.map { it.value to it.label }
+        assertEquals(
+            listOf(
+                "private" to "私密",
+                "tenant" to "租户内公开",
+                "company" to "公司内公开"
+            ),
+            actual
+        )
+    }
+
     /** 默认值：私密 + 递归字符分割 + 分割大小 1000 */
     @Test
     fun defaults_matchSpec() {

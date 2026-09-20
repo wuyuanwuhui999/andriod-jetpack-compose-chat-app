@@ -264,13 +264,13 @@ fun DirectoryWithDocumentsItem(
                 modifier = Modifier.weight(1f)
             )
 
-            // 箭头图标（展开时旋转90度向下）
+            // 箭头图标（展开时顺时针旋转90度，朝下）
             Icon(
                 painter = painterResource(id = R.drawable.icon_arrow),
                 contentDescription = if (isExpanded) "收起" else "展开",
                 modifier = Modifier
                     .size(Dimens.smallIconSize)
-                    .rotate(if (isExpanded) -90f else 0f)
+                    .rotate(if (isExpanded) 90f else 0f)
             )
         }
 

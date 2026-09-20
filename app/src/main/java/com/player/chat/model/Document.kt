@@ -28,6 +28,11 @@ data class Document(
     @SerializedName("directoryName")
     val directoryName: String,
 
+    // 文档权限：private-私密 / tenant-租户内公开 / company-公司内公开
+    // 用于"修改权限"对话框的默认值回显
+    @SerializedName("permission")
+    val permission: String? = null,
+
     // 本地状态，非后端字段
     var checked: Boolean = false
 )

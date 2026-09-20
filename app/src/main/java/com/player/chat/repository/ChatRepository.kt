@@ -6,6 +6,7 @@ import com.player.chat.model.Directory
 import com.player.chat.model.Document
 import com.player.chat.model.DocumentUploadConfig
 import com.player.chat.model.Prompt
+import com.player.chat.model.UpdateDocPermissionRequest
 import com.player.chat.model.UpdatePromptRequest
 import com.player.chat.network.ApiService
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -136,18 +137,46 @@ class ChatRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteDocument(docId: String): Result<Int> {
+    /**
+     * 删除文档
+     * 说明：调用 DELETE /service/chat/deleteDoc/{docId}，data > 0 视为成功
+     *
+     * @param docId 文档ID
+     * @return Result<String> 成功时携带后端 msg（用于提示语），失败时 exception.message 为后端 msg
+     */
+    suspend fun deleteDocument(docId: String): Result<String> {
         return try {
             val response = apiService.deleteDocument(docId)
-            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
-                val deletedCount = response.body()?.data ?: 0
-                if (deletedCount > 0) {
-                    Result.success(deletedCount)
-                } else {
-                    Result.failure(Exception("删除失败"))
-                }
+            val body = response.body()
+            if (response.isSuccessful && body?.status == "SUCCESS" && (body.data ?: 0) > 0) {
+                Result.success(body.message ?: "删除成功")
             } else {
-                Result.failure(Exception(response.body()?.message ?: "删除文档失败"))
+                Result.failure(Exception(body?.message ?: "删除文档失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 修改文档权限
+     * 说明：调用 PUT /service/chat/updateDocPermission/{docId}，data > 0 视为成功
+     *
+     * @param docId 文档ID
+     * @param permission 文档权限：private-私密 / tenant-租户内公开 / company-公司内公开
+     * @return Result<String> 成功时携带后端 msg（用于提示语），失败时 exception.message 为后端 msg
+     */
+    suspend fun updateDocPermission(docId: String, permission: String): Result<String> {
+        return try {
+            val response = apiService.updateDocPermission(
+                docId = docId,
+                request = UpdateDocPermissionRequest(permission = permission)
+            )
+            val body = response.body()
+            if (response.isSuccessful && body?.status == "SUCCESS" && (body.data ?: 0) > 0) {
+                Result.success(body.message ?: "修改权限成功")
+            } else {
+                Result.failure(Exception(body?.message ?: "修改文档权限失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)

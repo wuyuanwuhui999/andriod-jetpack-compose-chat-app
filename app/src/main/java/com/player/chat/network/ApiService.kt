@@ -101,9 +101,25 @@ interface ApiService {
         @Query("directoryId") directoryId: String
     ): Response<ApiResponse<List<Document>>>
 
-    // 删除文档
-    @POST("/service/chat/deleteDoc/{docId}")
+    /**
+     * 删除文档
+     * @param docId 文档ID（路径参数）
+     * 返回 data > 0 表示删除成功
+     */
+    @DELETE("/service/chat/deleteDoc/{docId}")
     suspend fun deleteDocument(@Path("docId") docId: String): Response<ApiResponse<Int>>
+
+    /**
+     * 修改文档权限
+     * @param docId 文档ID（路径参数）
+     * @param request 请求体，包含 permission：private-私密 / tenant-租户内公开 / company-公司内公开
+     * 返回 data > 0 表示修改成功，msg 为后端提示语
+     */
+    @PUT("/service/chat/updateDocPermission/{docId}")
+    suspend fun updateDocPermission(
+        @Path("docId") docId: String,
+        @Body request: UpdateDocPermissionRequest
+    ): Response<ApiResponse<Int>>
 
     @GET("/service/chat/getChatHistory")
     suspend fun getChatHistory(
