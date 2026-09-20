@@ -111,13 +111,13 @@ interface ApiService {
 
     /**
      * 修改文档权限
-     * @param docId 文档ID（路径参数）
-     * @param request 请求体，包含 permission：private-私密 / tenant-租户内公开 / company-公司内公开
+     * 说明：docId 已从 URL 路径（/updateDocPermission/{docId}）改为请求体字段，与 permission 一起放在 body 中
+     *
+     * @param request 请求体，包含 docId 与 permission：private-私密 / tenant-租户内公开 / company-公司内公开
      * 返回 data > 0 表示修改成功，msg 为后端提示语
      */
-    @PUT("/service/chat/updateDocPermission/{docId}")
+    @PUT("/service/chat/updateDocPermission")
     suspend fun updateDocPermission(
-        @Path("docId") docId: String,
         @Body request: UpdateDocPermissionRequest
     ): Response<ApiResponse<Int>>
 

@@ -159,9 +159,9 @@ class ChatRepository @Inject constructor(
 
     /**
      * 修改文档权限
-     * 说明：调用 PUT /service/chat/updateDocPermission/{docId}，data > 0 视为成功
+     * 说明：调用 PUT /service/chat/updateDocPermission，docId 与 permission 都放在请求体中，data > 0 视为成功
      *
-     * @param docId 文档ID
+     * @param docId 文档ID（随 permission 一起放入请求体）
      * @param permission 文档权限：private-私密 / tenant-租户内公开 / company-公司内公开
      * @return Result<String> 成功时携带后端 msg（用于提示语），失败时 exception.message 为后端 msg
      */
@@ -169,8 +169,7 @@ class ChatRepository @Inject constructor(
         return try {
             ApiResultUtils.docOperationResult(
                 response = apiService.updateDocPermission(
-                    docId = docId,
-                    request = UpdateDocPermissionRequest(permission = permission)
+                    UpdateDocPermissionRequest(docId = docId, permission = permission)
                 ),
                 successFallback = "修改权限成功",
                 failFallback = "修改文档权限失败"
