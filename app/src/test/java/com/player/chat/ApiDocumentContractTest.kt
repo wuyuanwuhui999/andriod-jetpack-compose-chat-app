@@ -1,5 +1,7 @@
 package com.player.chat
 
+import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.google.gson.annotations.SerializedName
 import com.player.chat.model.UpdateDocPermissionRequest
 import com.player.chat.network.ApiService
@@ -51,6 +53,17 @@ class ApiDocumentContractTest {
             .toSet()
         assertTrue("请求体缺少 docId 字段: $wireNames", wireNames.contains("docId"))
         assertTrue("请求体缺少 permission 字段: $wireNames", wireNames.contains("permission"))
+    }
+
+    /** 实际序列化出的请求体 JSON 形状：{"docId":..., "permission":...} */
+    @Test
+    fun updateDocPermissionRequest_jsonShape() {
+        val json = Gson().toJson(UpdateDocPermissionRequest(docId = "doc-1", permission = "tenant"))
+        val obj = JsonParser.parseString(json).asJsonObject
+        assertEquals("请求体字段应只有 docId 与 permission: $json",
+            setOf("docId", "permission"), obj.keySet())
+        assertEquals("doc-1", obj.get("docId").asString)
+        assertEquals("tenant", obj.get("permission").asString)
     }
 
     /** uploadDoc：tenantId/directoryId 等参数保持放在 body（multipart 表单），URL 无路径占位符 */
