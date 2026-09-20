@@ -211,6 +211,10 @@ class ChatViewModel @Inject constructor(
     private val _selectedDirIdForUpload = MutableStateFlow<String?>(null)
     val selectedDirIdForUpload: StateFlow<String?> = _selectedDirIdForUpload.asStateFlow()
 
+    /** 文档上传中状态（用于文档设置对话框的确定按钮 loading 与禁用） */
+    private val _isUploadingDocument = MutableStateFlow(false)
+    val isUploadingDocument: StateFlow<Boolean> = _isUploadingDocument.asStateFlow()
+
     init {
         loadTenantInfo()
         loadModelList()
@@ -1352,21 +1356,62 @@ class ChatViewModel @Inject constructor(
 
     /**
      * 上传文档（带回调）
+     * 说明：splitMethod、chunkSize、permission 来自"文档设置对话框"，
+     * 与 tenantId、directoryId 一并提交到 uploadDoc 接口（参数放在请求体中）
+     *
+     * @param context 上下文
+     * @param uri 选中的文件 Uri
+     * @param splitMethod 分割方式：recursive / paragraph / sentence / fixed
+     * @param chunkSize 分割大小，仅 splitMethod = fixed 时有效
+     * @param permission 文档权限：private / tenant / company
+     * @param onSuccess 上传成功回调
+     * @param onFailure 上传失败回调，参数为错误提示文案
      */
-    fun uploadDocumentWithCallback(context: Context, uri: Uri, onSuccess: () -> Unit) {
+    fun uploadDocumentWithCallback(
+        context: Context,
+        uri: Uri,
+        splitMethod: String = DocumentUploadConfig.DEFAULT_SPLIT_METHOD,
+        chunkSize: Int = DocumentUploadConfig.DEFAULT_CHUNK_SIZE,
+        permission: String = DocumentUploadConfig.DEFAULT_PERMISSION,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit = {}
+    ) {
         val dirId = _selectedDirIdForUpload.value ?: return
         viewModelScope.launch {
+            _isUploadingDocument.value = true
+            var tempFile: File? = null
             try {
-                val tempFile = createTempFileFromUri(context, uri)
-                if (tempFile != null) {
+                val uploadFile = createTempFileFromUri(context, uri)
+                tempFile = uploadFile
+                if (uploadFile != null) {
                     val tenantId = _currentTenant.value?.id ?: return@launch
-                    val result = chatRepository.uploadDocument(tenantId, dirId, tempFile)
+                    val result = chatRepository.uploadDocument(
+                        tenantId = tenantId,
+                        directoryId = dirId,
+                        file = uploadFile,
+                        splitMethod = splitMethod,
+                        chunkSize = chunkSize,
+                        permission = permission
+                    )
                     if (result.isSuccess && (result.getOrNull() ?: 0) > 0) {
                         onSuccess()
+                    } else {
+                        onFailure(result.exceptionOrNull()?.message ?: "上传失败")
                     }
+                } else {
+                    onFailure("读取文件失败，请重新选择")
                 }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "上传文档异常", e)
+                onFailure(e.message ?: "上传文档异常")
+            } finally {
+                _isUploadingDocument.value = false
+                // 清理本次上传产生的临时文件
+                try {
+                    tempFile?.delete()
+                } catch (e: Exception) {
+                    Log.e("ChatViewModel", "删除临时文件失败", e)
+                }
             }
         }
     }

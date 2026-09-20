@@ -1,5 +1,8 @@
 package com.player.chat.utils
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
@@ -75,5 +78,35 @@ object CommonUtils {
             targetTime
         }
     }
+
+    /**
+     * 根据 Uri 获取文件的真实显示名称（用于上传时展示文件信息）
+     * @param context 上下文
+     * @param uri 文件 Uri
+     * @return 文件名，获取失败时退化为 Uri 路径末段
+     */
+    fun getFileName(context: Context, uri: Uri): String {
+        var fileName = ""
+        try {
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex >= 0 && cursor.moveToFirst()) {
+                    fileName = cursor.getString(nameIndex) ?: ""
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        // 部分 ContentProvider 不返回 DISPLAY_NAME，退化为从 Uri 路径截取
+        return fileName.ifBlank { uri.lastPathSegment?.substringAfterLast('/') ?: "unknown" }
+    }
+
+    /**
+     * 根据文件名获取后缀（不含点），如 a.pdf -> pdf
+     * @param fileName 文件名
+     * @return 小写后缀，无后缀时返回空串
+     */
+    fun getFileExtension(fileName: String): String =
+        fileName.substringAfterLast('.', "").lowercase(Locale.getDefault())
 
 }

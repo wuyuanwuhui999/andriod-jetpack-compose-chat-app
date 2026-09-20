@@ -1,6 +1,7 @@
 package com.player.chat.ui.components
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -8,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,14 +20,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.player.chat.R
-import com.player.chat.model.Directory
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
+import com.player.chat.utils.CommonUtils
 import com.player.chat.viewmodel.ChatViewModel
 
 /**
  * 上传文档对话框
- * 功能：选择目录后选择文件上传
+ * 流程：选择目录 -> 选择文件 -> 弹出"文档设置对话框"（权限、分割模式、分割大小）
+ * -> 点击确定后再把文件与 splitMethod、chunkSize、permission 一起提交 uploadDoc 接口
  */
 @Composable
 fun UploadDocumentDialog(
@@ -39,18 +40,24 @@ fun UploadDocumentDialog(
     val directories by viewModel.directoryList.collectAsState()
     val selectedDirId by viewModel.selectedDirIdForUpload.collectAsState()
     val isLoading by viewModel.isDirectoryLoading.collectAsState()
+    val isUploading by viewModel.isUploadingDocument.collectAsState()
 
     var uploadSuccess by remember { mutableStateOf(false) }
+    // 已选中的文件 Uri（文件选择完成后暂存，等待文档设置对话框确认）
+    var pendingUri by remember { mutableStateOf<Uri?>(null) }
+    // 已选中文件的文件名（仅用于文档设置对话框展示）
+    var pendingFileName by remember { mutableStateOf("") }
+    // 是否展示文档设置对话框
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
-    // 文件选择器
+    // 文件选择器：选择完成后不直接上传，先弹出文档设置对话框
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            viewModel.uploadDocumentWithCallback(context, it) {
-                uploadSuccess = true
-                onUploadSuccess()
-            }
+            pendingUri = it
+            pendingFileName = CommonUtils.getFileName(context, it)
+            showSettingsDialog = true
         }
     }
 
@@ -60,6 +67,44 @@ fun UploadDocumentDialog(
             kotlinx.coroutines.delay(500)
             onDismiss()
         }
+    }
+
+    // 文档设置对话框：设置权限、分割模式、分割大小后提交上传
+    if (showSettingsDialog && pendingUri != null) {
+        DocumentSettingsDialog(
+            fileName = pendingFileName,
+            isUploading = isUploading,
+            onDismiss = {
+                // 取消设置：关闭设置对话框并释放已选文件
+                if (!isUploading) {
+                    showSettingsDialog = false
+                    pendingUri = null
+                    pendingFileName = ""
+                }
+            },
+            onConfirm = { splitMethod, chunkSize, permission ->
+                val uri = pendingUri
+                if (uri != null) {
+                    viewModel.uploadDocumentWithCallback(
+                        context = context,
+                        uri = uri,
+                        splitMethod = splitMethod,
+                        chunkSize = chunkSize,
+                        permission = permission,
+                        onSuccess = {
+                            showSettingsDialog = false
+                            pendingUri = null
+                            pendingFileName = ""
+                            uploadSuccess = true
+                            onUploadSuccess()
+                        },
+                        onFailure = { message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+        )
     }
 
     Box(
@@ -119,7 +164,7 @@ fun UploadDocumentDialog(
                     .background(Color.Gray.copy(alpha = 0.3f))
             )
 
-            // 内容区
+            // 内容区（目录列表）
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -218,10 +263,10 @@ fun UploadDocumentDialog(
 
                 Button(
                     onClick = {
-                        // 触发文件选择器，支持txt/pdf/word
+                        // 触发文件选择器，选择完成后弹出文档设置对话框
                         filePickerLauncher.launch("*/*")
                     },
-                    enabled = selectedDirId != null,
+                    enabled = selectedDirId != null && !isUploading,
                     modifier = Modifier
                         .weight(1f)
                         .height(Dimens.btnHeight),

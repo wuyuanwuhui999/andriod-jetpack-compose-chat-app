@@ -71,11 +71,26 @@ interface ApiService {
         @Part("tenantId") tenantId: RequestBody
     ): Response<ApiResponse<Directory>>
 
-    @POST("/service/chat/uploadDoc/{tenantId}/{directoryId}")
+    /**
+     * 上传文档
+     * 说明：tenantId、directoryId 已从 URL 路径（{tenantId}/{directoryId}）改为请求体字段，
+     * 与 splitMethod、chunkSize、permission 一起以 multipart 表单形式提交。
+     *
+     * @param tenantId 租户ID
+     * @param directoryId 目录ID
+     * @param splitMethod 分割方式：recursive / paragraph / sentence / fixed
+     * @param chunkSize 分割大小，仅当 splitMethod = fixed 时后端生效，默认 1000
+     * @param permission 文档权限：private-私密 / tenant-租户内公开 / company-公司内公开
+     * @param file 上传的文件
+     */
+    @POST("/service/chat/uploadDoc")
     @Multipart
     suspend fun uploadDocument(
-        @Path("tenantId") tenantId: String,
-        @Path("directoryId") directoryId: String,
+        @Part("tenantId") tenantId: RequestBody,
+        @Part("directoryId") directoryId: RequestBody,
+        @Part("splitMethod") splitMethod: RequestBody,
+        @Part("chunkSize") chunkSize: RequestBody,
+        @Part("permission") permission: RequestBody,
         @Part file: MultipartBody.Part?
     ): Response<ApiResponse<Int>>
 

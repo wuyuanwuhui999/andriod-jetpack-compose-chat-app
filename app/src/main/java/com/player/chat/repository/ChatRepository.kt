@@ -4,6 +4,7 @@ import com.player.chat.model.ChatHistory
 import com.player.chat.model.ChatModel
 import com.player.chat.model.Directory
 import com.player.chat.model.Document
+import com.player.chat.model.DocumentUploadConfig
 import com.player.chat.model.Prompt
 import com.player.chat.model.UpdatePromptRequest
 import com.player.chat.network.ApiService
@@ -76,21 +77,37 @@ class ChatRepository @Inject constructor(
 
     /**
      * 上传文档
+     * 说明：tenantId、directoryId 不再拼接在 URL 上，改为和分割参数、权限一起放到请求体（multipart 表单）中
+     *
      * @param tenantId 租户ID
      * @param directoryId 目录ID
      * @param file 文件
+     * @param splitMethod 分割方式：recursive / paragraph / sentence / fixed，默认 recursive
+     * @param chunkSize 分割大小，仅当 splitMethod = fixed 时生效，默认 1000
+     * @param permission 文档权限：private / tenant / company，默认 private
      * @return Result<Int> 上传成功的数量
      */
     suspend fun uploadDocument(
         tenantId: String,
         directoryId: String,
-        file: File
+        file: File,
+        splitMethod: String = DocumentUploadConfig.DEFAULT_SPLIT_METHOD,
+        chunkSize: Int = DocumentUploadConfig.DEFAULT_CHUNK_SIZE,
+        permission: String = DocumentUploadConfig.DEFAULT_PERMISSION
     ): Result<Int> {
         return try {
             val requestFile = file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
             val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            val textType = "text/plain".toMediaTypeOrNull()
 
-            val response = apiService.uploadDocument(tenantId, directoryId, filePart)
+            val response = apiService.uploadDocument(
+                tenantId = tenantId.toRequestBody(textType),
+                directoryId = directoryId.toRequestBody(textType),
+                splitMethod = splitMethod.toRequestBody(textType),
+                chunkSize = chunkSize.toString().toRequestBody(textType),
+                permission = permission.toRequestBody(textType),
+                file = filePart
+            )
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 val data = response.body()?.data ?: 0
                 if (data > 0) {
