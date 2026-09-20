@@ -9,6 +9,7 @@ import com.player.chat.model.Prompt
 import com.player.chat.model.UpdateDocPermissionRequest
 import com.player.chat.model.UpdatePromptRequest
 import com.player.chat.network.ApiService
+import com.player.chat.utils.ApiResultUtils
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -146,13 +147,11 @@ class ChatRepository @Inject constructor(
      */
     suspend fun deleteDocument(docId: String): Result<String> {
         return try {
-            val response = apiService.deleteDocument(docId)
-            val body = response.body()
-            if (response.isSuccessful && body?.status == "SUCCESS" && (body.data ?: 0) > 0) {
-                Result.success(body.message ?: "删除成功")
-            } else {
-                Result.failure(Exception(body?.message ?: "删除文档失败"))
-            }
+            ApiResultUtils.docOperationResult(
+                response = apiService.deleteDocument(docId),
+                successFallback = "删除成功",
+                failFallback = "删除文档失败"
+            )
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -168,16 +167,14 @@ class ChatRepository @Inject constructor(
      */
     suspend fun updateDocPermission(docId: String, permission: String): Result<String> {
         return try {
-            val response = apiService.updateDocPermission(
-                docId = docId,
-                request = UpdateDocPermissionRequest(permission = permission)
+            ApiResultUtils.docOperationResult(
+                response = apiService.updateDocPermission(
+                    docId = docId,
+                    request = UpdateDocPermissionRequest(permission = permission)
+                ),
+                successFallback = "修改权限成功",
+                failFallback = "修改文档权限失败"
             )
-            val body = response.body()
-            if (response.isSuccessful && body?.status == "SUCCESS" && (body.data ?: 0) > 0) {
-                Result.success(body.message ?: "修改权限成功")
-            } else {
-                Result.failure(Exception(body?.message ?: "修改文档权限失败"))
-            }
         } catch (e: Exception) {
             Result.failure(e)
         }
