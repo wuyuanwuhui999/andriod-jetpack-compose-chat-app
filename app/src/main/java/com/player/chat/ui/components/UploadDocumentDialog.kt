@@ -69,43 +69,8 @@ fun UploadDocumentDialog(
         }
     }
 
-    // 文档设置对话框：设置权限、分割模式、分割大小后提交上传
-    if (showSettingsDialog && pendingUri != null) {
-        DocumentSettingsDialog(
-            fileName = pendingFileName,
-            isUploading = isUploading,
-            onDismiss = {
-                // 取消设置：关闭设置对话框并释放已选文件
-                if (!isUploading) {
-                    showSettingsDialog = false
-                    pendingUri = null
-                    pendingFileName = ""
-                }
-            },
-            onConfirm = { splitMethod, chunkSize, permission ->
-                val uri = pendingUri
-                if (uri != null) {
-                    viewModel.uploadDocumentWithCallback(
-                        context = context,
-                        uri = uri,
-                        splitMethod = splitMethod,
-                        chunkSize = chunkSize,
-                        permission = permission,
-                        onSuccess = {
-                            showSettingsDialog = false
-                            pendingUri = null
-                            pendingFileName = ""
-                            uploadSuccess = true
-                            onUploadSuccess()
-                        },
-                        onFailure = { message ->
-                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                }
-            }
-        )
-    }
+    // 注意：文档设置对话框必须放在下方根 Box 内、基础弹窗之后渲染，
+    // 否则会被基础弹窗的半透明遮罩与内容覆盖，导致对话框看不见
 
     Box(
         modifier = Modifier
@@ -279,6 +244,44 @@ fun UploadDocumentDialog(
                     Text("确定", fontSize = Dimens.normalFontSize)
                 }
             }
+        }
+
+        // 文档设置对话框：放在根 Box 内部、基础弹窗之后渲染，保证显示在最上层
+        if (showSettingsDialog && pendingUri != null) {
+            DocumentSettingsDialog(
+                fileName = pendingFileName,
+                isUploading = isUploading,
+                onDismiss = {
+                    // 取消设置：关闭设置对话框并释放已选文件
+                    if (!isUploading) {
+                        showSettingsDialog = false
+                        pendingUri = null
+                        pendingFileName = ""
+                    }
+                },
+                onConfirm = { splitMethod, chunkSize, permission ->
+                    val uri = pendingUri
+                    if (uri != null) {
+                        viewModel.uploadDocumentWithCallback(
+                            context = context,
+                            uri = uri,
+                            splitMethod = splitMethod,
+                            chunkSize = chunkSize,
+                            permission = permission,
+                            onSuccess = {
+                                showSettingsDialog = false
+                                pendingUri = null
+                                pendingFileName = ""
+                                uploadSuccess = true
+                                onUploadSuccess()
+                            },
+                            onFailure = { message ->
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                }
+            )
         }
     }
 }

@@ -53,28 +53,8 @@ fun MyDocumentsDialog(
     // 是否正在提交（修改权限）
     var isSubmitting by remember { mutableStateOf(false) }
 
-    // 修改权限对话框
-    permissionDoc?.let { doc ->
-        UpdateDocPermissionDialog(
-            documentName = doc.name,
-            defaultPermission = doc.permission.orEmpty(),
-            isSubmitting = isSubmitting,
-            onDismiss = { if (!isSubmitting) permissionDoc = null },
-            onConfirm = { permission ->
-                isSubmitting = true
-                viewModel.updateDocPermissionWithCallback(
-                    docId = doc.id,
-                    permission = permission,
-                    directoryId = doc.directoryId
-                ) { _, msg ->
-                    isSubmitting = false
-                    permissionDoc = null
-                    // 成功与失败都提示后端返回的 msg
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-    }
+    // 注意：修改权限对话框必须放在下方根 Box 内、基础弹窗之后渲染，
+    // 否则会被基础弹窗的半透明遮罩与内容覆盖，导致"点了没反应"（看不见）
 
     // 删除确认对话框
     deleteDoc?.let { doc ->
@@ -252,6 +232,29 @@ fun MyDocumentsDialog(
             CreateDirectoryDialog(
                 viewModel = viewModel,
                 onDismiss = { viewModel.hideCreateDirDialog() }
+            )
+        }
+
+        // 修改权限对话框：同样放在最外层 Box 内部、基础弹窗之后，保证绘制在最上层
+        permissionDoc?.let { doc ->
+            UpdateDocPermissionDialog(
+                documentName = doc.name,
+                defaultPermission = doc.permission.orEmpty(),
+                isSubmitting = isSubmitting,
+                onDismiss = { if (!isSubmitting) permissionDoc = null },
+                onConfirm = { permission ->
+                    isSubmitting = true
+                    viewModel.updateDocPermissionWithCallback(
+                        docId = doc.id,
+                        permission = permission,
+                        directoryId = doc.directoryId
+                    ) { _, msg ->
+                        isSubmitting = false
+                        permissionDoc = null
+                        // 成功与失败都提示后端返回的 msg
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                    }
+                }
             )
         }
     }
