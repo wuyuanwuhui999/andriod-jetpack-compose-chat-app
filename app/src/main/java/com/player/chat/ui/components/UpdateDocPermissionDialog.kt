@@ -1,5 +1,6 @@
 package com.player.chat.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.player.chat.model.DocumentUploadConfig
 import com.player.chat.ui.theme.Color
@@ -76,6 +78,8 @@ fun UpdateDocPermissionDialog(
                     text = "修改权限",
                     color = Color.Black,
                     fontSize = Dimens.bigFontSize,
+                    modifier = Modifier.fillMaxWidth(),                  // 占满宽度，让居中生效
+                    textAlign = TextAlign.Center,                       // 文字水平居中
                     fontWeight = FontWeight.Medium
                 )
 
@@ -84,13 +88,13 @@ fun UpdateDocPermissionDialog(
                 // 文档名称
                 Text(
                     text = documentName,
-                    color = Color.Gray,
+                    color = Color.Secondary,
                     fontSize = Dimens.normalFontSize,
                     maxLines = 2
                 )
 
                 Divider(
-                    color = Color.Gray.copy(alpha = 0.3f),
+                    color = Color.DisableColor,
                     modifier = Modifier.padding(vertical = Dimens.middleGap)
                 )
 
@@ -118,8 +122,9 @@ fun UpdateDocPermissionDialog(
                             .weight(1f)
                             .height(Dimens.btnHeight),
                         shape = RoundedCornerShape(Dimens.btnHeight / 2),
+                        border = BorderStroke(1.dp, Color.DisableColor),          // 灰色边框
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.Gray
+                            contentColor = Color.DisableColor
                         )
                     ) {
                         Text("取消", fontSize = Dimens.normalFontSize)

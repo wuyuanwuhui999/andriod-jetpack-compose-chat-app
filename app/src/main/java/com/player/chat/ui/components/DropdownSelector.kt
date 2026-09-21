@@ -84,12 +84,12 @@ fun DropdownSelector(
                     .fillMaxWidth()
                     .clickable(enabled = enabled) { expanded = !expanded },
                 shape = RoundedCornerShape(Dimens.moduleBorderRadius),
-                color = Color.Transparent
+                color = Color.DisableColor.copy(alpha = 0.3f)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = Dimens.middleGap),
+                        .padding(vertical = Dimens.middleGap, horizontal = Dimens.middleGap),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -103,7 +103,7 @@ fun DropdownSelector(
                             if (expanded) R.drawable.icon_down else R.drawable.icon_arrow
                         ),
                         contentDescription = if (expanded) "收起" else "展开",
-                        tint = Color.Gray,
+                        tint = Color.DisableColor,
                         modifier = Modifier.size(Dimens.smallIconSize)
                     )
                 }
