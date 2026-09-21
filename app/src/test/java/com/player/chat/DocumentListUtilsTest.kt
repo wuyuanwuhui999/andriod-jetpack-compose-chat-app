@@ -10,8 +10,10 @@ import org.junit.Test
 
 /**
  * 本地"目录 -> 文档列表"同步逻辑的行为测试
- * 重点回归：本地 Map 的 key 是 Directory.id，而 Document.directoryId 来自后端，
- * 两者不一致时也必须能按文档 id 更新/删除（否则修改权限后回显旧值）
+ *
+ * 两个回归点：
+ * 1. 本地 Map 的 key 是 Directory.id，而 Document.directoryId 来自后端，两者不一致时也要按文档 id 生效；
+ * 2. 同步不使用数据类 copy()（后端缺字段时 Gson 会把 null 写进非空类型字段，copy() 会抛异常）。
  */
 class DocumentListUtilsTest {
 
@@ -26,25 +28,34 @@ class DocumentListUtilsTest {
     @Test
     fun updatePermission_updatesMatchingDoc() {
         val lists = mapOf("d1" to listOf(doc("a", "d1"), doc("b", "d1")))
+
         val updated = DocumentListUtils.updatePermission(lists, "a", "tenant")
-        assertEquals("tenant", updated.getValue("d1").first { it.id == "a" }.permission)
-        assertEquals("private", updated.getValue("d1").first { it.id == "b" }.permission)
+
+        assertEquals("命中 1 个文档", 1, updated)
+        assertEquals("tenant", lists.getValue("d1").first { it.id == "a" }.permission)
+        assertEquals("其他文档不受影响", "private", lists.getValue("d1").first { it.id == "b" }.permission)
     }
 
-    /** 回归用例：Document.directoryId 与 Map 的 key 不一致时，仍要能更新（原 bug 就死在这里） */
+    /** 回归用例：Document.directoryId 与 Map 的 key 不一致时，仍要能更新 */
     @Test
     fun updatePermission_worksWhenDirectoryIdDoesNotMatchMapKey() {
         val lists = mapOf("dir-key-1" to listOf(doc("a", "OTHER-DIR-ID")))
-        val updated = DocumentListUtils.updatePermission(lists, "a", "company")
-        assertEquals("company", updated.getValue("dir-key-1").single().permission)
+
+        DocumentListUtils.updatePermission(lists, "a", "company")
+
+        assertEquals("company", lists.getValue("dir-key-1").single().permission)
     }
 
-    /** 文档 id 不存在时，列表内容保持不变 */
+    /** 文档 id 不存在时，列表内容保持不变且返回 0 */
     @Test
     fun updatePermission_unknownDocLeavesListsIntact() {
         val lists = mapOf("d1" to listOf(doc("a", "d1")))
+
         val updated = DocumentListUtils.updatePermission(lists, "missing", "tenant")
-        assertEquals(listOf("a"), updated.getValue("d1").map { it.id })
+
+        assertEquals(0, updated)
+        assertEquals(listOf("a"), lists.getValue("d1").map { it.id })
+        assertEquals("private", lists.getValue("d1").single().permission)
     }
 
     /** 删除：按 id 从所有目录移除，key 不匹配也能删掉 */
@@ -73,7 +84,7 @@ class DocumentListUtilsTest {
     /** 空缓存不抛异常 */
     @Test
     fun emptyLists_areSafe() {
-        assertTrue(DocumentListUtils.updatePermission(emptyMap(), "a", "tenant").isEmpty())
+        assertEquals(0, DocumentListUtils.updatePermission(emptyMap(), "a", "tenant"))
         assertTrue(DocumentListUtils.removeDocument(emptyMap(), "a").isEmpty())
         assertNull(DocumentListUtils.findDocument(emptyMap(), "a"))
     }
@@ -82,11 +93,11 @@ class DocumentListUtilsTest {
     @Test
     fun reopenAfterSuccessfulUpdate_seedsNewPermission() {
         // 初始：文档权限为 private（下拉框回显 private）
-        var lists = mapOf("d1" to listOf(doc("a", "d1", "private")))
+        val lists = mapOf("d1" to listOf(doc("a", "d1", "private")))
         assertEquals("private", DocumentListUtils.findDocument(lists, "a")?.permission)
 
         // 用户把权限改成 tenant 且接口返回 data>0 -> ViewModel 同步本地缓存
-        lists = DocumentListUtils.updatePermission(lists, "a", "tenant")
+        DocumentListUtils.updatePermission(lists, "a", "tenant")
 
         // 再次点击"修改权限"：对话框应回显 tenant，而不是旧的 private
         assertEquals("tenant", DocumentListUtils.findDocument(lists, "a")?.permission)

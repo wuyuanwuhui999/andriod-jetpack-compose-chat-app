@@ -773,6 +773,11 @@ class ChatViewModel @Inject constructor(
         onResult: (Boolean, String) -> Unit
     ) {
         viewModelScope.launch {
+            // 防御：Document.id 声明为非空，但后端缺字段时 Gson 可能写入 null，这里给出可读提示而不是崩溃
+            if (docId.isNullOrBlank()) {
+                onResult(false, "文档ID缺失，无法删除文档")
+                return@launch
+            }
             try {
                 val result = chatRepository.deleteDocument(docId)
                 val msg = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "删除文档失败"
@@ -804,13 +809,17 @@ class ChatViewModel @Inject constructor(
         onResult: (Boolean, String) -> Unit
     ) {
         viewModelScope.launch {
+            // 防御：Document.id 声明为非空，但后端缺字段时 Gson 可能写入 null，这里给出可读提示而不是崩溃
+            if (docId.isNullOrBlank()) {
+                onResult(false, "文档ID缺失，无法修改权限")
+                return@launch
+            }
             try {
                 val result = chatRepository.updateDocPermission(docId, permission)
                 val msg = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "修改文档权限失败"
                 if (result.isSuccess) {
-                    // 修改成功，按文档 id 同步本地权限（不依赖目录 key，避免 key 不一致导致回显旧值）
-                    _directoryDocuments.value =
-                        DocumentListUtils.updatePermission(_directoryDocuments.value, docId, permission)
+                    // 修改成功，就地同步本地文档权限（按文档 id，且不使用 copy()，避免 Gson 空字段导致崩溃）
+                    DocumentListUtils.updatePermission(_directoryDocuments.value, docId, permission)
                 }
                 onResult(result.isSuccess, msg)
             } catch (e: Exception) {

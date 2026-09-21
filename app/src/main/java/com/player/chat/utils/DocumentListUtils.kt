@@ -14,20 +14,39 @@ import com.player.chat.model.Document
 object DocumentListUtils {
 
     /**
-     * 更新指定文档的权限
+     * 更新指定文档的权限（就地修改，不使用数据类 copy()）
+     *
+     * 为什么不用 copy()：Document 的非空字段在运行时可能是 null（后端未下发该字段时，
+     * Gson 通过 Unsafe 分配对象、绕过构造函数的非空校验），而 copy() 会对**所有**非空参数
+     * 做 null 校验，直接抛
+     * "Parameter specified as non-null is null: method com.player.chat.model.Document.copy, parameter xxx"，
+     * 该异常会被 ViewModel 的 catch 当成提示语弹出（用户点击"确定"时看到的报错）。
+     * 因此这里直接给可变字段 permission 赋值。
+     *
+     * 注意：就地修改不会改变 Map 内容（同一个 Document 实例），StateFlow 不会重复发射；
+     * 当前 UI 在每次打开对话框时重新读取列表，故回显仍是最新值。
+     *
      * @param lists 目录-文档列表缓存
      * @param docId 文档ID
      * @param permission 新的权限值
-     * @return 更新后的新 Map（未命中的目录原样返回）
+     * @return 实际更新的文档数量（0 表示列表中不存在该文档）
      */
     fun updatePermission(
         lists: Map<String, List<Document>>,
         docId: String,
         permission: String
-    ): Map<String, List<Document>> =
-        lists.mapValues { (_, documents) ->
-            documents.map { doc -> if (doc.id == docId) doc.copy(permission = permission) else doc }
+    ): Int {
+        var updated = 0
+        lists.values.forEach { documents ->
+            documents.forEach { doc ->
+                if (doc.id == docId) {
+                    doc.permission = permission
+                    updated++
+                }
+            }
         }
+        return updated
+    }
 
     /**
      * 从所有目录中移除指定文档
