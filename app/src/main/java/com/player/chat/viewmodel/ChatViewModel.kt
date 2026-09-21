@@ -25,6 +25,7 @@ import javax.inject.Inject
 import com.player.chat.repository.TenantRepository
 import com.player.chat.repository.UserRepository
 import com.player.chat.utils.CommonUtils.formatRelativeTime
+import com.player.chat.utils.DocumentListUtils
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
@@ -765,12 +766,10 @@ class ChatViewModel @Inject constructor(
      * 成功/失败都会把后端 msg 通过 onResult 回传给 UI 做提示
      *
      * @param docId 文档ID
-     * @param directoryId 文档所属目录ID（用于成功后同步本地列表）
      * @param onResult 回调，参数为 (是否成功, 提示语)
      */
     fun deleteDocumentWithCallback(
         docId: String,
-        directoryId: String,
         onResult: (Boolean, String) -> Unit
     ) {
         viewModelScope.launch {
@@ -778,12 +777,9 @@ class ChatViewModel @Inject constructor(
                 val result = chatRepository.deleteDocument(docId)
                 val msg = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "删除文档失败"
                 if (result.isSuccess) {
-                    // 删除成功，同步本地文档列表
-                    val currentMap = _directoryDocuments.value.toMutableMap()
-                    val documents = currentMap[directoryId]?.toMutableList() ?: mutableListOf()
-                    documents.removeAll { it.id == docId }
-                    currentMap[directoryId] = documents
-                    _directoryDocuments.value = currentMap
+                    // 删除成功，按文档 id 从所有目录的本地列表中移除（不依赖目录 key）
+                    _directoryDocuments.value =
+                        DocumentListUtils.removeDocument(_directoryDocuments.value, docId)
                 }
                 onResult(result.isSuccess, msg)
             } catch (e: Exception) {
@@ -795,18 +791,16 @@ class ChatViewModel @Inject constructor(
 
     /**
      * 修改文档权限
-     * 说明：调用 PUT /service/chat/updateDocPermission/{docId}，data > 0 视为成功；
-     * 成功/失败都会把后端 msg 通过 onResult 回传给 UI 做提示
+     * 说明：调用 PUT /service/chat/updateDocPermission，data > 0 视为成功；
+     * 成功后同步本地文档列表中的权限字段，成功/失败都把后端 msg 回传给 UI
      *
      * @param docId 文档ID
      * @param permission 新的权限值：private / tenant / company
-     * @param directoryId 文档所属目录ID（用于成功后同步本地列表）
      * @param onResult 回调，参数为 (是否成功, 提示语)
      */
     fun updateDocPermissionWithCallback(
         docId: String,
         permission: String,
-        directoryId: String,
         onResult: (Boolean, String) -> Unit
     ) {
         viewModelScope.launch {
@@ -814,15 +808,9 @@ class ChatViewModel @Inject constructor(
                 val result = chatRepository.updateDocPermission(docId, permission)
                 val msg = result.getOrNull() ?: result.exceptionOrNull()?.message ?: "修改文档权限失败"
                 if (result.isSuccess) {
-                    // 修改成功，同步本地文档列表中的权限字段
-                    val currentMap = _directoryDocuments.value.toMutableMap()
-                    val documents = currentMap[directoryId]?.map { doc ->
-                        if (doc.id == docId) doc.copy(permission = permission) else doc
-                    }
-                    if (documents != null) {
-                        currentMap[directoryId] = documents
-                        _directoryDocuments.value = currentMap
-                    }
+                    // 修改成功，按文档 id 同步本地权限（不依赖目录 key，避免 key 不一致导致回显旧值）
+                    _directoryDocuments.value =
+                        DocumentListUtils.updatePermission(_directoryDocuments.value, docId, permission)
                 }
                 onResult(result.isSuccess, msg)
             } catch (e: Exception) {

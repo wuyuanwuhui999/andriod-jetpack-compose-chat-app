@@ -25,6 +25,7 @@ import com.player.chat.model.Directory
 import com.player.chat.model.Document
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
+import com.player.chat.utils.DocumentListUtils
 import com.player.chat.viewmodel.ChatViewModel
 
 /**
@@ -46,12 +47,18 @@ fun MyDocumentsDialog(
     val isLoading by viewModel.isDirectoryLoading.collectAsState()
     val showCreateDirDialog by viewModel.showCreateDirDialog.collectAsState()
 
-    // 需要修改权限的文档
-    var permissionDoc by remember { mutableStateOf<Document?>(null) }
+    // 需要修改权限的文档ID与点击时的快照（只存 id，渲染时优先从最新列表里取文档，避免持有旧 permission）
+    var permissionDocId by remember { mutableStateOf<String?>(null) }
+    var permissionDocSnapshot by remember { mutableStateOf<Document?>(null) }
     // 需要删除的文档（非空时展示删除确认对话框）
     var deleteDoc by remember { mutableStateOf<Document?>(null) }
     // 是否正在提交（修改权限）
     var isSubmitting by remember { mutableStateOf(false) }
+
+    // 修改权限对话框：优先用当前列表里最新的文档对象回显（权限改动后立即生效），
+    // 列表里找不到时退回点击时的快照，保证对话框仍能打开
+    val permissionDoc = DocumentListUtils.findDocument(directoryDocuments, permissionDocId)
+        ?: permissionDocSnapshot
 
     // 注意：修改权限对话框必须放在下方根 Box 内、基础弹窗之后渲染，
     // 否则会被基础弹窗的半透明遮罩与内容覆盖，导致"点了没反应"（看不见）
@@ -67,8 +74,7 @@ fun MyDocumentsDialog(
                     onClick = {
                         deleteDoc = null
                         viewModel.deleteDocumentWithCallback(
-                            docId = doc.id,
-                            directoryId = doc.directoryId
+                            docId = doc.id
                         ) { _, msg ->
                             // 成功与失败都提示后端返回的 msg
                             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -216,7 +222,10 @@ fun MyDocumentsDialog(
                                         isExpanded = expandedDirectories.contains(directory.id),
                                         documents = directoryDocuments[directory.id] ?: emptyList(),
                                         onDirectoryClick = { viewModel.toggleDirectoryExpanded(directory) },
-                                        onEditPermission = { doc -> permissionDoc = doc },
+                                        onEditPermission = { doc ->
+                                            permissionDocId = doc.id
+                                            permissionDocSnapshot = doc
+                                        },
                                         onDelete = { doc -> deleteDoc = doc }
                                     )
                                 }
@@ -241,16 +250,15 @@ fun MyDocumentsDialog(
                 documentName = doc.name,
                 defaultPermission = doc.permission.orEmpty(),
                 isSubmitting = isSubmitting,
-                onDismiss = { if (!isSubmitting) permissionDoc = null },
+                onDismiss = { if (!isSubmitting) permissionDocId = null },
                 onConfirm = { permission ->
                     isSubmitting = true
                     viewModel.updateDocPermissionWithCallback(
                         docId = doc.id,
-                        permission = permission,
-                        directoryId = doc.directoryId
+                        permission = permission
                     ) { _, msg ->
                         isSubmitting = false
-                        permissionDoc = null
+                        permissionDocId = null
                         // 成功与失败都提示后端返回的 msg
                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
