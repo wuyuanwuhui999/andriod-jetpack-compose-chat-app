@@ -71,11 +71,12 @@ class DocumentUploadConfigTest {
         assertEquals("", DocumentUploadConfig.splitMethodLabel(null))
     }
 
-    /** 上传参数对象未显式赋值时应落到默认值 */
+    /** 上传参数对象未显式赋值时应落到默认值；companyId 与 tenantId 一样为必填 */
     @Test
     fun uploadRequest_appliesDefaults() {
-        val request = UploadDocumentRequest(tenantId = "t1", directoryId = "d1")
+        val request = UploadDocumentRequest(tenantId = "t1", companyId = "c1", directoryId = "d1")
         assertEquals("t1", request.tenantId)
+        assertEquals("c1", request.companyId)
         assertEquals("d1", request.directoryId)
         assertEquals(DocumentUploadConfig.DEFAULT_SPLIT_METHOD, request.splitMethod)
         assertEquals(DocumentUploadConfig.DEFAULT_CHUNK_SIZE, request.chunkSize)

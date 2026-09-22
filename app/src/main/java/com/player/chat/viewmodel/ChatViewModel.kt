@@ -54,6 +54,10 @@ class ChatViewModel @Inject constructor(
     private val _currentTenant = MutableStateFlow<Tenant?>(null)
     val currentTenant: StateFlow<Tenant?> = _currentTenant.asStateFlow()
 
+    /** 当前公司ID（用于 uploadDoc 接口的 companyId 参数），来自登录后缓存的 company_id_{userId} */
+    private val _currentCompanyId = MutableStateFlow("")
+    val currentCompanyId: StateFlow<String> = _currentCompanyId.asStateFlow()
+
     private val _chatId = MutableStateFlow<String>("")
     val chatId: StateFlow<String> = _chatId.asStateFlow()
 
@@ -232,6 +236,8 @@ class ChatViewModel @Inject constructor(
             val currentUser = dataStoreManager.getUser().firstOrNull()
             val companyKey = if (currentUser != null) "company_id_${currentUser.id}" else "company_id"
             val cachedCompanyId = dataStoreManager.getString(companyKey).firstOrNull()
+            // 记录当前公司ID，供 uploadDoc 接口的 companyId 参数使用
+            _currentCompanyId.value = cachedCompanyId.orEmpty()
 
             if (cachedCompanyId.isNullOrBlank()) {
                 // 没有公司ID，使用默认租户
@@ -631,6 +637,8 @@ class ChatViewModel @Inject constructor(
                 viewModelScope.launch {
                     chatRepository.uploadDocument(
                         tenantId = directory.tenantId,
+                        // Directory 不返回公司ID，这里用当前登录用户缓存的 companyId
+                        companyId = _currentCompanyId.value,
                         directoryId = directory.id ?: "",
                         file = tempFile
                     ).onSuccess { result ->
@@ -1402,7 +1410,8 @@ class ChatViewModel @Inject constructor(
     /**
      * 上传文档（带回调）
      * 说明：splitMethod、chunkSize、permission 来自"文档设置对话框"，
-     * 与 tenantId、directoryId 一并提交到 uploadDoc 接口（参数放在请求体中）
+     * 与 tenantId、companyId、directoryId 一并提交到 uploadDoc 接口（参数放在请求体中）；
+     * companyId 取自登录后缓存的 company_id_{userId}（与 loadTenantInfo 同一来源）
      *
      * @param context 上下文
      * @param uri 选中的文件 Uri
@@ -1422,6 +1431,13 @@ class ChatViewModel @Inject constructor(
         onFailure: (String) -> Unit = {}
     ) {
         val dirId = _selectedDirIdForUpload.value ?: return
+        // companyId 为空说明当前账号没有公司归属，后端无法归档文档，先给可读提示而不是提交空值
+        val companyId = _currentCompanyId.value
+        if (companyId.isBlank()) {
+            Log.e("ChatViewModel", "companyId 为空，无法上传文档")
+            onFailure("未获取到公司信息，无法上传文档")
+            return
+        }
         viewModelScope.launch {
             _isUploadingDocument.value = true
             var tempFile: File? = null
@@ -1432,6 +1448,7 @@ class ChatViewModel @Inject constructor(
                     val tenantId = _currentTenant.value?.id ?: return@launch
                     val result = chatRepository.uploadDocument(
                         tenantId = tenantId,
+                        companyId = companyId,
                         directoryId = dirId,
                         file = uploadFile,
                         splitMethod = splitMethod,

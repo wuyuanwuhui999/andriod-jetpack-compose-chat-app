@@ -85,10 +85,11 @@ object DocumentUploadConfig {
 
 /**
  * 上传文档设置参数
- * 说明：tenantId、directoryId 由 URL 路径改为请求体（multipart 表单）字段，
+ * 说明：tenantId、companyId、directoryId 由 URL 路径改为请求体（multipart 表单）字段，
  * 与 splitMethod、chunkSize、permission 一起提交给 uploadDoc 接口
  *
  * @param tenantId 租户ID
+ * @param companyId 公司ID
  * @param directoryId 目录ID
  * @param splitMethod 分割方式：recursive / paragraph / sentence / fixed
  * @param chunkSize 分割大小，仅当 splitMethod = fixed 时生效
@@ -96,6 +97,7 @@ object DocumentUploadConfig {
  */
 data class UploadDocumentRequest(
     @SerializedName("tenantId") val tenantId: String,
+    @SerializedName("companyId") val companyId: String,
     @SerializedName("directoryId") val directoryId: String,
     @SerializedName("splitMethod") val splitMethod: String = DocumentUploadConfig.DEFAULT_SPLIT_METHOD,
     @SerializedName("chunkSize") val chunkSize: Int = DocumentUploadConfig.DEFAULT_CHUNK_SIZE,

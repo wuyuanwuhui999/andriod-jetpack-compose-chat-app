@@ -4,7 +4,10 @@ import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.google.gson.annotations.SerializedName
 import com.player.chat.model.UpdateDocPermissionRequest
+import com.player.chat.model.UploadDocumentRequest
 import com.player.chat.network.ApiService
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -66,7 +69,7 @@ class ApiDocumentContractTest {
         assertEquals("tenant", obj.get("permission").asString)
     }
 
-    /** uploadDoc：tenantId/directoryId 等参数保持放在 body（multipart 表单），URL 无路径占位符 */
+    /** uploadDoc：tenantId/companyId/directoryId 等参数保持放在 body（multipart 表单），URL 无路径占位符 */
     @Test
     fun uploadDocument_paramsStayInMultipartBody() {
         val m = apiMethod("uploadDocument")
@@ -75,13 +78,44 @@ class ApiDocumentContractTest {
         assertFalse("URL 不应有路径占位符: ${post.value}", post.value.contains("{"))
         assertTrue("uploadDoc 应为 multipart", m.annotations.any { it is Multipart })
 
-        val anns = paramAnnotations(m)
-        assertTrue("tenantId 应通过表单字段提交", anns.any { it is Part && it.value == "tenantId" })
-        assertTrue("directoryId 应通过表单字段提交", anns.any { it is Part && it.value == "directoryId" })
-        assertTrue("splitMethod 应通过表单字段提交", anns.any { it is Part && it.value == "splitMethod" })
-        assertTrue("chunkSize 应通过表单字段提交", anns.any { it is Part && it.value == "chunkSize" })
-        assertTrue("permission 应通过表单字段提交", anns.any { it is Part && it.value == "permission" })
-        assertFalse("uploadDoc 不应有 @Path 参数", anns.any { it is Path })
+        // 具名表单字段集合必须与后端约定完全一致（含新增的 companyId）
+        val namedParts = m.parameters
+            .mapNotNull { it.getAnnotation(Part::class.java)?.value?.takeIf { v -> v.isNotBlank() } }
+        assertEquals(
+            "uploadDoc 表单字段集合应与约定一致",
+            setOf("tenantId", "companyId", "directoryId", "splitMethod", "chunkSize", "permission"),
+            namedParts.toSet()
+        )
+
+        // 具名字段都应是文本 RequestBody
+        val namedTypes = m.parameters
+            .filter { it.getAnnotation(Part::class.java)?.value?.isNotBlank() == true }
+            .map { it.type }
+        assertTrue("具名字段应为 RequestBody，实际: $namedTypes", namedTypes.all { it == RequestBody::class.java })
+
+        // 文件 part：只有一个且不带名字（注意 suspend 函数末尾还有一个无注解的 Continuation 参数，不能算进去）
+        val fileParts = m.parameters.filter { p ->
+            val part = p.getAnnotation(Part::class.java)
+            part != null && part.value.isBlank()
+        }
+        assertEquals("应且仅应有一个文件 part", 1, fileParts.size)
+        assertEquals("文件 part 类型应为 MultipartBody.Part",
+            MultipartBody.Part::class.java, fileParts.single().type)
+
+        assertFalse("uploadDoc 不应有 @Path 参数", paramAnnotations(m).any { it is Path })
+    }
+
+    /** uploadDoc 请求体的线上字段名：含新增 companyId，且集合与后端约定一致 */
+    @Test
+    fun uploadDocumentRequest_wireFields() {
+        val wireNames = UploadDocumentRequest::class.java.declaredFields
+            .mapNotNull { it.getAnnotation(SerializedName::class.java)?.value }
+            .toSet()
+        assertEquals(
+            "uploadDoc 请求体字段应为约定集合: $wireNames",
+            setOf("tenantId", "companyId", "directoryId", "splitMethod", "chunkSize", "permission"),
+            wireNames
+        )
     }
 
     /** deleteDoc：本次未改动，docId 仍在 URL 路径上且为 DELETE */

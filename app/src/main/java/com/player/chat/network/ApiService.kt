@@ -73,10 +73,11 @@ interface ApiService {
 
     /**
      * 上传文档
-     * 说明：tenantId、directoryId 已从 URL 路径（{tenantId}/{directoryId}）改为请求体字段，
+     * 说明：tenantId、companyId、directoryId 已从 URL 路径（{tenantId}/{directoryId}）改为请求体字段，
      * 与 splitMethod、chunkSize、permission 一起以 multipart 表单形式提交。
      *
      * @param tenantId 租户ID
+     * @param companyId 公司ID（与 tenantId 一样放在表单字段中）
      * @param directoryId 目录ID
      * @param splitMethod 分割方式：recursive / paragraph / sentence / fixed
      * @param chunkSize 分割大小，仅当 splitMethod = fixed 时后端生效，默认 1000
@@ -87,6 +88,7 @@ interface ApiService {
     @Multipart
     suspend fun uploadDocument(
         @Part("tenantId") tenantId: RequestBody,
+        @Part("companyId") companyId: RequestBody,
         @Part("directoryId") directoryId: RequestBody,
         @Part("splitMethod") splitMethod: RequestBody,
         @Part("chunkSize") chunkSize: RequestBody,

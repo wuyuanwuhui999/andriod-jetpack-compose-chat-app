@@ -79,9 +79,10 @@ class ChatRepository @Inject constructor(
 
     /**
      * 上传文档
-     * 说明：tenantId、directoryId 不再拼接在 URL 上，改为和分割参数、权限一起放到请求体（multipart 表单）中
+     * 说明：tenantId、companyId、directoryId 不再拼接在 URL 上，改为和分割参数、权限一起放到请求体（multipart 表单）中
      *
      * @param tenantId 租户ID
+     * @param companyId 公司ID
      * @param directoryId 目录ID
      * @param file 文件
      * @param splitMethod 分割方式：recursive / paragraph / sentence / fixed，默认 recursive
@@ -91,6 +92,7 @@ class ChatRepository @Inject constructor(
      */
     suspend fun uploadDocument(
         tenantId: String,
+        companyId: String,
         directoryId: String,
         file: File,
         splitMethod: String = DocumentUploadConfig.DEFAULT_SPLIT_METHOD,
@@ -104,6 +106,7 @@ class ChatRepository @Inject constructor(
 
             val response = apiService.uploadDocument(
                 tenantId = tenantId.toRequestBody(textType),
+                companyId = companyId.toRequestBody(textType),
                 directoryId = directoryId.toRequestBody(textType),
                 splitMethod = splitMethod.toRequestBody(textType),
                 chunkSize = chunkSize.toString().toRequestBody(textType),
