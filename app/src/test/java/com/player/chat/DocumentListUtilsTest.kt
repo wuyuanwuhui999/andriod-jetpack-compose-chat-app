@@ -81,6 +81,30 @@ class DocumentListUtilsTest {
         assertNull(DocumentListUtils.findDocument(lists, null))
     }
 
+    /** 回归用户反馈："点击取消/确定后修改权限对话框不消失" */
+    @Test
+    fun resolveDialogDocument_closedWhenDocIdIsNull_evenIfSnapshotRemains() {
+        val lists = mapOf("d1" to listOf(doc("a", "d1")))
+        val snapshot = doc("a", "d1")
+
+        // 关闭时只置空 docId，快照还残留（或相反）都必须返回 null，否则对话框关不掉
+        assertNull(DocumentListUtils.resolveDialogDocument(lists, null, snapshot))
+        assertNull(DocumentListUtils.resolveDialogDocument(lists, null, null))
+    }
+
+    /** 打开时：优先列表最新值；列表里查不到才退回快照 */
+    @Test
+    fun resolveDialogDocument_prefersLatestThenFallsBackToSnapshot() {
+        val lists = mapOf("d1" to listOf(doc("a", "d1", "tenant")))
+        val staleSnapshot = doc("a", "d1", "private")
+
+        val latest = DocumentListUtils.resolveDialogDocument(lists, "a", staleSnapshot)
+        assertEquals("列表里有则以列表为准（回显最新权限）", "tenant", latest?.permission)
+
+        val fallback = DocumentListUtils.resolveDialogDocument(emptyMap(), "a", staleSnapshot)
+        assertSame("列表里没有则退回点击时的快照", staleSnapshot, fallback)
+    }
+
     /** 空缓存不抛异常 */
     @Test
     fun emptyLists_areSafe() {

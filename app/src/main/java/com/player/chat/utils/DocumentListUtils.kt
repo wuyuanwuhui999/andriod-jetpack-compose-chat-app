@@ -76,4 +76,24 @@ object DocumentListUtils {
             documents.firstOrNull { it.id == docId }
         }
     }
+
+    /**
+     * 解析"修改权限对话框"当前应展示的文档
+     *
+     * 规则：docId 为空即关闭对话框（返回 null）；非空时优先取列表里最新的文档，
+     * 列表里查不到该文档时退回点击时的快照（保证对话框仍能打开）。
+     *
+     * 注意：不能写成 `findDocument(...) ?: snapshot` —— 那样关闭时（docId=null）
+     * 会被快照兜住，表现为"提示修改成功但对话框不关闭"。
+     *
+     * @param lists 目录-文档列表缓存
+     * @param docId 当前正在改权限的文档ID，null 表示不展示对话框
+     * @param snapshot 点击菜单时的文档快照（兜底用）
+     * @return 应展示的文档，null 表示对话框不展示
+     */
+    fun resolveDialogDocument(
+        lists: Map<String, List<Document>>,
+        docId: String?,
+        snapshot: Document?
+    ): Document? = docId?.let { findDocument(lists, it) ?: snapshot }
 }

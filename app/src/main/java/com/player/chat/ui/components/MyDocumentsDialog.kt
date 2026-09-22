@@ -55,10 +55,20 @@ fun MyDocumentsDialog(
     // 是否正在提交（修改权限）
     var isSubmitting by remember { mutableStateOf(false) }
 
-    // 修改权限对话框：优先用当前列表里最新的文档对象回显（权限改动后立即生效），
-    // 列表里找不到时退回点击时的快照，保证对话框仍能打开
-    val permissionDoc = DocumentListUtils.findDocument(directoryDocuments, permissionDocId)
-        ?: permissionDocSnapshot
+    // 修改权限对话框要展示的文档：
+    // permissionDocId 置空即关闭对话框；非空时优先取列表里最新的文档（权限改动后立即生效），
+    // 列表里查不到时才退回点击时的快照
+    val permissionDoc = DocumentListUtils.resolveDialogDocument(
+        lists = directoryDocuments,
+        docId = permissionDocId,
+        snapshot = permissionDocSnapshot
+    )
+
+    // 关闭修改权限对话框：id 与快照一起清空，避免残留快照导致对话框关不掉
+    val closePermissionDialog = {
+        permissionDocId = null
+        permissionDocSnapshot = null
+    }
 
     // 注意：修改权限对话框必须放在下方根 Box 内、基础弹窗之后渲染，
     // 否则会被基础弹窗的半透明遮罩与内容覆盖，导致"点了没反应"（看不见）
@@ -250,15 +260,16 @@ fun MyDocumentsDialog(
                 documentName = doc.name,
                 defaultPermission = doc.permission.orEmpty(),
                 isSubmitting = isSubmitting,
-                onDismiss = { if (!isSubmitting) permissionDocId = null },
+                onDismiss = { if (!isSubmitting) closePermissionDialog() },
                 onConfirm = { permission ->
                     isSubmitting = true
                     viewModel.updateDocPermissionWithCallback(
                         docId = doc.id,
                         permission = permission
                     ) { _, msg ->
+                        // 成功与失败都要关闭对话框：先复位提交态，再同时清空 id 与快照
                         isSubmitting = false
-                        permissionDocId = null
+                        closePermissionDialog()
                         // 成功与失败都提示后端返回的 msg
                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
