@@ -142,6 +142,28 @@ class ChatRepository @Inject constructor(
     }
 
     /**
+     * 获取公共文档列表
+     * 说明：GET /service/chat/getPublicDocList?tenantId={tenantId}&companyId={companyId}，
+     * 接口一次性返回全部公共文档（含 directoryName），由界面按目录名分组，展开不再请求接口
+     *
+     * @param tenantId 租户ID
+     * @param companyId 公司ID
+     * @return Result<List<Document>> 全部公共文档
+     */
+    suspend fun getPublicDocList(tenantId: String, companyId: String): Result<List<Document>> {
+        return try {
+            val response = apiService.getPublicDocList(tenantId, companyId)
+            if (response.isSuccessful && response.body()?.status == "SUCCESS") {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.failure(Exception(response.body()?.msg ?: "获取公共文档失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * 删除文档
      * 说明：调用 DELETE /service/chat/deleteDoc/{docId}，data > 0 视为成功
      *

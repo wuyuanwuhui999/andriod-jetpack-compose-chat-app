@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.player.chat.R
@@ -21,11 +22,19 @@ import com.player.chat.model.Directory
 import com.player.chat.model.Document
 import com.player.chat.ui.theme.Color
 import com.player.chat.ui.theme.Dimens
+import com.player.chat.utils.PublicDocumentUtils
 import com.player.chat.viewmodel.ChatViewModel
+
+/** "选择文档"对话框页签下标：0=我的文档（默认激活），1=公共文档 */
+private const val TAB_MY_DOCUMENTS = 0
+private const val TAB_PUBLIC_DOCUMENTS = 1
 
 /**
  * 查询文档对话框
- * 功能：显示目录列表，支持展开查看文档、刷新目录、创建目录、上传文档
+ * 功能：标题栏为"我的文档 ｜ 公共文档"两个可切换页签（居中、默认激活我的文档）
+ * 1. 我的文档：保持原逻辑——目录列表来自接口，点目录才加载该目录下的文档；
+ * 2. 公共文档：点击页签时调用 getPublicDocList 一次拿回全部文档，按文档自带 directoryName 分组展示目录卡片，
+ *    点击展开直接显示该目录下的文档（不再请求接口）。
  */
 @Composable
 fun QueryDocumentDialog(
@@ -38,6 +47,16 @@ fun QueryDocumentDialog(
     val isLoading by viewModel.isDirectoryLoading.collectAsState()
     val selectedDocIds by viewModel.selectedDocIds.collectAsState()
     val showCreateDirDialog by viewModel.showCreateDirDialog.collectAsState()
+    // 公共文档页签数据
+    val publicDocuments by viewModel.publicDocuments.collectAsState()
+    val expandedPublicDirectories by viewModel.expandedPublicDirectories.collectAsState()
+    val isPublicLoading by viewModel.isPublicDocumentsLoading.collectAsState()
+
+    // 页签：默认激活"我的文档"（对话框每次打开都是初始状态）
+    var selectedTab by remember { mutableStateOf(TAB_MY_DOCUMENTS) }
+
+    // 左/右图标区取相同宽度（两个图标位），这样中间的页签相对整条标题栏真正居中
+    val sideSlotWidth = Dimens.middleIconSize * 2 + Dimens.middleGap
 
     // 关键修复：使用 Box 作为根容器，确保 CreateDirectoryDialog 在最上层
     Box(modifier = Modifier.fillMaxSize()) {
@@ -56,7 +75,7 @@ fun QueryDocumentDialog(
                     .align(Alignment.BottomCenter)
                     .clip(RoundedCornerShape(topStart = Dimens.moduleBorderRadius, topEnd = Dimens.moduleBorderRadius))
             ) {
-                // 标题栏
+                // 标题栏：中间是"我的文档 ｜ 公共文档"页签
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -66,54 +85,93 @@ fun QueryDocumentDialog(
                 ) {
                     Spacer(modifier = Modifier.width(Dimens.middleGap))
 
-                    // 左侧刷新按钮
-                    IconButton(
-                        onClick = { viewModel.loadDirectoriesForQuery() },
-                        modifier = Modifier.size(Dimens.middleIconSize)
+                    // 左侧刷新：按当前页签刷新对应数据
+                    Box(
+                        modifier = Modifier.width(sideSlotWidth),
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_refresh),
-                            contentDescription = "刷新",
+                        IconButton(
+                            onClick = {
+                                if (selectedTab == TAB_PUBLIC_DOCUMENTS) {
+                                    viewModel.loadPublicDocuments()
+                                } else {
+                                    viewModel.loadDirectoriesForQuery()
+                                }
+                            },
                             modifier = Modifier.size(Dimens.middleIconSize)
-                        )
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icon_refresh),
+                                contentDescription = "刷新",
+                                modifier = Modifier.size(Dimens.middleIconSize)
+                            )
+                        }
                     }
 
-                    // 标题
-                    Text(
-                        text = "选择文档",
-                        color = Color.Black,
-                        maxLines = 1,
+                    // 中间页签：我的文档 ｜ 公共文档（整块水平居中）
+                    Row(
                         modifier = Modifier.weight(1f),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-
-                    // 右侧创建目录图标
-                    IconButton(
-                        onClick = { viewModel.showCreateDirDialog() },
-                        modifier = Modifier.size(Dimens.middleIconSize)
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_create_directory),
-                            contentDescription = "创建目录",
-                            modifier = Modifier.size(Dimens.middleIconSize)
+                        QueryDocTabItem(
+                            text = "我的文档",
+                            selected = selectedTab == TAB_MY_DOCUMENTS,
+                            onClick = { selectedTab = TAB_MY_DOCUMENTS }
+                        )
+
+                        // 页签之间的竖线
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = Dimens.smallGap)
+                                .width(Dimens.borderSize)
+                                .height(Dimens.smallIconSize)
+                                .background(Color.Gray.copy(alpha = 0.6f))
+                        )
+
+                        QueryDocTabItem(
+                            text = "公共文档",
+                            selected = selectedTab == TAB_PUBLIC_DOCUMENTS,
+                            onClick = {
+                                selectedTab = TAB_PUBLIC_DOCUMENTS
+                                // 点击公共文档页签时调用接口（每次点击都取最新数据）
+                                viewModel.loadPublicDocuments()
+                            }
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(Dimens.middleGap))
-
-                    // 右侧上传图标
-                    IconButton(
-                        onClick = {
-                            viewModel.hideQueryDocumentDialog()
-                            viewModel.showUploadDocumentDialog()
-                        },
-                        modifier = Modifier.size(Dimens.middleIconSize)
+                    // 右侧创建目录 + 上传（与左侧同宽，保证页签居中）
+                    Row(
+                        modifier = Modifier.width(sideSlotWidth),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_upload),
-                            contentDescription = "上传文档",
+                        IconButton(
+                            onClick = { viewModel.showCreateDirDialog() },
                             modifier = Modifier.size(Dimens.middleIconSize)
-                        )
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icon_create_directory),
+                                contentDescription = "创建目录",
+                                modifier = Modifier.size(Dimens.middleIconSize)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(Dimens.middleGap))
+
+                        IconButton(
+                            onClick = {
+                                viewModel.hideQueryDocumentDialog()
+                                viewModel.showUploadDocumentDialog()
+                            },
+                            modifier = Modifier.size(Dimens.middleIconSize)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.icon_upload),
+                                contentDescription = "上传文档",
+                                modifier = Modifier.size(Dimens.middleIconSize)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.width(Dimens.middleGap))
@@ -140,43 +198,54 @@ fun QueryDocumentDialog(
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
-                        if (isLoading && directories.isEmpty()) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimens.middleGap),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(Dimens.bigIconSize),
-                                    color = Color.Primary,
-                                    strokeWidth = Dimens.strokeWidth
-                                )
+                        if (selectedTab == TAB_PUBLIC_DOCUMENTS) {
+                            // 公共文档：全部文档已在本地，按 directoryName 分组；展开只是本地状态切换
+                            val publicGroups = remember(publicDocuments) {
+                                PublicDocumentUtils.groupByDirectoryName(publicDocuments)
                             }
-                        } else if (directories.isEmpty()) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimens.middleGap),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "暂无目录",
-                                    color = Color.Gray,
-                                    fontSize = Dimens.normalFontSize
-                                )
+                            when {
+                                isPublicLoading && publicGroups.isEmpty() -> {
+                                    LoadingHint()
+                                }
+
+                                publicGroups.isEmpty() -> {
+                                    EmptyHint(text = "暂无公共文档")
+                                }
+
+                                else -> {
+                                    LazyColumn {
+                                        items(publicGroups.entries.toList()) { entry ->
+                                            // 目录名取自文档的 directoryName 字段，展开后直接显示分组内的文档
+                                            DocumentDirectoryItem(
+                                                title = entry.key,
+                                                isExpanded = expandedPublicDirectories.contains(entry.key),
+                                                documents = entry.value,
+                                                selectedDocIds = selectedDocIds,
+                                                onDirectoryClick = { viewModel.togglePublicDirectoryExpanded(entry.key) },
+                                                onDocumentToggle = { docId -> viewModel.toggleDocSelection(docId) }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         } else {
-                            LazyColumn {
-                                items(directories) { directory ->
-                                    DirectoryWithDocumentsItem(
-                                        directory = directory,
-                                        isExpanded = expandedDirectories.contains(directory.id),
-                                        documents = directoryDocuments[directory.id] ?: emptyList(),
-                                        selectedDocIds = selectedDocIds,
-                                        onDirectoryClick = { viewModel.toggleDirectoryExpanded(directory) },
-                                        onDocumentToggle = { docId -> viewModel.toggleDocSelection(docId) }
-                                    )
+                            // 我的文档：保持原有逻辑（目录来自接口，点目录才加载文档）
+                            if (isLoading && directories.isEmpty()) {
+                                LoadingHint()
+                            } else if (directories.isEmpty()) {
+                                EmptyHint(text = "暂无目录")
+                            } else {
+                                LazyColumn {
+                                    items(directories) { directory ->
+                                        DirectoryWithDocumentsItem(
+                                            directory = directory,
+                                            isExpanded = expandedDirectories.contains(directory.id),
+                                            documents = directoryDocuments[directory.id] ?: emptyList(),
+                                            selectedDocIds = selectedDocIds,
+                                            onDirectoryClick = { viewModel.toggleDirectoryExpanded(directory) },
+                                            onDocumentToggle = { docId -> viewModel.toggleDocSelection(docId) }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -235,11 +304,101 @@ fun QueryDocumentDialog(
 }
 
 /**
- * 目录及文档列表项
+ * 标题栏页签文本
+ *
+ * @param text 页签文案
+ * @param selected 是否激活：激活用高亮色（Color.Primary），未激活用黑色
+ * @param onClick 点击回调
+ */
+@Composable
+private fun QueryDocTabItem(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Text(
+        text = text,
+        color = if (selected) Color.Primary else Color.Black,
+        fontSize = Dimens.normalFontSize,
+        fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+        maxLines = 1,
+        modifier = Modifier
+            .clickable { onClick() }
+            .padding(horizontal = Dimens.smallGap, vertical = Dimens.smallGap)
+    )
+}
+
+/** 内容区加载提示（我的文档/公共文档共用） */
+@Composable
+private fun LoadingHint() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimens.middleGap),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(Dimens.bigIconSize),
+            color = Color.Primary,
+            strokeWidth = Dimens.strokeWidth
+        )
+    }
+}
+
+/** 内容区空数据提示（我的文档/公共文档共用） */
+@Composable
+private fun EmptyHint(text: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimens.middleGap),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = Color.Gray,
+            fontSize = Dimens.normalFontSize
+        )
+    }
+}
+
+/**
+ * 目录及文档列表项（我的文档：目录对象来自接口）
  */
 @Composable
 fun DirectoryWithDocumentsItem(
     directory: Directory,
+    isExpanded: Boolean,
+    documents: List<Document>,
+    selectedDocIds: Set<String>,
+    onDirectoryClick: () -> Unit,
+    onDocumentToggle: (String) -> Unit
+) {
+    // 目录名来自 Directory；公共文档页签直接用 Document.directoryName，两者共用同一个条目组件
+    DocumentDirectoryItem(
+        title = directory.directory,
+        isExpanded = isExpanded,
+        documents = documents,
+        selectedDocIds = selectedDocIds,
+        onDirectoryClick = onDirectoryClick,
+        onDocumentToggle = onDocumentToggle
+    )
+}
+
+/**
+ * 目录及文档列表项（通用：目录标题 + 展开后的文档列表）
+ * 我的文档的目录标题来自 Directory.directory，公共文档的目录标题来自 Document.directoryName
+ *
+ * @param title 目录名称（展示在卡片上）
+ * @param isExpanded 是否展开（展开时显示文档列表）
+ * @param documents 该目录下的文档列表
+ * @param selectedDocIds 已勾选的文档ID集合
+ * @param onDirectoryClick 点击目录行（展开/收起）
+ * @param onDocumentToggle 勾选/取消勾选文档
+ */
+@Composable
+fun DocumentDirectoryItem(
+    title: String,
     isExpanded: Boolean,
     documents: List<Document>,
     selectedDocIds: Set<String>,
@@ -257,7 +416,7 @@ fun DirectoryWithDocumentsItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = directory.directory,
+                text = title,
                 color = Color.Black,
                 fontSize = Dimens.normalFontSize,
                 fontWeight = FontWeight.Medium,

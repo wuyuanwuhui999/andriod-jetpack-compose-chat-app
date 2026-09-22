@@ -14,11 +14,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 import java.lang.reflect.Method
 
 /**
@@ -125,5 +127,23 @@ class ApiDocumentContractTest {
         assertEquals("/service/chat/deleteDoc/{docId}", m.annotations.filterIsInstance<DELETE>().single().value)
         assertTrue("docId 仍应为路径参数",
             paramAnnotations(m).any { it is Path && it.value == "docId" })
+    }
+
+    /** getPublicDocList：GET + tenantId/companyId 作为 URL 查询参数，无路径占位符、无 body */
+    @Test
+    fun getPublicDocList_usesQueryParams() {
+        val m = apiMethod("getPublicDocList")
+        val get = m.annotations.filterIsInstance<GET>().single()
+        assertEquals("/service/chat/getPublicDocList", get.value)
+        assertFalse("URL 不应有路径占位符: ${get.value}", get.value.contains("{"))
+        assertFalse("URL 不应把参数拼死在里面: ${get.value}", get.value.contains("?"))
+
+        val anns = paramAnnotations(m)
+        assertTrue("tenantId 应为查询参数", anns.any { it is Query && it.value == "tenantId" })
+        assertTrue("companyId 应为查询参数", anns.any { it is Query && it.value == "companyId" })
+        assertFalse("不应有 @Path 参数", anns.any { it is Path })
+        assertFalse("不应有 @Body 参数", anns.any { it is Body })
+        assertEquals("查询参数应只有 tenantId 与 companyId", 2,
+            anns.filterIsInstance<Query>().size)
     }
 }

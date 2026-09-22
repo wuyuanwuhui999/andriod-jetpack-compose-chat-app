@@ -116,6 +116,18 @@ class ChatViewModel @Inject constructor(
     private val _directoryDocuments = MutableStateFlow<Map<String, List<Document>>>(emptyMap())
     val directoryDocuments: StateFlow<Map<String, List<Document>>> = _directoryDocuments.asStateFlow()
 
+    /** 公共文档（"选择文档"对话框的公共文档页签）：接口一次返回全部文档，界面按 directoryName 分组 */
+    private val _publicDocuments = MutableStateFlow<List<Document>>(emptyList())
+    val publicDocuments: StateFlow<List<Document>> = _publicDocuments.asStateFlow()
+
+    /** 公共文档已展开的目录名集合（展开只切本地状态，不再请求接口） */
+    private val _expandedPublicDirectories = MutableStateFlow<Set<String>>(emptySet())
+    val expandedPublicDirectories: StateFlow<Set<String>> = _expandedPublicDirectories.asStateFlow()
+
+    /** 公共文档加载中 */
+    private val _isPublicDocumentsLoading = MutableStateFlow(false)
+    val isPublicDocumentsLoading: StateFlow<Boolean> = _isPublicDocumentsLoading.asStateFlow()
+
     private val _isDocumentsLoading = MutableStateFlow(false)
     val isDocumentsLoading: StateFlow<Boolean> = _isDocumentsLoading.asStateFlow()
 
@@ -769,6 +781,50 @@ class ChatViewModel @Inject constructor(
     }
 
     /**
+     * 加载公共文档列表（"选择文档"对话框的公共文档页签）
+     * 说明：调用 GET /service/chat/getPublicDocList?tenantId={tenantId}&companyId={companyId}；
+     * 接口一次性返回全部公共文档，文档自带 directoryName，界面按 directoryName 分组展示，
+     * 展开目录时不再请求接口（只切本地展开状态）
+     */
+    fun loadPublicDocuments() {
+        viewModelScope.launch {
+            val tenantId = _currentTenant.value?.id.orEmpty()
+            val companyId = _currentCompanyId.value
+            if (tenantId.isBlank() || companyId.isBlank()) {
+                Log.e("ChatViewModel", "tenantId/companyId 为空，无法加载公共文档")
+                _publicDocuments.value = emptyList()
+                return@launch
+            }
+
+            _isPublicDocumentsLoading.value = true
+            try {
+                val result = chatRepository.getPublicDocList(tenantId = tenantId, companyId = companyId)
+                if (result.isSuccess) {
+                    _publicDocuments.value = result.getOrNull() ?: emptyList()
+                } else {
+                    Log.e("ChatViewModel", "加载公共文档失败: ${result.exceptionOrNull()?.message}")
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "加载公共文档异常", e)
+            } finally {
+                _isPublicDocumentsLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * 切换公共文档目录的展开/收起
+     * 说明：公共文档列表已包含全部文档，这里只改本地展开状态，不请求接口
+     *
+     * @param directoryName 文档目录名称（Document.directoryName，分组时已做空值兜底）
+     */
+    fun togglePublicDirectoryExpanded(directoryName: String) {
+        val current = _expandedPublicDirectories.value
+        _expandedPublicDirectories.value =
+            if (current.contains(directoryName)) current - directoryName else current + directoryName
+    }
+
+    /**
      * 删除文档
      * 说明：调用 DELETE /service/chat/deleteDoc/{docId}，data > 0 视为成功；
      * 成功/失败都会把后端 msg 通过 onResult 回传给 UI 做提示
@@ -1323,10 +1379,13 @@ class ChatViewModel @Inject constructor(
 
     /**
      * 显示查询文档对话框
+     * 说明：每次打开都回到"我的文档"页签的初始状态（页签默认激活我的文档），公共文档数据等点击页签时再拉取
      */
     fun showQueryDocumentDialog() {
         _showQueryDocumentDialog.value = true
         _selectedDocIds.value = emptySet()
+        _publicDocuments.value = emptyList()
+        _expandedPublicDirectories.value = emptySet()
         loadDirectories()
     }
 
@@ -1338,6 +1397,9 @@ class ChatViewModel @Inject constructor(
         _selectedDocIds.value = emptySet()
         _expandedDirectories.value = emptySet()
         _directoryDocuments.value = emptyMap()
+        // 公共文档同样清空，下次打开按页签重新加载
+        _publicDocuments.value = emptyList()
+        _expandedPublicDirectories.value = emptySet()
     }
 
     /**

@@ -104,6 +104,20 @@ interface ApiService {
     ): Response<ApiResponse<List<Document>>>
 
     /**
+     * 获取公共文档列表（"选择文档"对话框的公共文档页签）
+     * 说明：一次性返回全部公共文档，文档自带 directoryName（文档目录名称）字段，
+     * 界面按 directoryName 分组、点击展开直接展示分组内文档，展开时不需要再请求接口
+     *
+     * @param tenantId 租户ID（URL 查询参数）
+     * @param companyId 公司ID（URL 查询参数）
+     */
+    @GET("/service/chat/getPublicDocList")
+    suspend fun getPublicDocList(
+        @Query("tenantId") tenantId: String,
+        @Query("companyId") companyId: String
+    ): Response<ApiResponse<List<Document>>>
+
+    /**
      * 删除文档
      * @param docId 文档ID（路径参数）
      * 返回 data > 0 表示删除成功
