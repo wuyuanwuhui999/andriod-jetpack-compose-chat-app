@@ -32,7 +32,7 @@ class UserRepository @Inject constructor(
                     Result.failure(Exception("Login failed"))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Login failed"))
+                Result.failure(Exception(response.body()?.msg ?: "Login failed"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -53,7 +53,7 @@ class UserRepository @Inject constructor(
                     Result.failure(Exception("User data is null"))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Request failed"))
+                Result.failure(Exception(response.body()?.msg ?: "Request failed"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -76,7 +76,7 @@ class UserRepository @Inject constructor(
                     Result.failure(Exception("Login failed"))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Login failed"))
+                Result.failure(Exception(response.body()?.msg ?: "Login failed"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -90,7 +90,7 @@ class UserRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Failed to send code"))
+                Result.failure(Exception(response.body()?.msg ?: "Failed to send code"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -111,7 +111,7 @@ class UserRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
-                Result.failure(Exception(response.body()?.message ?: "获取租户列表失败"))
+                Result.failure(Exception(response.body()?.msg ?: "获取租户列表失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -151,7 +151,7 @@ class UserRepository @Inject constructor(
                     Result.failure(Exception("头像上传成功但返回路径为空"))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "头像上传失败"))
+                Result.failure(Exception(response.body()?.msg ?: "头像上传失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -171,7 +171,7 @@ class UserRepository @Inject constructor(
                 dataStoreManager.saveUser(user)
                 Result.success(true)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "更新用户信息失败"))
+                Result.failure(Exception(response.body()?.msg ?: "更新用户信息失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -196,7 +196,7 @@ class UserRepository @Inject constructor(
                     Result.failure(Exception("密码修改失败，请检查旧密码是否正确"))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "密码修改失败"))
+                Result.failure(Exception(response.body()?.msg ?: "密码修改失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -236,7 +236,7 @@ class UserRepository @Inject constructor(
                 val body = response.body()
                 Log.d("UserRepository", "响应body: ${gson.toJson(body)}")
                 Log.d("UserRepository", "响应status: ${body?.status}")
-                Log.d("UserRepository", "响应msg: ${body?.message}")
+                Log.d("UserRepository", "响应msg: ${body?.msg}")
                 Log.d("UserRepository", "响应data: ${body?.data}")
                 Log.d("UserRepository", "响应token: ${body?.token}")
 
@@ -246,7 +246,7 @@ class UserRepository @Inject constructor(
                     Log.d("UserRepository", "重置密码成功 - user: $user, token: $token")
                     Result.success(Pair(user, token))
                 } else {
-                    val errorMsg = body?.message ?: "重置密码失败"
+                    val errorMsg = body?.msg ?: "重置密码失败"
                     Log.e("UserRepository", "重置密码失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -321,7 +321,7 @@ class UserRepository @Inject constructor(
                 val body = response.body()
                 Log.d("UserRepository", "响应body: ${gson.toJson(body)}")
                 Log.d("UserRepository", "响应status: ${body?.status}")
-                Log.d("UserRepository", "响应msg: ${body?.message}")
+                Log.d("UserRepository", "响应msg: ${body?.msg}")
                 Log.d("UserRepository", "响应data: ${body?.data}")
                 Log.d("UserRepository", "响应token: ${body?.token}")
 
@@ -331,7 +331,7 @@ class UserRepository @Inject constructor(
                     Log.d("UserRepository", "注册成功 - user: $registeredUser, token: $token")
                     Result.success(Pair(registeredUser, token))
                 } else {
-                    val errorMsg = body?.message ?: "注册失败"
+                    val errorMsg = body?.msg ?: "注册失败"
                     Log.e("UserRepository", "注册失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -375,7 +375,7 @@ class UserRepository @Inject constructor(
                     val data = body.data ?: 0
                     Result.success(data)
                 } else {
-                    Result.failure(Exception(body?.message ?: "校验失败"))
+                    Result.failure(Exception(body?.msg ?: "校验失败"))
                 }
             } else {
                 val errorBody = response.errorBody()?.string()

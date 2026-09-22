@@ -34,7 +34,7 @@ class TenantRepository @Inject constructor(
                 if (body?.status == "SUCCESS") {
                     Result.success(body.data ?: emptyList())
                 } else {
-                    Result.failure(Exception(body?.message ?: "获取租户用户列表失败"))
+                    Result.failure(Exception(body?.msg ?: "获取租户用户列表失败"))
                 }
             } else {
                 Result.failure(Exception("网络请求失败: ${response.code()}"))
@@ -59,7 +59,7 @@ class TenantRepository @Inject constructor(
                     val tenantList = body.data ?: emptyList()
                     Result.success(tenantList)
                 } else {
-                    val errorMsg = body?.message ?: "获取租户列表失败"
+                    val errorMsg = body?.msg ?: "获取租户列表失败"
                     Result.failure(Exception(errorMsg))
                 }
             } else {
@@ -146,7 +146,7 @@ class TenantRepository @Inject constructor(
                     val deletedCount = body.data ?: 0
                     Result.success(deletedCount)
                 } else {
-                    Result.failure(Exception(body?.message ?: "删除租户用户失败"))
+                    Result.failure(Exception(body?.msg ?: "删除租户用户失败"))
                 }
             } else {
                 Result.failure(Exception("网络请求失败: ${response.code()}"))
@@ -173,7 +173,7 @@ class TenantRepository @Inject constructor(
                     val addedCount = body.data ?: 0
                     Result.success(addedCount)
                 } else {
-                    Result.failure(Exception(body?.message ?: "添加租户用户失败"))
+                    Result.failure(Exception(body?.msg ?: "添加租户用户失败"))
                 }
             } else {
                 Result.failure(Exception("网络请求失败: ${response.code()}"))
@@ -197,10 +197,10 @@ class TenantRepository @Inject constructor(
                 val body = response.body()
                 if (body?.status == "SUCCESS") {
                     val data = body.data ?: 0
-                    val msg = body.message
+                    val msg = body.msg
                     Result.success(Pair(data, msg))
                 } else {
-                    val errorMsg = body?.message ?: "取消管理员失败"
+                    val errorMsg = body?.msg ?: "取消管理员失败"
                     Result.failure(Exception(errorMsg))
                 }
             } else {
@@ -225,10 +225,10 @@ class TenantRepository @Inject constructor(
                 val body = response.body()
                 if (body?.status == "SUCCESS") {
                     val data = body.data ?: 0
-                    val msg = body.message
+                    val msg = body.msg
                     Result.success(Pair(data, msg))
                 } else {
-                    val errorMsg = body?.message ?: "设为管理员失败"
+                    val errorMsg = body?.msg ?: "设为管理员失败"
                     Result.failure(Exception(errorMsg))
                 }
             } else {
@@ -272,7 +272,7 @@ class TenantRepository @Inject constructor(
                     Log.d("TenantRepository", "搜索用户成功，共 ${users.size} 条")
                     Result.success(users)
                 } else {
-                    val errorMsg = body?.message ?: "搜索用户失败"
+                    val errorMsg = body?.msg ?: "搜索用户失败"
                     Log.e("TenantRepository", "搜索用户失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }

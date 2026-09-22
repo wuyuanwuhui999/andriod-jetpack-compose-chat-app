@@ -34,7 +34,7 @@ class CompanyRepository @Inject constructor(
                     Log.d("CompanyRepository", "获取公司列表成功，共 ${companies.size} 条")
                     Result.success(companies)
                 } else {
-                    val errorMsg = body?.message ?: "获取公司列表失败"
+                    val errorMsg = body?.msg ?: "获取公司列表失败"
                     Log.e("CompanyRepository", "获取公司列表失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -73,7 +73,7 @@ class CompanyRepository @Inject constructor(
                     Log.d("CompanyRepository", "获取公司用户成功，共 ${users.size} 条")
                     Result.success(users)
                 } else {
-                    val errorMsg = body?.message ?: "获取公司用户失败"
+                    val errorMsg = body?.msg ?: "获取公司用户失败"
                     Log.e("CompanyRepository", "获取公司用户失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -105,7 +105,7 @@ class CompanyRepository @Inject constructor(
                     Log.d("CompanyRepository", "删除用户成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "删除用户失败"
+                    val errorMsg = body?.msg ?: "删除用户失败"
                     Log.e("CompanyRepository", "删除用户失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -151,7 +151,7 @@ class CompanyRepository @Inject constructor(
                     Log.d("CompanyRepository", "搜索用户成功，共 ${users.size} 条")
                     Result.success(users)
                 } else {
-                    val errorMsg = body?.message ?: "搜索用户失败"
+                    val errorMsg = body?.msg ?: "搜索用户失败"
                     Log.e("CompanyRepository", "搜索用户失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -182,7 +182,7 @@ class CompanyRepository @Inject constructor(
                     Log.d("CompanyRepository", "获取部门列表成功，共 ${departments.size} 条")
                     Result.success(departments)
                 } else {
-                    val errorMsg = body?.message ?: "获取部门列表失败"
+                    val errorMsg = body?.msg ?: "获取部门列表失败"
                     Log.e("CompanyRepository", "获取部门列表失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -213,7 +213,7 @@ class CompanyRepository @Inject constructor(
                     Log.d("CompanyRepository", "获取职位列表成功，共 ${positions.size} 条")
                     Result.success(positions)
                 } else {
-                    val errorMsg = body?.message ?: "获取职位列表失败"
+                    val errorMsg = body?.msg ?: "获取职位列表失败"
                     Log.e("CompanyRepository", "获取职位列表失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -244,7 +244,7 @@ class CompanyRepository @Inject constructor(
                     Log.d("CompanyRepository", "添加用户成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "添加用户失败"
+                    val errorMsg = body?.msg ?: "添加用户失败"
                     Log.e("CompanyRepository", "添加用户失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }

@@ -17,7 +17,7 @@ class ApiResultUtilsTest {
 
     /** 构造一个 HTTP 200 的响应体 */
     private fun ok(data: Int?, status: String, msg: String?) =
-        Response.success(ApiResponse(data = data, token = null, status = status, message = msg, total = null))
+        Response.success(ApiResponse(data = data, token = null, status = status, msg = msg, total = null))
 
     /** data > 0 且 status=SUCCESS：成功，并提示后端 msg */
     @Test

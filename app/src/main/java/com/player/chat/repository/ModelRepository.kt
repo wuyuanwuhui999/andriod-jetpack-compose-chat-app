@@ -33,7 +33,7 @@ class ModelRepository @Inject constructor(
                     Log.d("ModelRepository", "获取模型列表成功，共 ${models.size} 条")
                     Result.success(models)
                 } else {
-                    val errorMsg = body?.message ?: "获取模型列表失败"
+                    val errorMsg = body?.msg ?: "获取模型列表失败"
                     Log.e("ModelRepository", "获取模型列表失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -64,7 +64,7 @@ class ModelRepository @Inject constructor(
                     Log.d("ModelRepository", "添加模型成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "添加模型失败"
+                    val errorMsg = body?.msg ?: "添加模型失败"
                     Log.e("ModelRepository", "添加模型失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -95,7 +95,7 @@ class ModelRepository @Inject constructor(
                     Log.d("ModelRepository", "更新模型成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "更新模型失败"
+                    val errorMsg = body?.msg ?: "更新模型失败"
                     Log.e("ModelRepository", "更新模型失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -126,7 +126,7 @@ class ModelRepository @Inject constructor(
                     Log.d("ModelRepository", "删除模型成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "删除模型失败"
+                    val errorMsg = body?.msg ?: "删除模型失败"
                     Log.e("ModelRepository", "删除模型失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }

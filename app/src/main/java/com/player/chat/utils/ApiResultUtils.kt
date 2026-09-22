@@ -24,9 +24,9 @@ object ApiResultUtils {
     ): Result<String> {
         val body = response.body()
         return if (response.isSuccessful && body?.status == "SUCCESS" && (body.data ?: 0) > 0) {
-            Result.success(body.message ?: successFallback)
+            Result.success(body.msg ?: successFallback)
         } else {
-            Result.failure(Exception(body?.message ?: failFallback))
+            Result.failure(Exception(body?.msg ?: failFallback))
         }
     }
 }

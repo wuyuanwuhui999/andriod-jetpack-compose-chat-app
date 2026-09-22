@@ -27,7 +27,7 @@ class ChatRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
-                Result.failure(Exception(response.body()?.message ?: "获取模型列表失败"))
+                Result.failure(Exception(response.body()?.msg ?: "获取模型列表失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -41,7 +41,7 @@ class ChatRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
-                Result.failure(Exception(response.body()?.message ?: "获取目录列表失败"))
+                Result.failure(Exception(response.body()?.msg ?: "获取目录列表失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -70,7 +70,7 @@ class ChatRepository @Inject constructor(
                     Result.success(Directory(directory = directory, tenantId = tenantId))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "创建目录失败"))
+                Result.failure(Exception(response.body()?.msg ?: "创建目录失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -118,7 +118,7 @@ class ChatRepository @Inject constructor(
                     Result.failure(Exception("上传失败"))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "上传失败"))
+                Result.failure(Exception(response.body()?.msg ?: "上传失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -131,7 +131,7 @@ class ChatRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
-                Result.failure(Exception(response.body()?.message ?: "获取文档列表失败"))
+                Result.failure(Exception(response.body()?.msg ?: "获取文档列表失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -185,7 +185,7 @@ class ChatRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
-                Result.failure(Exception(response.body()?.message ?: "获取会话记录失败"))
+                Result.failure(Exception(response.body()?.msg ?: "获取会话记录失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -208,7 +208,7 @@ class ChatRepository @Inject constructor(
                     Result.failure(Exception("提示词不存在"))
                 }
             } else {
-                Result.failure(Exception(response.body()?.message ?: "获取提示词失败"))
+                Result.failure(Exception(response.body()?.msg ?: "获取提示词失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -225,7 +225,7 @@ class ChatRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(true)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "更新提示词失败"))
+                Result.failure(Exception(response.body()?.msg ?: "更新提示词失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -250,7 +250,7 @@ class ChatRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: emptyList())
             } else {
-                Result.failure(Exception(response.body()?.message ?: "获取提示词列表失败"))
+                Result.failure(Exception(response.body()?.msg ?: "获取提示词列表失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -268,7 +268,7 @@ class ChatRepository @Inject constructor(
             if (response.isSuccessful && response.body()?.status == "SUCCESS") {
                 Result.success(response.body()?.data ?: 0)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "删除提示词失败"))
+                Result.failure(Exception(response.body()?.msg ?: "删除提示词失败"))
             }
         } catch (e: Exception) {
             Result.failure(e)

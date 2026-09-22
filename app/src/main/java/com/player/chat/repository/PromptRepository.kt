@@ -33,7 +33,7 @@ class PromptRepository @Inject constructor(
                     Log.d("PromptRepository", "获取提示词列表成功，共 ${prompts.size} 条")
                     Result.success(prompts)
                 } else {
-                    val errorMsg = body?.message ?: "获取提示词列表失败"
+                    val errorMsg = body?.msg ?: "获取提示词列表失败"
                     Log.e("PromptRepository", "获取提示词列表失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -66,7 +66,7 @@ class PromptRepository @Inject constructor(
                     Log.d("PromptRepository", "新增提示词成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "新增提示词失败"
+                    val errorMsg = body?.msg ?: "新增提示词失败"
                     Log.e("PromptRepository", "新增提示词失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -100,7 +100,7 @@ class PromptRepository @Inject constructor(
                     Log.d("PromptRepository", "更新提示词成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "更新提示词失败"
+                    val errorMsg = body?.msg ?: "更新提示词失败"
                     Log.e("PromptRepository", "更新提示词失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
@@ -131,7 +131,7 @@ class PromptRepository @Inject constructor(
                     Log.d("PromptRepository", "删除提示词成功，影响行数: $data")
                     Result.success(data)
                 } else {
-                    val errorMsg = body?.message ?: "删除提示词失败"
+                    val errorMsg = body?.msg ?: "删除提示词失败"
                     Log.e("PromptRepository", "删除提示词失败: $errorMsg")
                     Result.failure(Exception(errorMsg))
                 }
