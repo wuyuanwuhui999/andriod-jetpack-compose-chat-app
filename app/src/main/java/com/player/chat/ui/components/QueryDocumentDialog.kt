@@ -101,6 +101,7 @@ fun QueryDocumentDialog(
                             modifier = Modifier.size(Dimens.middleIconSize)
                         ) {
                             Icon(
+                                tint = Color.Secondary,
                                 painter = painterResource(id = R.drawable.icon_refresh),
                                 contentDescription = "刷新",
                                 modifier = Modifier.size(Dimens.middleIconSize)
@@ -151,6 +152,7 @@ fun QueryDocumentDialog(
                             modifier = Modifier.size(Dimens.middleIconSize)
                         ) {
                             Icon(
+                                tint = Color.Secondary,
                                 painter = painterResource(id = R.drawable.icon_create_directory),
                                 contentDescription = "创建目录",
                                 modifier = Modifier.size(Dimens.middleIconSize)
@@ -167,6 +169,7 @@ fun QueryDocumentDialog(
                             modifier = Modifier.size(Dimens.middleIconSize)
                         ) {
                             Icon(
+                                tint = Color.Secondary,
                                 painter = painterResource(id = R.drawable.icon_upload),
                                 contentDescription = "上传文档",
                                 modifier = Modifier.size(Dimens.middleIconSize)
@@ -427,6 +430,7 @@ fun DocumentDirectoryItem(
             Icon(
                 painter = painterResource(id = R.drawable.icon_arrow),
                 contentDescription = if (isExpanded) "收起" else "展开",
+                tint = Color.Secondary,
                 modifier = Modifier
                     .size(Dimens.smallIconSize)
                     .rotate(if (isExpanded) 90f else 0f)
@@ -475,7 +479,8 @@ fun DocumentDirectoryItem(
                             checked = selectedDocIds.contains(document.id),
                             onCheckedChange = { onDocumentToggle(document.id) },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = Color.Primary
+                                checkedColor = Color.Primary,
+                                uncheckedColor = Color.Secondary     // 未选中时的颜色
                             )
                         )
                     }
